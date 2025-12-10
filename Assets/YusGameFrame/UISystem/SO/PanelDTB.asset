@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 841e1682f04d9cb45a1de39bb58fbe2b, type: 3}
+  m_Name: PanelDTB
+  m_EditorClassIdentifier: 
+  entries:
+  - panelName: PlayerState
+    panelPrefab: {fileID: 7286578817313563292, guid: 8428fc5b0b2572b4ebf5dc60c110a499, type: 3}
+  - panelName: PlayerInfo
+    panelPrefab: {fileID: 7272180753300245676, guid: f2bba4c72488bfd4a8e75825d6b144d2, type: 3}
+  - panelName: BubblePanel
+    panelPrefab: {fileID: 1656570065251819708, guid: 27b17a0225ebf9b47bb166ad745ebb0e, type: 3}

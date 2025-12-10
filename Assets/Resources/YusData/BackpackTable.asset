@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9affe1d38fd223345b36ef74d13270bc, type: 3}
+  m_Name: BackpackTable
+  m_EditorClassIdentifier: 
+  dataList:
+  - id: 1001
+    name: "\u94C1\u5251"
+    logicType: Weapon
+    desc: "\u65B0\u624B\u6751\u53D1\u7684\u751F\u9508\u94C1\u5251"
+    durability: 100
+    icon: {fileID: 21300000, guid: d2bb88c13deb4be4684f19bfbd065d8f, type: 3}
+  - id: 1002
+    name: "\u6CBB\u7597\u836F\u6C34"
+    logicType: Potion
+    desc: "\u6062\u590D50\u70B9\u751F\u547D\u503C"
+    durability: 1
+    icon: {fileID: 21300000, guid: b993230a23ce08848a23f6a3c706f65a, type: 3}
+  - id: 1003
+    name: "\u94C1\u76FE"
+    logicType: Armor
+    desc: "\u62B5\u6321\u4E00\u6B21\u653B\u51FB"
+    durability: 50
+    icon: {fileID: 21300000, guid: 846ee75b6c856544fb98c7bd41189bd4, type: 3}
