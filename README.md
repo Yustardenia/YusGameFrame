@@ -2,21 +2,22 @@
 
 基于Yus框架的Unity开发完整解决方案
 
-*   [1\. Attributes](#attributes)
-*   [2\. EditorProMax](#editorpromax)
-*   [3\. ExcelTool](#exceltool)
-*   [4\. GameControls](#gamecontrols)
-*   [5\. MusicControl](#musiccontrol)
-*   [6\. PoolSystem](#poolsystem)
-*   [7\. ResLoadSystem](#resloadsystem)
-*   [8\. SimpleBinary](#simplebinary)
-*   [9\. UISystem](#uisystem)
-*   [10\. YusAssetExporter](#yusassetexporter)
-*   [11\. YusEventSystem](#yuseventsystem)
-*   [12\. YusFSM](#yusfsm)
-*   [13\. AnimSystem](#anim)
+-   [1\. Attributes](#attributes)
+-   [2\. EditorProMax](#editorpromax)
+-   [3\. ExcelTool](#exceltool)
+-   [4\. GameControls](#gamecontrols)
+-   [5\. MusicControl](#musiccontrol)
+-   [6\. PoolSystem](#poolsystem)
+-   [7\. ResLoadSystem](#resloadsystem)
+-   [8\. SimpleBinary](#simplebinary)
+-   [9\. UISystem](#uisystem)
+-   [10\. YusAssetExporter](#yusassetexporter)
+-   [11\. YusEventSystem](#yuseventsystem)
+-   [12\. YusFSM](#yusfsm)
+-   [13\. AnimSystem](#anim)
+-   [14\. YusGameFrame 本地化系统](#localizationsystem)
 
-[Top](#top "回到顶部") [1](#attributes "跳转到第1层") [2](#editorpromax "跳转到第2层") [3](#exceltool "跳转到第3层") [4](#gamecontrols "跳转到第4层") [5](#musiccontrol "跳转到第5层") [6](#poolsystem "跳转到第6层") [7](#resloadsystem "跳转到第7层") [8](#simplebinary "跳转到第8层") [9](#uisystem "跳转到第9层") [10](#yusassetexporter "跳转到第10层") [11](#yuseventsystem "跳转到第11层") [12](#yusfsm "跳转到第12层") [13](#anim "跳转到第13层")
+[Top](#top "回到顶部") [1](#attributes "跳转到第1层") [2](#editorpromax "跳转到第2层") [3](#exceltool "跳转到第3层") [4](#gamecontrols "跳转到第4层") [5](#musiccontrol "跳转到第5层") [6](#poolsystem "跳转到第6层") [7](#resloadsystem "跳转到第7层") [8](#simplebinary "跳转到第8层") [9](#uisystem "跳转到第9层") [10](#yusassetexporter "跳转到第10层") [11](#yuseventsystem "跳转到第11层") [12](#yusfsm "跳转到第12层") [13](#anim "跳转到第13层") [14](#localizationsystem "跳转到第14层")
 
 ## 1\. MyAttributes - 强大自定义属性系统（完整版）
 
@@ -112,11 +113,11 @@ public int levelIndex;            // 显示 Build Index
 
 包含以下文件（缺一不可）：
 
-*   `MyAttributes.cs`（属性定义）
-*   `GlobalWatcher.cs`（运行时监视器）
-*   `Editor/AutoGetInjector.cs`
-*   `Editor/KeepValueProcessor.cs`
-*   `Editor/SceneSelectorDrawer.cs`（上面已给出完整代码）
+-   `MyAttributes.cs`（属性定义）
+-   `GlobalWatcher.cs`（运行时监视器）
+-   `Editor/AutoGetInjector.cs`
+-   `Editor/KeepValueProcessor.cs`
+-   `Editor/SceneSelectorDrawer.cs`（上面已给出完整代码）
 
 #### 步骤2：在任意 MonoBehaviour 上使用
 
@@ -155,16 +156,16 @@ public class PlayerController : MonoBehaviour
 
 #### 步骤3：直接按 Play 即可看到效果
 
-*   屏幕左上角出现绿色文字实时显示所有 `[Watch]` 的值
-*   修改 `[KeepValue]` 的字段 → 停止 Play → 再次 Play → 值还在！
-*   `[Get]` 的组件即使是 private 且没 \[SerializeField\]，运行时也不会空
-*   `[SceneSelector]` 字段在 Inspector 变成下拉框
+-   屏幕左上角出现绿色文字实时显示所有 `[Watch]` 的值
+-   修改 `[KeepValue]` 的字段 → 停止 Play → 再次 Play → 值还在！
+-   `[Get]` 的组件即使是 private 且没 \[SerializeField\]，运行时也不会空
+-   `[SceneSelector]` 字段在 Inspector 变成下拉框
 
 ### 工作原理速览（技术向）
 
 #### GlobalWatcher
 
-`RuntimeInitializeOnLoadMethod(AfterSceneLoad)` 自动创建 → 每秒 `FindObjectsOfType` + 反射扫描 `[Watch]` → OnGUI 绘制
+`RuntimeInitializeOnLoadMethod(AfterSceneLoad)` 自动创建 → 每秒 `FindObjectsOfType<MonoBehaviour>` + 反射扫描 `[Watch]` → OnGUI 绘制
 
 #### KeepValue
 
@@ -176,13 +177,13 @@ public class PlayerController : MonoBehaviour
 
 ### 常见问题 & 注意事项
 
-*   __性能：__ GlobalWatcher 每秒扫描一次，1000 个物体以下几乎无感知。物体极多时可改为手动注册。
-*   __KeepValue 不支持的类型：__ 纯 C# 类（无 \[Serializable\]）、GameObject/Transform 引用等复杂引用类型会失败。
-*   __Domain Reload：__ 进入 PlayMode 时脚本域重载会导致 private 字段变 null，`[Get]` 的运行时注入专门解决这个问题。
-*   __不要删除自动生成的 \[GlobalWatcher\] 对象__，它是 DontDestroyOnLoad 的单例。
-*   所有功能在 Build 后自动失效（#if UNITY\_EDITOR 包裹），不会影响打包体积和性能。
+-   **性能：** GlobalWatcher 每秒扫描一次，1000 个物体以下几乎无感知。物体极多时可改为手动注册。
+-   **KeepValue 不支持的类型：** 纯 C# 类（无 \[Serializable\]）、GameObject/Transform 引用等复杂引用类型会失败。
+-   **Domain Reload：** 进入 PlayMode 时脚本域重载会导致 private 字段变 null，`[Get]` 的运行时注入专门解决这个问题。
+-   **不要删除自动生成的 \[GlobalWatcher\] 对象**，它是 DontDestroyOnLoad 的单例。
+-   所有功能在 Build 后自动失效（#if UNITY\_EDITOR 包裹），不会影响打包体积和性能。
 
-__现在你已经拥有了一个比 NaughtyAttributes 更轻量、更专注调试的超级属性工具包！__  
+**现在你已经拥有了一个比 NaughtyAttributes 更轻量、更专注调试的超级属性工具包！**  
 写代码 → 加属性 → 直接 Play → 调参飞起 → 永远不用重复设置调试值
 
 ## 2\. EditorProMax - 编辑器工具集
@@ -195,18 +196,18 @@ __现在你已经拥有了一个比 NaughtyAttributes 更轻量、更专注调�
 
 资源侦探工具，支持三种模式：
 
-*   引用查找：查找谁引用了指定资源
-*   废弃资源：检测未使用的资源
-*   重复资源：通过MD5查找重复文件
+-   引用查找：查找谁引用了指定资源
+-   废弃资源：检测未使用的资源
+-   重复资源：通过MD5查找重复文件
 
 #### EssentialToolkit
 
 开发效率工具集：
 
-*   快速场景切换
-*   代码行数统计
-*   待办事项便签
-*   资源收藏夹
+-   快速场景切换
+-   代码行数统计
+-   待办事项便签
+-   资源收藏夹
 
 #### FolderColorizer
 
@@ -262,7 +263,7 @@ Tools/🎨 文件夹染色配置
 
 ## 3\. ExcelTool - 终极二进制配置表 + 存档系统
 
-一套__完全自动化__的 Excel → C# → ScriptableObject → 运行时读写 + 二进制存档 + 资源自动重连 + Excel反写 的闭环数据解决方案。  
+一套**完全自动化**的 Excel → C# → ScriptableObject → 运行时读写 + 二进制存档 + 资源自动重连 + Excel反写 的闭环数据解决方案。  
 比 Excel2SO、Odin、YooAsset 配置表更轻量、更快、更适合中型 RPG/对话重度项目。
 
 一键生成 Data + Table 类
@@ -289,7 +290,7 @@ Gen/\*.cs
 
 运行时克隆 + 资源重连
 
-YusBaseManager
+YusBaseManager<TTable,TData>
 
 修改 → Save()
 
@@ -305,31 +306,31 @@ Excel 被反写！
 
 菜单 `Tools → Yus Data` 的两大核心功能：
 
-*   __1\. 生成代码__ → 自动生成 `*Data.cs` + `*Table.cs`
-*   __2\. 导出数据到 SO__ → 生成 `Resources/YusData/*.asset`
+-   **1\. 生成代码** → 自动生成 `*Data.cs` + `*Table.cs`
+-   **2\. 导出数据到 SO** → 生成 `Resources/YusData/*.asset`
 
-#### YusTableSO 运行时配置表基类
+#### YusTableSO<TKey,TData> 运行时配置表基类
 
 所有生成的 `*Table` 继承自它，提供 `Get(key)`、`GetAll()`、自动字典缓存。
 
-#### YusBaseManager 运行时数据管理器基类
+#### YusBaseManager<TTable,TData> 运行时数据管理器基类
 
 你只需要继承一次，全部功能自动拥有：
 
-*   自动加载配置表或读档
-*   资源（Sprite/Prefab）自动重连（解决存档后图片丢失）
-*   Save() 一键二进制存档
-*   Dev\_WriteBackToExcel() 右键反写回 Excel
-*   Dev\_ResetSave() 重置存档
+-   自动加载配置表或读档
+-   资源（Sprite/Prefab）自动重连（解决存档后图片丢失）
+-   Save() 一键二进制存档
+-   Dev\_WriteBackToExcel() 右键反写回 Excel
+-   Dev\_ResetSave() 重置存档
 
 #### YusDataManager 全局单例
 
 核心枢纽，负责：
 
-*   配置表缓存（Resources.Load）
-*   二进制读写
-*   运行时克隆 + 资源重连
-*   编辑器下调用 ExcelYusWriter 反写
+-   配置表缓存（Resources.Load）
+-   二进制读写
+-   运行时克隆 + 资源重连
+-   编辑器下调用 ExcelYusWriter 反写
 
 #### ExcelYusWriter 反写工具
 
@@ -354,19 +355,19 @@ key
 
 #### 步骤2：一键生成代码 + 导出数据
 
-菜单 → __Tools → Yus Data → 1. 生成代码__  
-→ __2\. 导出数据到 SO__
+菜单 → **Tools → Yus Data → 1. 生成代码**  
+→ **2\. 导出数据到 SO**
 
 会自动生成：
 
-*   `Assets/ExcelTool/Yus/Gen/BackpackData.cs`
-*   `BackpackTable.cs`
-*   `Assets/Resources/YusData/BackpackTable.asset`
+-   `Assets/ExcelTool/Yus/Gen/BackpackData.cs`
+-   `BackpackTable.cs`
+-   `Assets/Resources/YusData/BackpackTable.asset`
 
 #### 步骤3：创建运行时管理器（只需继承一次）
 
 ```
-public class BackpackManager : YusBaseManager
+public class BackpackManager : YusBaseManager<BackpackTable, BackpackData>
 {
     public static BackpackManager Instance { get; private set; }
     
@@ -398,9 +399,9 @@ public class BackpackManager : YusBaseManager
 
 已内置 3 个 Fungus Command：
 
-*   __Dialogue Trigger Condition__ → 判断对话是否可触发
-*   __Increment Dialogue Count__ → 触发次数+1
-*   __Set Dialogue Trigger__ → 强制设置可触发状态
+-   **Dialogue Trigger Condition** → 判断对话是否可触发
+-   **Increment Dialogue Count** → 触发次数+1
+-   **Set Dialogue Trigger** → 强制设置可触发状态
 
 配合 `DialogueKeyManager.cs` 使用，支持运行时动态添加对话键。
 
@@ -408,7 +409,7 @@ public class BackpackManager : YusBaseManager
 
 #### 资源自动重连（解决存档后图片丢失）
 
-存档只存名字，读档后自动根据 ID 从配置表把 Sprite/Prefab 重新塞回去，__永不丢失图片__。
+存档只存名字，读档后自动根据 ID 从配置表把 Sprite/Prefab 重新塞回去，**永不丢失图片**。
 
 #### Excel 反写（调试神器）
 
@@ -440,19 +441,19 @@ Assets/ExcelTool/
 
 ### 常见问题 & 注意事项
 
-*   Excel 文件名就是表名（如 `Backpack.xlsx` → `BackpackTable`）
-*   有且仅有 __一列__ 第三行写 `key`
-*   修改 Excel 后记得重新 “生成代码 + 导出数据”
-*   打包后自动移除所有 Editor 代码（反写功能只在编辑器）
-*   存档路径：PC 为 `%userprofile%\AppData\LocalLow\你的公司\你的游戏\SaveData\`
-*   性能极高：1000条数据存档
+-   Excel 文件名就是表名（如 `Backpack.xlsx` → `BackpackTable`）
+-   有且仅有 **一列** 第三行写 `key`
+-   修改 Excel 后记得重新 “生成代码 + 导出数据”
+-   打包后自动移除所有 Editor 代码（反写功能只在编辑器）
+-   存档路径：PC 为 `%userprofile%\AppData\LocalLow\你的公司\你的游戏\SaveData\`
+-   性能极高：1000条数据存档
 
-__恭喜！你现在拥有了一个比 90% 商业项目还强的配置表+存档系统！__  
+**恭喜！你现在拥有了一个比 90% 商业项目还强的配置表+存档系统！**  
 从此告别手动拖资源、JSON 字符串、存档图片丢失、策划改表要重打 AB 包的痛苦
 
 ## 4\. GameControls - 全新输入系统（终极版）
 
-基于 Unity 新输入系统（Input System Package）的完整封装，__零手动订阅、自动防漏、支持改键保存、模式切换、一键生成控制器__，彻底告别 \`OnEnable/OnDisable\` 地狱。
+基于 Unity 新输入系统（Input System Package）的完整封装，**零手动订阅、自动防漏、支持改键保存、模式切换、一键生成控制器**，彻底告别 \`OnEnable/OnDisable\` 地狱。
 
 自动注册 + 自动解绑
 
@@ -497,14 +498,14 @@ PlayerController / UIController
 
 整个输入系统的核心枢纽，挂一个空物体即可：
 
-*   `EnableGameplay()` → 开启移动、跳跃、攻击
-*   `EnableUI()` → 开启 UI 操作（自动禁用游戏输入）
-*   `DisableAll()` → 过场动画、锁输入
-*   自动加载/保存玩家改键（Json 存本地）
+-   `EnableGameplay()` → 开启移动、跳跃、攻击
+-   `EnableUI()` → 开启 UI 操作（自动禁用游戏输入）
+-   `DisableAll()` → 过场动画、锁输入
+-   自动加载/保存玩家改键（Json 存本地）
 
 #### YusInputExtensions + YusInputAutoCleaner 黑魔法
 
-__彻底解放你__：再也不用写 `OnEnable/OnDisable` 订阅事件！
+**彻底解放你**：再也不用写 `OnEnable/OnDisable` 订阅事件！
 
 ```
 this.YusRegisterInput(
@@ -520,9 +521,9 @@ this.YusRegisterInput(
 菜单 `Tools → Yus Tools → 6. 输入脚本生成器`  
 自动扫描 `GameControls.inputactions`，生成以下内容：
 
-*   `PlayerController.cs`（Gameplay 动作）
-*   `UIController.cs`（UI 动作）
-*   每个 Action 都自动生成缓存字段 + OnXXX 方法
+-   `PlayerController.cs`（Gameplay 动作）
+-   `UIController.cs`（UI 动作）
+-   每个 Action 都自动生成缓存字段 + OnXXX 方法
 
 #### GameControls.cs 自动生成
 
@@ -536,9 +537,9 @@ this.YusRegisterInput(
 
 建议配置：
 
-*   Action Map: `Gameplay`（移动、跳跃、攻击、冲刺）
-*   Action Map: `UI`（确认、取消、导航）
-*   支持 Interactions：Hold、Press、MultiTap 等
+-   Action Map: `Gameplay`（移动、跳跃、攻击、冲刺）
+-   Action Map: `UI`（确认、取消、导航）
+-   支持 Interactions：Hold、Press、MultiTap 等
 
 #### 步骤2：挂载 YusInputManager（只需一次）
 
@@ -546,7 +547,7 @@ this.YusRegisterInput(
 
 #### 步骤3：一键生成控制器代码（推荐）
 
-__Tools → Yus Tools → 6. 输入脚本生成器__
+**Tools → Yus Tools → 6. 输入脚本生成器**
 
 自动生成两个脚本：
 
@@ -653,19 +654,19 @@ Assets/GameControls/
 
 ### 常见问题 & 注意事项
 
-*   永远不要手动 `+=` 事件！使用 `YusRegisterInput` 即可
-*   移动类输入必须缓存到字段，在 `FixedUpdate` 使用
-*   改键后务必调用 `SaveBindingOverrides()`
-*   支持手柄、键盘、触摸，完全自动适配
-*   打包后自动移除所有 Editor 代码
+-   永远不要手动 `+=` 事件！使用 `YusRegisterInput` 即可
+-   移动类输入必须缓存到字段，在 `FixedUpdate` 使用
+-   改键后务必调用 `SaveBindingOverrides()`
+-   支持手柄、键盘、触摸，完全自动适配
+-   打包后自动移除所有 Editor 代码
 
-__恭喜！你现在拥有了一个比 99% 商业游戏还先进的输入系统！__  
+**恭喜！你现在拥有了一个比 99% 商业游戏还先进的输入系统！**  
 从此告别输入漏订阅、模式混乱、改键不保存、代码重复的痛苦。  
 真正的“一次配置，永久爽”。
 
 ## 5\. MusicControl - 专业级音频管理系统（商业级）
 
-一套__完整、优雅、零坑__的音频解决方案，彻底解决 BGM 被打断无法恢复、音效音量不统一、音量设置不保存、Fungus 播放混乱等 99% 项目都踩过的坑。
+一套**完整、优雅、零坑**的音频解决方案，彻底解决 BGM 被打断无法恢复、音效音量不统一、音量设置不保存、Fungus 播放混乱等 99% 项目都踩过的坑。
 
 BGM 与 SFX 完全分离
 
@@ -700,26 +701,26 @@ Fungus 原生三连命令（开箱即用）
 
 只负责存取和广播，永不播放：
 
-*   `AudioData.MusicVolume` / `SFXVolume`
-*   自动加载/保存（基于 SimpleSingleValueSaver）
-*   音量变化 → 自动广播 `YusEvents.OnMusicVolChange`
+-   `AudioData.MusicVolume` / `SFXVolume`
+-   自动加载/保存（基于 SimpleSingleValueSaver）
+-   音量变化 → 自动广播 `YusEvents.OnMusicVolChange`
 
 #### AudioLibrary ScriptableObject 音效库
 
 集中管理所有音效，支持多库：
 
-*   支持 `soundName` 自定义 Key
-*   每个音效独立 `volumeScale` 微调
-*   运行时自动构建字典，查找 O(1)
+-   支持 `soundName` 自定义 Key
+-   每个音效独立 `volumeScale` 微调
+-   运行时自动构建字典，查找 O(1)
 
 #### SceneAudioManager 场景单例
 
 全局唯一音频播放器，挂一个空物体即可：
 
-*   自动创建 `MusicSource` 和 `SFXSource`
-*   支持 `PlayMusic(clip/name)`、`PlaySFX(name)`
-*   完整临时切换逻辑（记住进度 + 自动恢复）
-*   实时监听音量变化自动更新
+-   自动创建 `MusicSource` 和 `SFXSource`
+-   支持 `PlayMusic(clip/name)`、`PlaySFX(name)`
+-   完整临时切换逻辑（记住进度 + 自动恢复）
+-   实时监听音量变化自动更新
 
 ### 使用教程（3分钟上手）
 
@@ -752,8 +753,8 @@ public class AudioLibrary : ScriptableObject
 
 配置：
 
-*   `Default BGM`：启动时自动播放
-*   `Audio Libraries`：拖入所有你创建的库
+-   `Default BGM`：启动时自动播放
+-   `Audio Libraries`：拖入所有你创建的库
 
 #### 步骤3：播放音效（超简单）
 
@@ -853,25 +854,25 @@ Assets/MusicControl/
 
 ### 常见问题 & 注意事项
 
-*   `soundName` 必须填写，否则用文件名（容易冲突）
-*   多个 AudioLibrary 时，相同 `soundName` 后加入的会覆盖前面的
-*   BGM 建议放在专门的 BGM 库，避免和 SFX 混淆
-*   音效不要勾 `Play On Awake`，全部由系统控制
-*   所有音量调节都走 `AudioData.SetXXXVolume`，不要直接改 AudioSource.volume
+-   `soundName` 必须填写，否则用文件名（容易冲突）
+-   多个 AudioLibrary 时，相同 `soundName` 后加入的会覆盖前面的
+-   BGM 建议放在专门的 BGM 库，避免和 SFX 混淆
+-   音效不要勾 `Play On Awake`，全部由系统控制
+-   所有音量调节都走 `AudioData.SetXXXVolume`，不要直接改 AudioSource.volume
 
-__恭喜！你现在拥有了一个比大多数商业游戏还强的音频系统！__  
+**恭喜！你现在拥有了一个比大多数商业游戏还强的音频系统！**  
 从此告别：
 
-*   BGM 被打断后变成死寂
-*   玩家调了音量下次启动又恢复默认
-*   某个音效特别吵只能全局压低
-*   Fungus 里写一堆 AudioSource.PlayOneShot
+-   BGM 被打断后变成死寂
+-   玩家调了音量下次启动又恢复默认
+-   某个音效特别吵只能全局压低
+-   Fungus 里写一堆 AudioSource.PlayOneShot
 
 真正的“一次配置，全游戏完美”。
 
 ## 6\. PoolSystem - 工业级对象池系统（性能杀手级）
 
-一套__零 GC、自动回收、延迟归还、实时监控、完全防漏__的对象池框架，专治“子弹/敌人/粒子/特效一多就卡死”的顽疾。
+一套**零 GC、自动回收、延迟归还、实时监控、完全防漏**的对象池框架，专治“子弹/敌人/粒子/特效一多就卡死”的顽疾。
 
 零 GC Alloc（真正意义上的）
 
@@ -910,18 +911,18 @@ OnRecycle() + StopAllCoroutines()
 
 整个系统的核心大脑，挂一个空物体即可：
 
-*   按资源路径自动分池（同一 Prefab 自动归一池）
-*   自动创建 `PoolObject` 标记组件
-*   自动整理到 `=== YusPoolSystem ===` 下，层次结构超级干净
-*   支持 `ClearAll()` 释放内存
+-   按资源路径自动分池（同一 Prefab 自动归一池）
+-   自动创建 `PoolObject` 标记组件
+-   自动整理到 `=== YusPoolSystem ===` 下，层次结构超级干净
+-   支持 `ClearAll()` 释放内存
 
 #### PoolObject 自动添加
 
 每个池对象都会自动挂上这个组件：
 
-*   记录所属池路径
-*   提供 `ReturnToPool(delay)` 一键延迟回收
-*   自动停止所有协程（防止回收后还在跑逻辑）
+-   记录所属池路径
+-   提供 `ReturnToPool(delay)` 一键延迟回收
+-   自动停止所有协程（防止回收后还在跑逻辑）
 
 #### IPoolable 生命周期接口
 
@@ -936,10 +937,10 @@ public void OnRecycle() → 归还时调用（真正意义上的 OnDisable）
 
 菜单 `Tools → Yus Data → 5. 对象池监视器`
 
-*   实时显示每个池的“闲置 / 使用中”数量
-*   使用率进度条可视化
-*   搜索 + 一键清空闲置对象
-*   点击“选中池子根节点”直接跳到 Hierarchy
+-   实时显示每个池的“闲置 / 使用中”数量
+-   使用率进度条可视化
+-   搜索 + 一键清空闲置对象
+-   点击“选中池子根节点”直接跳到 Hierarchy
 
 ### 使用教程（2分钟上手）
 
@@ -992,14 +993,14 @@ bullet.GetComponent().ReturnToPool(3f);
 
 #### 步骤4：实时监控（开发必备）
 
-__Tools → Yus Data → 5. 对象池监视器__
+**Tools → Yus Data → 5. 对象池监视器**
 
 你会看到：
 
-*   池子总数：32
-*   闲置待命：892 个
-*   正在使用：127 个
-*   每个池的使用率进度条（绿色 = 健康，红色 = 可能泄漏）
+-   池子总数：32
+-   闲置待命：892 个
+-   正在使用：127 个
+-   每个池的使用率进度条（绿色 = 健康，红色 = 可能泄漏）
 
 ### 最佳实践示例
 
@@ -1040,11 +1041,29 @@ void Start()
 
 ### 性能对比（实测数据）
 
-| 方式 | 每帧生成 100 个 | GC Alloc | 卡顿 |
-| --- | --- | --- | --- |
-| 方式 | 每帧生成 100 个 | GC Alloc | 卡顿 |
-| Instantiate + Destroy | 严重卡顿 | 10+ MB | 严重 |
-| 对象池（YusPool） | 丝滑 | 0 B | 无 |
+方式
+
+每帧生成 100 个
+
+GC Alloc
+
+卡顿
+
+Instantiate + Destroy
+
+严重卡顿
+
+10+ MB
+
+严重
+
+对象池（YusPool）
+
+丝滑
+
+0 B
+
+无
 
 ### 目录结构建议
 
@@ -1061,25 +1080,25 @@ Assets/PoolSystem/
 
 ### 常见问题 & 注意事项
 
-*   路径必须是 `Resources/xxx` 或你自己的资源系统路径
-*   所有逻辑写在 `OnSpawn` 和 `OnRecycle`，不要写在 `Start/OnEnable`
-*   协程必须在当前物体上启动，回收时会自动 `StopAllCoroutines`
-*   泄漏检测：如果某个池“使用中”数量持续上涨 → 说明没回收
-*   切换场景不需要清理池子（DontDestroyOnLoad）
+-   路径必须是 `Resources/xxx` 或你自己的资源系统路径
+-   所有逻辑写在 `OnSpawn` 和 `OnRecycle`，不要写在 `Start/OnEnable`
+-   协程必须在当前物体上启动，回收时会自动 `StopAllCoroutines`
+-   泄漏检测：如果某个池“使用中”数量持续上涨 → 说明没回收
+-   切换场景不需要清理池子（DontDestroyOnLoad）
 
-__恭喜！你现在拥有了一个比 Unity 官方对象池还强 10 倍的工业级池系统！__  
+**恭喜！你现在拥有了一个比 Unity 官方对象池还强 10 倍的工业级池系统！**  
 从此告别：
 
-*   子弹一多就掉帧
-*   粒子特效卡成 PPT
-*   敌人生成一卡一卡的
-*   内存泄漏查到吐
+-   子弹一多就掉帧
+-   粒子特效卡成 PPT
+-   敌人生成一卡一卡的
+-   内存泄漏查到吐
 
 真正的“开枪如丝般顺滑”。
 
 ## 7\. ResLoadSystem - 终极资源加载系统（四模式合一）
 
-一套__统一接口、自动缓存、支持 Resources / AssetBundle / Addressables / 编辑器直载__的资源加载神器，让你从此告别“今天用 Resources，明天改 Addressables，重写一堆加载代码”的痛苦。
+一套**统一接口、自动缓存、支持 Resources / AssetBundle / Addressables / 编辑器直载**的资源加载神器，让你从此告别“今天用 Resources，明天改 Addressables，重写一堆加载代码”的痛苦。
 
 统一 Load / LoadAsync 接口
 
@@ -1097,23 +1116,76 @@ __恭喜！你现在拥有了一个比 Unity 官方对象池还强 10 倍的工�
 
 ```
 // 开发期（最快）
-YusResManager.Instance.Load("Prefabs/Enemy");
+YusResManager.Instance.Load<GameObject>("Prefabs/Enemy");
 
 // 上线后改成 Addressables（只改一行！）
-YusResManager.Instance.Load("Enemy_Prefab", LoadMode.Addressables);
+YusResManager.Instance.Load<GameObject>("Enemy_Prefab", LoadMode.Addressables);
 
 // 编辑器工具用最快的方式
-YusResManager.Instance.Load("Assets/Textures/icon.png", LoadMode.EditorDatabase);
+YusResManager.Instance.Load<Texture2D>("Assets/Textures/icon.png", LoadMode.EditorDatabase);
 ```
 
 ### 四种加载模式深度对比
 
-| 模式 | 加载速度 | 是否支持热更 | 编辑器体验 | 推荐场景 | 路径写法 |
-| --- | --- | --- | --- | --- | --- |
-| Resources | 快 | 不支持 | 良好 | 原型/小项目 | Prefabs/Enemy |
-| EditorDatabase | 最快 | 不支持 | 极致 | 编辑器工具 | Assets/Prefabs/Enemy.prefab |
-| AssetBundle | 中等 | 支持 | 一般 | 传统热更项目 | bundles/enemy.ab|Enemy |
-| Addressables | 中等 | 支持 | 良好 | 现代商业项目 | Enemy_Prefab（Label 或 Address） |
+模式
+
+加载速度
+
+是否支持热更
+
+编辑器体验
+
+推荐场景
+
+路径写法
+
+**Resources**
+
+快
+
+不支持
+
+良好
+
+原型/小项目
+
+`Prefabs/Enemy`
+
+**EditorDatabase**
+
+最快
+
+不支持
+
+极致
+
+编辑器工具
+
+`Assets/Prefabs/Enemy.prefab`
+
+**AssetBundle**
+
+中等
+
+支持
+
+一般
+
+传统热更项目
+
+`bundles/enemy.ab|Enemy`
+
+**Addressables**
+
+中等
+
+支持
+
+良好
+
+现代商业项目
+
+`Enemy_Prefab`（Label 或 Address）
 
 ### 核心功能详解
 
@@ -1121,11 +1193,11 @@ YusResManager.Instance.Load("Assets/Textures/icon.png", LoadMode.EditorDatabase)
 
 整个项目的资源中枢，自动创建，无需手动挂载：
 
-*   自动缓存所有加载过的资源（路径 → Object）
-*   支持同步 Load 和异步 LoadAsync
-*   支持 AssetBundle 和 Addressables（条件编译）
-*   提供 LoadPrefab 一键实例化
-*   ClearCache() 清理所有缓存
+-   自动缓存所有加载过的资源（路径 → Object）
+-   支持同步 Load 和异步 LoadAsync
+-   支持 AssetBundle 和 Addressables（条件编译）
+-   提供 LoadPrefab 一键实例化
+-   ClearCache() 清理所有缓存
 
 #### LoadMode 枚举
 
@@ -1147,10 +1219,10 @@ public enum LoadMode
 
 ```
 // 开发期（最简单）
-GameObject enemyPrefab = YusResManager.Instance.Load("Enemies/Goblin");
+GameObject enemyPrefab = YusResManager.Instance.Load<GameObject>("Enemies/Goblin");
 
 // 异步加载（推荐用于大资源）
-YusResManager.Instance.LoadAsync("Boss/Dragon", (obj) =>
+YusResManager.Instance.LoadAsync<GameObject>("Boss/Dragon", (obj) =>
 {
     if (obj) Instantiate(obj);
 });
@@ -1164,14 +1236,14 @@ YusResManager.Instance.LoadAsync("Boss/Dragon", (obj) =>
 #define YUS_ADDRESSABLES
 
 // 然后你的代码不用改，直接生效：
-GameObject player = YusResManager.Instance.Load("Player_Character", LoadMode.Addressables);
+GameObject player = YusResManager.Instance.Load<GameObject>("Player_Character", LoadMode.Addressables);
 ```
 
 #### 步骤3：编辑器工具用最快模式
 
 ```
 // 编辑器下生成器、预览工具用这个，秒加载
-Sprite icon = YusResManager.Instance.Load("Assets/Icons/sword.png", LoadMode.EditorDatabase);
+Sprite icon = YusResManager.Instance.Load<Sprite>("Assets/Icons/sword.png", LoadMode.EditorDatabase);
 ```
 
 #### 步骤4：配合对象池系统（完美结合）
@@ -1179,7 +1251,7 @@ Sprite icon = YusResManager.Instance.Load("Assets/Icons/sword.png", LoadMode.Edi
 ```
 // YusPoolManager 内部就是调的这个！
 GameObject bullet = YusPoolManager.Instance.Get("Weapons/Bullet"); 
-// 内部实际上是：YusResManager.Instance.Load("Weapons/Bullet")
+// 内部实际上是：YusResManager.Instance.Load<GameObject>("Weapons/Bullet")
 ```
 
 #### 步骤5：一键实例化（超方便）
@@ -1189,6 +1261,7 @@ GameObject bullet = YusPoolManager.Instance.Get("Weapons/Bullet");
 GameObject uiPanel = YusResManager.Instance.LoadPrefab("UI/PauseMenu", canvas);
 
 // 自动缓存 + 自动支持所有模式
+
 ```
 
 ### 终极技巧：全局切换加载模式（神级功能）
@@ -1228,22 +1301,22 @@ StreamingAssets/bundles/      ← AssetBundle 包
 
 ### 常见问题 & 注意事项
 
-*   Resources 路径不含 `.asset` 后缀和 `Resources/` 前缀
-*   Addressables 使用 Address 或 Label，不需要写路径
-*   AssetBundle 路径格式： `包路径|资源名`
-*   缓存是永久的，除非调用 `ClearCache()`
-*   所有加载失败都会有 Warning，便于排查
-*   完全兼容对象池、UI系统、音频系统
+-   Resources 路径不含 `.asset` 后缀和 `Resources/` 前缀
+-   Addressables 使用 Address 或 Label，不需要写路径
+-   AssetBundle 路径格式： `包路径|资源名`
+-   缓存是永久的，除非调用 `ClearCache()`
+-   所有加载失败都会有 Warning，便于排查
+-   完全兼容对象池、UI系统、音频系统
 
-__恭喜！你现在拥有了一个比 99% 商业项目还强的资源加载系统！__  
+**恭喜！你现在拥有了一个比 99% 商业项目还强的资源加载系统！**  
 从此告别：
 
-*   项目中期想换 Addressables → 重写几百个 Resources.Load
-*   编辑器工具卡顿 → 还要等 Resources.Load
-*   上线后发现热更没做 → 返工哭死
-*   不同模块用不同加载方式 → 维护地狱
+-   项目中期想换 Addressables → 重写几百个 Resources.Load
+-   编辑器工具卡顿 → 还要等 Resources.Load
+-   上线后发现热更没做 → 返工哭死
+-   不同模块用不同加载方式 → 维护地狱
 
-__真正做到：开发期丝滑，上线后热更，一行代码切换！__
+**真正做到：开发期丝滑，上线后热更，一行代码切换！**
 
 ## 8\. SimpleBinary - 极简二进制单值存档系统（轻量级王者）
 
@@ -1263,14 +1336,47 @@ __真正做到：开发期丝滑，上线后热更，一行代码切换！__
 
 ### 为什么不用 PlayerPrefs？（血泪对比）
 
-| 特性 | PlayerPrefs | SimpleSingleValueSaver |
-| --- | --- | --- |
-| 存储格式 | 明文（可被改） | 二进制（更安全） |
-| 读写速度 | 慢 | 极快（<1ms） |
-| 体积 | 大（字符串存储） | 极小（int 仅4字节） |
-| 类型安全 | 无（全转string） | 完整（类型不匹配自动报错） |
-| 编辑器查看 | 无 | 专业查看器 |
-| 热更安全 | 高危（常丢失） | 100% 可靠 |
+特性
+
+PlayerPrefs
+
+SimpleSingleValueSaver
+
+存储格式
+
+明文（可被改）
+
+二进制（更安全）
+
+读写速度
+
+慢
+
+极快（<1ms）
+
+体积
+
+大（字符串存储）
+
+极小（int 仅4字节）
+
+类型安全
+
+无（全转string）
+
+完整（类型不匹配自动报错）
+
+编辑器查看
+
+无
+
+专业查看器
+
+热更安全
+
+高危（常丢失）
+
+100% 可靠
 
 ### 核心类详解
 
@@ -1278,10 +1384,10 @@ __真正做到：开发期丝滑，上线后热更，一行代码切换！__
 
 无需挂载、无需初始化、开箱即用：
 
-*   `Save(key, value)` → 保存
-*   `Load(key, default)` → 读取
-*   `HasKey(key)` → 是否存在
-*   `Delete(key)` → 删除
+-   `Save(key, value)` → 保存
+-   `Load<T>(key, default)` → 读取
+-   `HasKey(key)` → 是否存在
+-   `Delete(key)` → 删除
 
 存储路径：`persistentDataPath/YusSimple/*.yus`
 
@@ -1339,15 +1445,15 @@ public class SettingsPanel : MonoBehaviour
 
 #### 编辑器查看器（调试神器）
 
-__Tools → Yus Data → 简单值查看器__
+**Tools → Yus Data → 简单值查看器**
 
 功能一览：
 
-*   实时查看所有存档项
-*   直接修改数值并保存
-*   一键删除
-*   打开存档文件夹
-*   支持搜索
+-   实时查看所有存档项
+-   直接修改数值并保存
+-   一键删除
+-   打开存档文件夹
+-   支持搜索
 
 ### 典型应用场景
 
@@ -1369,24 +1475,42 @@ __Tools → Yus Data → 简单值查看器__
 
 ### 存储位置（透明可查）
 
-__PC：__  
+**PC：**  
 `C:\Users\你的名字\AppData\LocalLow\你的公司\你的游戏\YusSimple\`
 
-__Android：__  
+**Android：**  
 `/data/data/你的包名/files/YusSimple/`
 
-__iOS：__  
+**iOS：**  
 `Application.persistentDataPath/YusSimple/`
 
 每个文件就是 `Key名.yus`，可用十六进制编辑器打开查看
 
 ### 与 ExcelTool 完美分工
 
-| 数据类型 | 用什么工具 | 原因 |
-| --- | --- | --- |
-| 配置表（怪物、物品） | ExcelTool | 数据量大、需要策划修改 |
-| 玩家设置、进度开关 | SimpleSingleValueSaver | 少量、需要永久保存 |
-| 背包、对话钥匙 | YusBaseManager + 二进制存档 | 结构化数据 |
+数据类型
+
+用什么工具
+
+原因
+
+配置表（怪物、物品）
+
+ExcelTool
+
+数据量大、需要策划修改
+
+玩家设置、进度开关
+
+SimpleSingleValueSaver
+
+少量、需要永久保存
+
+背包、对话钥匙
+
+YusBaseManager + 二进制存档
+
+结构化数据
 
 ### 目录结构建议
 
@@ -1398,25 +1522,25 @@ Assets/SimpleBinary/
 
 ### 常见问题 & 注意事项
 
-*   只支持 `int / float / bool / string` 四种基础类型
-*   复杂对象请用 `ExcelTool` 或 `YusBaseManager`
-*   类型不匹配会自动返回默认值并警告
-*   文件损坏也会自动回默认值，永不崩溃
-*   热更完全安全（存档路径不变）
+-   只支持 `int / float / bool / string` 四种基础类型
+-   复杂对象请用 `ExcelTool` 或 `YusBaseManager`
+-   类型不匹配会自动返回默认值并警告
+-   文件损坏也会自动回默认值，永不崩溃
+-   热更完全安全（存档路径不变）
 
-__恭喜！你现在拥有了一个比 PlayerPrefs 强 100 倍的极简存档系统！__  
+**恭喜！你现在拥有了一个比 PlayerPrefs 强 100 倍的极简存档系统！**  
 从此告别：
 
-*   玩家调了音量下次启动又变回来了
-*   PlayerPrefs 被改成 999999 金币
-*   首包太大因为存了一堆 string
-*   热更后所有设置全没了
+-   玩家调了音量下次启动又变回来了
+-   PlayerPrefs 被改成 999999 金币
+-   首包太大因为存了一堆 string
+-   热更后所有设置全没了
 
 真正的“轻量、极速、可靠、永不翻车”。
 
 ## 9\. UISystem - 工业级 UI 框架 + 气泡对话终极解决方案
 
-一套__零 GC、自动缓存、对象池深度集成、历史存档、Fungus 原生支持__的顶级 UI 系统 + 气泡对话系统，彻底解决“打开面板卡顿”、“气泡重复出现”、“选项选了还出现”、“UI 内存泄漏”等 99% 项目都踩过的坑。
+一套**零 GC、自动缓存、对象池深度集成、历史存档、Fungus 原生支持**的顶级 UI 系统 + 气泡对话系统，彻底解决“打开面板卡顿”、“气泡重复出现”、“选项选了还出现”、“UI 内存泄漏”等 99% 项目都踩过的坑。
 
 全局 UIManager + 面板缓存
 
@@ -1458,43 +1582,43 @@ BubbleManager.AddBubble()
 
 整个 UI 系统的核心大脑：
 
-*   通过 `UIPanelDatabase` 配置所有面板
-*   自动缓存 + 复用（永不重复 Instantiate）
-*   面板栈管理（支持返回键）
-*   `OpenPanel("Name")` 一行打开
+-   通过 `UIPanelDatabase` 配置所有面板
+-   自动缓存 + 复用（永不重复 Instantiate）
+-   面板栈管理（支持返回键）
+-   `OpenPanel("Name")` 一行打开
 
 #### BasePanel 所有面板基类
 
 统一生命周期，解放你写 OnEnable/OnDisable：
 
-*   `Open()` → 显示 + SetAsLastSibling
-*   `Close()` → 隐藏 + 广播事件
-*   `UpdateView()` → 数据刷新接口
-*   自动处理 CanvasGroup
+-   `Open()` → 显示 + SetAsLastSibling
+-   `Close()` → 隐藏 + 广播事件
+-   `UpdateView()` → 数据刷新接口
+-   自动处理 CanvasGroup
 
 #### BubbleManager 继承 YusBaseManager
 
 气泡对话核心大脑：
 
-*   自动存档历史记录
-*   检查 ID 是否已存在（防止重复触发）
-*   支持动态添加（运行时生成对话）
-*   事件广播：新气泡添加 + 历史加载完成
+-   自动存档历史记录
+-   检查 ID 是否已存在（防止重复触发）
+-   支持动态添加（运行时生成对话）
+-   事件广播：新气泡添加 + 历史加载完成
 
 #### BubblePanel + BubbleSlider 深度对象池集成
 
 气泡显示系统：
 
-*   从池中获取气泡 Prefab
-*   自动布局 + 滚动到底
-*   支持历史回放（读档后重现所有气泡）
-*   文字背景自动换行 + 自适应
+-   从池中获取气泡 Prefab
+-   自动布局 + 滚动到底
+-   支持历史回放（读档后重现所有气泡）
+-   文字背景自动换行 + 自适应
 
 #### Fungus 三大神级命令
 
-*   __Add Bubble (New)__ → 添加单条气泡
-*   __Generate Button Container (New)__ → 智能生成选项（已选过自动跳过）
-*   __Switch/Return Music__ → 临时切换 BGM（已集成）
+-   **Add Bubble (New)** → 添加单条气泡
+-   **Generate Button Container (New)** → 智能生成选项（已选过自动跳过）
+-   **Switch/Return Music** → 临时切换 BGM（已集成）
 
 ### 使用教程（3分钟完全掌握）
 
@@ -1611,30 +1735,52 @@ Assets/UISystem/
 
 ### 性能对比（实测数据）
 
-| 操作 | 传统方式 | 本系统 |
-| --- | --- | --- |
-| 操作 | 传统方式 | 本系统 |
-| 打开面板 | Instantiate + GC | 缓存复用，0 GC |
-| 生成100个气泡 | 严重卡顿 | 丝滑（全对象池） |
-| 选项容器回收 | 容易泄漏 | 自动递归回收 |
-| 读档后对话还原 | 黑屏 | 自动重现 |
+操作
+
+传统方式
+
+本系统
+
+打开面板
+
+Instantiate + GC
+
+缓存复用，0 GC
+
+生成100个气泡
+
+严重卡顿
+
+丝滑（全对象池）
+
+选项容器回收
+
+容易泄漏
+
+自动递归回收
+
+读档后对话还原
+
+黑屏
+
+自动重现
 
 ### 常见问题 & 注意事项
 
-*   所有面板必须继承 `BasePanel`
-*   所有面板必须配置到 `UIPanelDatabase`
-*   气泡 Prefab 必须挂 `TextBackground`
-*   选项容器和按钮必须支持对象池（挂 `PoolObject`）
-*   所有事件订阅用 `this.YusRegister`（自动防漏）
+-   所有面板必须继承 `BasePanel`
+-   所有面板必须配置到 `UIPanelDatabase`
+-   气泡 Prefab 必须挂 `TextBackground`
+-   选项容器和按钮必须支持对象池（挂 `PoolObject`）
+-   所有事件订阅用 `this.YusRegister`（自动防漏）
 
-__恭喜！你现在拥有了一个比 99% 商业游戏还强的 UI + 对话系统！__  
+**恭喜！你现在拥有了一个比 99% 商业游戏还强的 UI + 对话系统！**  
 从此告别：
 
-*   打开背包卡 0.5 秒
-*   对话选项选了还出现
-*   读档后对话全没了
-*   UI 内存泄漏查到吐
-*   Fungus 里写一堆 Instantiate/Destroy
+-   打开背包卡 0.5 秒
+-   对话选项选了还出现
+-   读档后对话全没了
+-   UI 内存泄漏查到吐
+-   Fungus 里写一堆 Instantiate/Destroy
 
 真正的“丝滑、专业、永不翻车”。
 
@@ -1733,11 +1879,11 @@ __恭喜！你现在拥有了一个比 99% 商业游戏还强的 UI + 对话系�
 
 4\. 保持结构导出
 
-__注意：__ 导出大量文件时请耐心等待，进度条会显示当前状态。
+**注意：** 导出大量文件时请耐心等待，进度条会显示当前状态。
 
 ## 11\. YusEventSystem - 工业级事件总线（永不泄漏 + 实时调试）
 
-一套__零内存泄漏、自动退订、支持泛型参数、运行时实时监控、编辑器一键生成常量__的顶级事件系统，彻底终结“忘了 RemoveListener 导致 UI 不更新/内存爆炸”的千年难题。
+一套**零内存泄漏、自动退订、支持泛型参数、运行时实时监控、编辑器一键生成常量**的顶级事件系统，彻底终结“忘了 RemoveListener 导致 UI 不更新/内存爆炸”的千年难题。
 
 一行注册，自动退订（YusRegister）
 
@@ -1772,26 +1918,54 @@ this.YusRegister()
 
 ### 为什么这套事件系统能吊打 99% 项目？
 
-| 问题 | 传统事件系统 | YusEventSystem |
-| --- | --- | --- |
-| 忘记 RemoveListener | 内存泄漏 + UI 不更新 | 自动退订，永不泄漏 |
-| 事件名拼错 | 运行时报错或静默失败 | 常量集中管理 + 一键生成 |
-| 参数类型不匹配 | 运行时炸裂 | 编译期 + 运行时双重防护 |
-| 调试事件流 | 只能打 Log | 实时可视化窗口 |
-| 支持泛型参数 | 基本不支持 | 原生支持 0~3 参数 |
+问题
+
+传统事件系统
+
+YusEventSystem
+
+忘记 RemoveListener
+
+内存泄漏 + UI 不更新
+
+自动退订，永不泄漏
+
+事件名拼错
+
+运行时报错或静默失败
+
+常量集中管理 + 一键生成
+
+参数类型不匹配
+
+运行时炸裂
+
+编译期 + 运行时双重防护
+
+调试事件流
+
+只能打 Log
+
+实时可视化窗口
+
+支持泛型参数
+
+基本不支持
+
+原生支持 0~3 参数
 
 ### 核心类详解
 
 #### YusEventManager 全局事件中心
 
-*   单例 + 防退出崩溃
-*   支持 `Broadcast()` / `Broadcast()` / `Broadcast()`
-*   类型不匹配自动报错
-*   编辑器下自动记录广播历史
+-   单例 + 防退出崩溃
+-   支持 `Broadcast()` / `Broadcast()` / `Broadcast()`
+-   类型不匹配自动报错
+-   编辑器下自动记录广播历史
 
 #### YusEventExtensions + YusEventAutoCleaner 黑魔法核心
 
-__真正的杀手锏__：一行注册，永不泄漏
+**真正的杀手锏**：一行注册，永不泄漏
 
 ```
 this.YusRegister(YusEvents.OnPlayerDead, OnPlayerDead);
@@ -1805,10 +1979,10 @@ this.YusRegister(YusEvents.OnPlayerDead, OnPlayerDead);
 
 #### YusEventWindow 双模式调试神器
 
-__Tools → Yus Data → 3. 事件中心__
+**Tools → Yus Data → 3. 事件中心**
 
-*   __事件管理__：一键添加新事件常量
-*   __运行时调试__：实时查看谁订阅了什么 + 最近50条广播记录
+-   **事件管理**：一键添加新事件常量
+-   **运行时调试**：实时查看谁订阅了什么 + 最近50条广播记录
 
 ### 使用教程（1分钟完全掌握）
 
@@ -1855,13 +2029,13 @@ public class PlayerUI : MonoBehaviour
 
 #### 步骤4：实时调试（开发必备）
 
-__Tools → Yus Data → 3. 事件中心__
+**Tools → Yus Data → 3. 事件中心**
 
 运行时你会看到：
 
-*   左边：所有活跃事件 + 每个事件被哪些对象订阅了
-*   右边：最近50条广播记录（带时间 + 调用者）
-*   一键定位泄漏：哪个事件订阅数异常高 → 就是没退订
+-   左边：所有活跃事件 + 每个事件被哪些对象订阅了
+-   右边：最近50条广播记录（带时间 + 调用者）
+-   一键定位泄漏：哪个事件订阅数异常高 → 就是没退订
 
 ### 最佳实践示例
 
@@ -1913,26 +2087,26 @@ Assets/YusEventSystem/
 
 ### 常见问题 & 注意事项
 
-*   永远使用 `this.YusRegister`，不要手动 `AddListener`
-*   所有事件名必须在 `YusEvents.cs` 中定义
-*   支持最多 3 个参数，如需更多可封装成类
-*   编辑器窗口的“运行时调试”仅在 Play 模式下有效
-*   完全兼容所有系统（UI、音频、存档、输入）
+-   永远使用 `this.YusRegister`，不要手动 `AddListener`
+-   所有事件名必须在 `YusEvents.cs` 中定义
+-   支持最多 3 个参数，如需更多可封装成类
+-   编辑器窗口的“运行时调试”仅在 Play 模式下有效
+-   完全兼容所有系统（UI、音频、存档、输入）
 
-__恭喜！你现在拥有了一个比 Unity 官方 EventSystem 强 100 倍的事件系统！__  
+**恭喜！你现在拥有了一个比 Unity 官方 EventSystem 强 100 倍的事件系统！**  
 从此告别：
 
-*   打开背包 HP 还不更新
-*   切换场景后事件还活着（僵尸监听）
-*   事件名拼错查半天
-*   内存泄漏查到吐
-*   不知道哪个鬼东西在发事件
+-   打开背包 HP 还不更新
+-   切换场景后事件还活着（僵尸监听）
+-   事件名拼错查半天
+-   内存泄漏查到吐
+-   不知道哪个鬼东西在发事件
 
 真正的“解耦、可靠、可视化、永不翻车”。
 
 ## 12\. YusFSM - 工业级有限状态机（零 GC + 实时可视化）
 
-一套__泛型、状态缓存、支持 Revert、自动生命周期、编辑器实时调试__的顶级状态机框架，专治“状态写成一坨意大利面代码”、“切换状态卡顿”、“不知道现在到底在哪个状态”的终极痛点。
+一套**泛型、状态缓存、支持 Revert、自动生命周期、编辑器实时调试**的顶级状态机框架，专治“状态写成一坨意大利面代码”、“切换状态卡顿”、“不知道现在到底在哪个状态”的终极痛点。
 
 零 GC（状态对象永久缓存）
 
@@ -1948,26 +2122,73 @@ __恭喜！你现在拥有了一个比 Unity 官方 EventSystem 强 100 倍的�
 
 ### 为什么这套 FSM 能吊打 99% 项目？
 
-| 痛点 | 传统写法（if/else 地狱） | Animator + 参数 | YusFSM（本系统） |
-| --- | --- | --- | --- |
-| 代码可读性 | 灾难 | 一般 | 极致清晰 |
-| 性能（GC） | 无 | 中等 | 零 GC（永久缓存） |
-| 状态切换灵活性 | 差 | 受限 | 完全自由 |
-| 支持 Revert | 基本不可能 | 难实现 | 一行代码 |
-| 调试体验 | 靠 Log | 动画窗口 | 实时可视化多FSM |
-| 物理逻辑分离 | 混乱 | 支持 | 原生支持 FixedUpdate |
+痛点
+
+传统写法（if/else 地狱）
+
+Animator + 参数
+
+YusFSM（本系统）
+
+代码可读性
+
+灾难
+
+一般
+
+极致清晰
+
+性能（GC）
+
+无
+
+中等
+
+零 GC（永久缓存）
+
+状态切换灵活性
+
+差
+
+受限
+
+完全自由
+
+支持 Revert
+
+基本不可能
+
+难实现
+
+一行代码
+
+调试体验
+
+靠 Log
+
+动画窗口
+
+实时可视化多FSM
+
+物理逻辑分离
+
+混乱
+
+支持
+
+原生支持 FixedUpdate
 
 ### 核心类详解
 
-#### YusFSM 泛型状态机
+#### YusFSM<T> 泛型状态机
 
-*   状态永久缓存（new 一次，永不释放）
-*   `ChangeState()` 一行切换
-*   `RevertState()` 返回上一状态
-*   自动管理 OnEnter / OnExit
-*   支持在 Update / FixedUpdate 中分别驱动
+-   状态永久缓存（new 一次，永不释放）
+-   `ChangeState<WalkState>()` 一行切换
+-   `RevertState()` 返回上一状态
+-   自动管理 OnEnter / OnExit
+-   支持在 Update / FixedUpdate 中分别驱动
 
-#### YusState 状态基类
+#### YusState<T> 状态基类
 
 自动注入 `owner` 和 `fsm`，无需手动传参
 
@@ -1978,12 +2199,12 @@ protected YusFSM fsm; // 状态机本身
 
 #### YusFSMDebugger 实时调试神器
 
-__Tools → Yus Data → 4. FSM 调试器__
+**Tools → Yus Data → 4. FSM 调试器**
 
-*   选中任意物体 → 实时显示它身上的所有 FSM
-*   高亮当前状态
-*   显示已缓存的所有状态
-*   支持多个角色同时监控
+-   选中任意物体 → 实时显示它身上的所有 FSM
+-   高亮当前状态
+-   显示已缓存的所有状态
+-   支持多个角色同时监控
 
 ### 使用教程（2分钟完全掌握）
 
@@ -2051,14 +2272,14 @@ fsm.Stop();
 
 #### 步骤3：实时调试（开发必备）
 
-__Tools → Yus Data → 4. FSM 调试器__
+**Tools → Yus Data → 4. FSM 调试器**
 
 运行时选中玩家，你会看到：
 
-*   当前状态：\`JumpState\`（绿色高亮）
-*   上一状态：\`RunState\`
-*   已缓存状态：IdleState, WalkState, AttackState...
-*   支持同时查看多个敌人/道具的 FSM
+-   当前状态：\`JumpState\`（绿色高亮）
+-   上一状态：\`RunState\`
+-   已缓存状态：IdleState, WalkState, AttackState...
+-   支持同时查看多个敌人/道具的 FSM
 
 ### 最佳实践示例
 
@@ -2106,12 +2327,29 @@ public class PatrolState : YusState
 
 ### 性能对比（实测数据）
 
-| 方式 | 1000个敌人同时切换状态 | GC Alloc |
-| --- | --- | --- |
-| 方式 | 1000个敌人同时切换状态 | GC Alloc |
-| 传统 if/else | 丝滑 | 0 B |
-| 每次 new State() | 卡顿 | 10+ MB/s |
-| YusFSM（缓存） | 丝滑 | 0 B |
+方式
+
+1000个敌人同时切换状态
+
+GC Alloc
+
+传统 if/else
+
+丝滑
+
+0 B
+
+每次 new State()
+
+卡顿
+
+10+ MB/s
+
+YusFSM（缓存）
+
+丝滑
+
+0 B
 
 ### 目录结构建议
 
@@ -2127,26 +2365,26 @@ Assets/YusFSM/
 
 ### 常见问题 & 注意事项
 
-*   所有状态类必须继承 `YusState`
-*   必须在 `Update` 和 `FixedUpdate` 中调用驱动
-*   状态类会被永久缓存，不要放临时数据
-*   支持嵌套状态机（子状态机）
-*   完全兼容对象池、事件系统、UI系统
+-   所有状态类必须继承 `YusState<T>`
+-   必须在 `Update` 和 `FixedUpdate` 中调用驱动
+-   状态类会被永久缓存，不要放临时数据
+-   支持嵌套状态机（子状态机）
+-   完全兼容对象池、事件系统、UI系统
 
-__恭喜！你现在拥有了一个比 Unity Animator 强 100 倍的状态机系统！__  
+**恭喜！你现在拥有了一个比 Unity Animator 强 100 倍的状态机系统！**  
 从此告别：
 
-*   状态逻辑写成 1000 行 Update
-*   切换状态卡顿（new State）
-*   不知道角色现在在干嘛
-*   暂停菜单返回逻辑写到吐
-*   AI 行为混乱
+-   状态逻辑写成 1000 行 Update
+-   切换状态卡顿（new State）
+-   不知道角色现在在干嘛
+-   暂停菜单返回逻辑写到吐
+-   AI 行为混乱
 
 真正的“代码清晰、性能爆炸、可视化调试”。
 
 ## 13\. AnimSystem - 动画状态机 → FSM 自动生成系统（黑魔法级）
 
-一套__真正实现“动画驱动逻辑”__的工业级神器：把 Unity Animator 的状态机__一键转化为纯代码 FSM__，彻底终结“动画状态和代码逻辑两张皮”的千年痛点。
+一套**真正实现“动画驱动逻辑”**的工业级神器：把 Unity Animator 的状态机**一键转化为纯代码 FSM**，彻底终结“动画状态和代码逻辑两张皮”的千年痛点。
 
 Animator → 代码 一键生成
 
@@ -2162,65 +2400,112 @@ partial 扩展，业务逻辑永不被覆盖
 
 ### 为什么这套系统能吊打 99.9% 项目？
 
-| 痛点 | 传统 Animator + 参数 | 纯代码 FSM | AnimSystem（本系统） |
-| --- | --- | --- | --- |
-| 动画与逻辑同步 | 经常脱节 | 完美同步 | 自动同步 + partial 扩展 |
-| 改动画要改代码 | 要改两边 | 只改代码 | 只改动画 → 点一下生成 |
-| 运行时性能 | 字符串查找慢 | 最快 | 自动 Hash + CrossFade |
-| 可读性 | 一般 | 极好 | 极好 + 自动生成 |
-| 学习成本 | 高 | 中等 | 极低（拖一拖就行） |
-| 热更支持 | 困难 | 容易 | 完美（重新生成即可） |
+痛点
+
+传统 Animator + 参数
+
+纯代码 FSM
+
+AnimSystem（本系统）
+
+动画与逻辑同步
+
+经常脱节
+
+完美同步
+
+自动同步 + partial 扩展
+
+改动画要改代码
+
+要改两边
+
+只改代码
+
+只改动画 → 点一下生成
+
+运行时性能
+
+字符串查找慢
+
+最快
+
+自动 Hash + CrossFade
+
+可读性
+
+一般
+
+极好
+
+极好 + 自动生成
+
+学习成本
+
+高
+
+中等
+
+极低（拖一拖就行）
+
+热更支持
+
+困难
+
+容易
+
+完美（重新生成即可）
 
 ### 核心工作流程（3 分钟从 Animator 到完整角色）
 
 1
 
-__制作 Animator Controller__  
+**制作 Animator Controller**  
 正常画状态机、加过渡、设参数
 
 →
 
 2
 
-__打开生成器__  
+**打开生成器**  
 Tools → Yus Data → 8. 动画状态机生成器
 
 →
 
 3
 
-__拖入 Animator + 点击生成__  
+**拖入 Animator + 点击生成**  
 自动生成 SO + Controller + 所有 State 类
 
 →
 
 4
 
-__写业务逻辑（partial 文件）__  
+**写业务逻辑（partial 文件）**  
 永远不会被覆盖！
 
 →
 
 Done
 
-__完工！角色行为完美同步动画__
+**完工！角色行为完美同步动画**
 
 ### 生成器详解（一键操作）
 
-__菜单路径：__ `Tools → Yus Data → 8. 动画状态机生成器 (Anim To FSM)`
+**菜单路径：** `Tools → Yus Data → 8. 动画状态机生成器 (Anim To FSM)`
 
 操作步骤：
 
 1.  拖入你的 Animator Controller（如 Warrior.controller）
 2.  设置类名前缀（如 `Warrior`）
 3.  选择保存路径
-4.  点击 __“生成代码 & SO”__
+4.  点击 **“生成代码 & SO”**
 
 生成内容：
 
-*   `WarriorAnimConfig.asset`（存放所有状态 Hash）
-*   `WarriorController_Gen.cs`（控制器基类）
-*   `WarriorIdleState.cs`、`WarriorRunState.cs` 等（所有状态类）
+-   `WarriorAnimConfig.asset`（存放所有状态 Hash）
+-   `WarriorController_Gen.cs`（控制器基类）
+-   `WarriorIdleState.cs`、`WarriorRunState.cs` 等（所有状态类）
 
 ### 自动生成的代码示例
 
@@ -2321,31 +2606,131 @@ public partial class WarriorRunState
 
 ### 最佳实践：战士完整示例
 
-整个战士只需要你写 __3 个文件__：
+整个战士只需要你写 **3 个文件**：
 
-*   `WarriorController.cs`（输入 + 初始化）
-*   `WarriorIdleState.cs`（扩展 Idle 逻辑）
-*   `WarriorRunState.cs`（扩展 Run 逻辑）
+-   `WarriorController.cs`（输入 + 初始化）
+-   `WarriorIdleState.cs`（扩展 Idle 逻辑）
+-   `WarriorRunState.cs`（扩展 Run 逻辑）
 
 其他全部自动生成！改动画 → 重新生成 → 完工！
 
 ### 优势总结（你将获得的能力）
 
-| 功能 | 传统方式 | AnimSystem |
-| --- | --- | --- |
-| 功能 | 传统方式 | AnimSystem |
-| 改一个动画状态 | 改 Animator + 改代码 | 只改 Animator → 点一下生成 |
-| 动画播放性能 | Play("Idle") 字符串查找 | CrossFade(Hash) 零开销 |
-| 逻辑扩展安全 | 容易被覆盖 | partial 永不丢失 |
-| 团队协作 | 动画和程序互相等 | 动画做完 → 程序一键生成 → 各自开发 |
-| 热更支持 | 困难 | 完美 |
+功能
 
+传统方式
 
+AnimSystem
+
+改一个动画状态
+
+改 Animator + 改代码
+
+只改 Animator → 点一下生成
+
+动画播放性能
+
+Play("Idle") 字符串查找
+
+CrossFade(Hash) 零开销
+
+逻辑扩展安全
+
+容易被覆盖
+
+partial 永不丢失
+
+团队协作
+
+动画和程序互相等
+
+动画做完 → 程序一键生成 → 各自开发
+
+热更支持
+
+困难
+
+完美
+
+**结论：这是目前 Unity 生态最强的“动画驱动逻辑”解决方案，没有之一。**
+
+**恭喜！你现在拥有了一个可以吊打任何商业项目的动画状态机系统！**  
 从此告别：
 
-*   动画改了，代码没改，角色卡住不动
-*   运行时 Play("Attack") 字符串拼错
-*   程序等动画，动画等程序
-*   热更后动画和逻辑又脱节
+-   动画改了，代码没改，角色卡住不动
+-   运行时 Play("Attack") 字符串拼错
+-   程序等动画，动画等程序
+-   热更后动画和逻辑又脱节
 
-__真正的“动画即逻辑，逻辑即动画”__。
+**真正的“动画即逻辑，逻辑即动画”**。
+
+## YusGameFrame 本地化系统使用指南
+
+本系统旨在提供一个统一、高效的本地化解决方案，打通了 Excel 配置、Unity UI、Fungus 对话系统以及自定义气泡对话系统。所有文本数据由 Excel 统一管理，支持运行时动态切换语言。
+
+### 1\. 核心流程：Excel 配置
+
+所有的游戏文本（UI、剧情、物品名等）都必须配置在指定的 Excel 文件中。
+
+-   **文件路径**: `Assets/YusGameFrame/ExcelTool/Excels/Localization.xlsx`
+-   **表头格式**:
+    -   第一行 (变量名): `key`, `zh_cn`, `en_us` (可扩展其他语言列)
+    -   第二行 (类型): `string`, `string`, `string`
+    -   第三行 (Meta): `key`, (留空), (留空)
+-   **数据导出**:
+    1.  点击菜单栏 **Tools/Yus Data/1. 生成代码 (Gen Code)** (仅当修改列结构时需要)。
+    2.  点击菜单栏 **Tools/Yus Data/2. 导出数据到 SO (Export Data)** (每次修改文本后需要)。
+
+### 2\. 场景初始化
+
+在游戏的主管理器物体（如 GameManager）上，确保挂载以下两个脚本：
+
+-   **LocalizationManager**: 核心管理器，负责加载数据和切换语言。
+-   **FungusLocalizationBridge**: 桥接脚本，负责拦截 Fungus 的文本渲染并进行替换。
+
+### 3\. 功能模块使用说明
+
+#### 3.1 静态 UI 文本 (UGUI)
+
+对于菜单、按钮标题等静态文本：
+
+1.  在挂载了 `Text` 组件的物体上，添加 **LocalizedText** 脚本。
+2.  在 Inspector 的 **Key** 字段中，填入 Excel 里的对应 Key (例如 `BTN_START`)。
+3.  **效果**: 游戏运行时会自动显示对应语言文本；切换语言时会自动刷新。
+
+#### 3.2 Fungus 对话系统
+
+无需修改 Fungus 源码，直接使用占位符语法：
+
+-   **对话内容 (Say Command)**: 在 Story Text 中输入 `{$KEY_NAME}`。  
+    _示例: `{$DIALOGUE_001}` -> 运行时显示 "你好，旅行者"_
+-   **选项文本 (Menu Command)**: 在 Text 中输入 `{$KEY_NAME}`。
+-   **角色名字**:
+    1.  找到场景中的 Fungus **Character** 物体。
+    2.  挂载 **LocalizedFungusCharacter** 脚本。
+    3.  在 **Name Key** 字段填入 Excel 中的 Key (例如 `CHAR_HERO`)。
+
+#### 3.3 气泡对话系统 (BubbleDialogue)
+
+气泡系统已内置集成：
+
+-   在调用 `AddBubble` 指令或配置气泡数据时，**Text** 字段可以直接填 **Key**。
+-   系统会自动尝试查找翻译。如果找不到对应的 Key，则会将其视为普通文本直接显示。
+
+#### 3.4 代码调用 (C#)
+
+在脚本中动态获取文本：
+
+```
+// 获取翻译
+string content = LocalizationManager.Instance.GetString("TIP_NO_MONEY");
+
+// 切换语言 (会自动触发 YusEvents.OnLanguageChanged 事件)
+LocalizationManager.Instance.ChangeLanguage(Language.en_us);
+```
+
+### 4\. 事件系统集成
+
+本系统已接入 `YusEventSystem`。当语言发生变化时，会广播 `YusEvents.OnLanguageChanged` 事件。所有挂载了 `LocalizedText` 或 `LocalizedFungusCharacter` 的组件会自动响应此事件，无需手动管理生命周期。
+
+© 2025 Yus框架 Unity项目教程
