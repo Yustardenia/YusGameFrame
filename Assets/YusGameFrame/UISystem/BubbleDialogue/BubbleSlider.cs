@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using YusGameFrame.Localization;
 
 public class BubbleSlider : MonoBehaviour
 {
@@ -49,8 +50,8 @@ public class BubbleSlider : MonoBehaviour
         if (tb != null)
         {
             tb.isRight = data.isRight;
-            if (tb.bubbleName != null) tb.bubbleName.text = data.textName;
-            tb.SetText(data.text);
+            if (tb.bubbleName != null) tb.bubbleName.text = LocalizationManager.Instance.GetString(data.textName);
+            tb.SetText(LocalizationManager.Instance.GetString(data.text));
         }
         else
         {

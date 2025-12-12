@@ -14,4 +14,7 @@ public static class YusEvents
     public const string OnPanelClose = "OnPanelClose";
     public const string OnMusicVolChange = "OnMusicVolChange";
     public const string OnSFXVolChange = "OnSFXVolChange";
+
+    // 本地化
+    public const string OnLanguageChanged = "OnLanguageChanged";
 }

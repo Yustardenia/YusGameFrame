@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79372ad4d905fb648b89789e9ab18e64, type: 3}
+  m_Name: LocalizationTable
+  m_EditorClassIdentifier: 
+  dataList:
+  - key: test
+    zh_cn: "\u54C7\u54E6"
+    en_us: wow!
+  - key: testname
+    zh_cn: "\u4EBA"
+    en_us: person
