@@ -25,7 +25,7 @@ public class BubbleDialogueData : IYusBinaryData, IYusCloneable<BubbleDialogueDa
         bw.Write(textName);
         bw.Write(isRight);
     }
-    public void Read(BinaryReader br) {
+    public void Read(BinaryReader br, int version) {
         id = br.ReadInt32();
         text = br.ReadString();
         textName = br.ReadString();

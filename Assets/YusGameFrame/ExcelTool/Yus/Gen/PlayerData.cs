@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class PlayerData : IYusBinaryData, IYusCloneable<PlayerData>
@@ -32,9 +33,10 @@ public class PlayerData : IYusBinaryData, IYusCloneable<PlayerData>
         bw.Write(mp);
         bw.Write(maxMp);
         bw.Write(location.x); bw.Write(location.y); bw.Write(location.z);
-        bw.Write(map);
+        bw.Write(map ?? "");
     }
-    public void Read(BinaryReader br) {
+
+    public void Read(BinaryReader br, int version) {
         id = br.ReadInt32();
         hp = br.ReadInt32();
         maxHp = br.ReadInt32();
@@ -42,5 +44,9 @@ public class PlayerData : IYusBinaryData, IYusCloneable<PlayerData>
         maxMp = br.ReadInt32();
         location = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
         map = br.ReadString();
+    }
+
+    public void Read(BinaryReader br) {
+        Read(br, 1);
     }
 }

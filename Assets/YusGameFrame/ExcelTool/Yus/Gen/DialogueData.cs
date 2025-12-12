@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class DialogueData : IYusBinaryData, IYusCloneable<DialogueData>
@@ -28,15 +29,20 @@ public class DialogueData : IYusBinaryData, IYusCloneable<DialogueData>
         bw.Write(npcId);
         bw.Write(canTrigger);
         bw.Write(triggerCount);
-        bw.Write(dialogueText);
-        bw.Write(triggerConditionName);
+        bw.Write(dialogueText ?? "");
+        bw.Write(triggerConditionName ?? "");
     }
-    public void Read(BinaryReader br) {
+
+    public void Read(BinaryReader br, int version) {
         id = br.ReadInt32();
         npcId = br.ReadInt32();
         canTrigger = br.ReadBoolean();
         triggerCount = br.ReadInt32();
         dialogueText = br.ReadString();
         triggerConditionName = br.ReadString();
+    }
+
+    public void Read(BinaryReader br) {
+        Read(br, 1);
     }
 }

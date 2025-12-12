@@ -24,6 +24,9 @@ public static class ExcelYusWriter
             return;
         }
 
+        // 备份
+        try { File.Copy(filePath, filePath + ".bak", true); } catch (System.Exception e) { Debug.LogWarning("备份失败: " + e.Message); }
+
         try
         {
             using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -126,12 +129,21 @@ public static class ExcelYusWriter
 
     private static void SetCellValue(ICell cell, object val)
     {
+        if (val == null) { cell.SetCellValue(""); return; }
+
         if (val is int i) cell.SetCellValue(i);
         else if (val is float f) cell.SetCellValue(f);
         else if (val is bool b) cell.SetCellValue(b);
         else if (val is string s) cell.SetCellValue(s);
         else if (val is Vector3 v) cell.SetCellValue($"{v.x},{v.y},{v.z}");
+        else if (val is System.Collections.IList list)
+        {
+            // 处理 List -> "1|2|3"
+            List<string> strList = new List<string>();
+            foreach (var item in list) strList.Add(item?.ToString() ?? "");
+            cell.SetCellValue(string.Join("|", strList));
+        }
         else if (val is UnityEngine.Object obj) cell.SetCellValue(obj != null ? AssetDatabase.GetAssetPath(obj) : ""); // 资源写回路径
-        else cell.SetCellValue(val?.ToString() ?? "");
+        else cell.SetCellValue(val.ToString());
     }
 }

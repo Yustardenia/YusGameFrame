@@ -82,6 +82,194 @@
 - 缺少监控和调试工具（虽然有 Editor 扩展，但功能有限）
 
 ### 6. **数据管理系统（7.5/10）**
+ <section id="exceltool" class="module">
+    <h2>3. ExcelTool - 终极二进制配置表 + 存档系统</h2>
+    <p>一套<strong>完全自动化</strong>的 Excel → C# → ScriptableObject → 运行时读写 + 二进制存档 + 资源自动重连 + Excel反写 的闭环数据解决方案。<br>比 Excel2SO、Odin、YooAsset 配置表更轻量、更快、更适合中型 RPG/对话重度项目。</p>
+
+    <div class="feature-grid">
+        <div class="feature">一键生成 Data + Table 类</div>
+        <div class="feature">自动导出 SO 配置表</div>
+        <div class="feature">二进制极速存档</div>
+        <div class="feature">图片/Prefab 自动重连</div>
+        <div class="feature">运行时修改 → 反写回 Excel</div>
+        <div class="feature">完美集成 Fungus 对话系统</div>
+    </div>
+
+    <h3>核心架构图</h3>
+    <div class="architecture">
+        <div class="flow-box">Excel<br>(Excels/)</div>
+        <div class="arrow-down">生成代码 + 导出 SO</div>
+        <div class="flow-box">Gen/*.cs<br>+ Resources/YusData/*.asset</div>
+        <div class="arrow-down">运行时克隆 + 资源重连</div>
+        <div class="flow-box">YusBaseManager&lt;TTable,TData&gt;</div>
+        <div class="arrow-down">修改 → Save()</div>
+        <div class="flow-box">persistentDataPath/SaveData/*.yus</div>
+        <div class="arrow-down">Dev_WriteBackToExcel()</div>
+        <div class="flow-box">Excel 被反写！</div>
+    </div>
+
+    <h3>核心类详解</h3>
+    <div class="class-diagram">
+
+        <div class="class-item">
+            <h4>ExcelYusTool <span class="tag editor">编辑器工具</span></h4>
+            <p>菜单 <code>Tools → Yus Data</code> 的两大核心功能：</p>
+            <ul>
+                <li><strong>1. 生成代码</strong> → 自动生成 <code>*Data.cs</code> + <code>*Table.cs</code></li>
+                <li><strong>2. 导出数据到 SO</strong> → 生成 <code>Resources/YusData/*.asset</code></li>
+            </ul>
+        </div>
+
+        <div class="class-item">
+            <h4>YusTableSO&lt;TKey,TData&gt; <span class="tag runtime">运行时配置表基类</span></h4>
+            <p>所有生成的 <code>*Table</code> 继承自它，提供 <code>Get(key)</code>、<code>GetAll()</code>、自动字典缓存。</p>
+        </div>
+
+        <div class="class-item">
+            <h4>YusBaseManager&lt;TTable,TData&gt; <span class="tag runtime">运行时数据管理器基类</span></h4>
+            <p>你只需要继承一次，全部功能自动拥有：</p>
+            <ul>
+                <li>自动加载配置表或读档</li>
+                <li>资源（Sprite/Prefab）自动重连（解决存档后图片丢失）</li>
+                <li>Save() 一键二进制存档</li>
+                <li>Dev_WriteBackToExcel() 右键反写回 Excel</li>
+                <li>Dev_ResetSave() 重置存档</li>
+            </ul>
+        </div>
+
+        <div class="class-item">
+            <h4>YusDataManager <span class="tag runtime">全局单例</span></h4>
+            <p>核心枢纽，负责：</p>
+            <ul>
+                <li>配置表缓存（Resources.Load）</li>
+                <li>二进制读写</li>
+                <li>运行时克隆 + 资源重连</li>
+                <li>编辑器下调用 ExcelYusWriter 反写</li>
+            </ul>
+        </div>
+
+        <div class="class-item">
+            <h4>ExcelYusWriter <span class="tag editor">反写工具</span></h4>
+            <p>运行时修改数据后 → 右键 → “开发者/反写回 Excel”，即可把内存数据写回原 Excel 文件！</p>
+        </div>
+    </div>
+
+    <h3>使用教程（手把手教学）</h3>
+
+    <div class="tutorial-step">
+        <h4>步骤1：准备 Excel（只需要做一次）</h4>
+        <p>放入 <code>Assets/ExcelTool/Excels/</code> 目录，格式严格如下：</p>
+        <pre><code># 第1行：字段名（英文）
+id          name        durability    icon         desc
+# 第2行：类型（支持简写）
+int         string      float         Sprite       string
+# 第3行：key标记（有且仅有一列写 key）
+key                                     </code></pre>
+        <p>支持类型：int、float、bool、string、Vector3、Sprite、GameObject(Prefab)</p>
+    </div>
+
+    <div class="tutorial-step">
+        <h4>步骤2：一键生成代码 + 导出数据</h4>
+        <p>菜单 → <strong>Tools → Yus Data → 1. 生成代码</strong><br>
+            → <strong>2. 导出数据到 SO</strong></p>
+        <p>会自动生成：</p>
+        <ul>
+            <li><code>Assets/ExcelTool/Yus/Gen/BackpackData.cs</code></li>
+            <li><code>BackpackTable.cs</code></li>
+            <li><code>Assets/Resources/YusData/BackpackTable.asset</code></li>
+        </ul>
+    </div>
+
+    <div class="tutorial-step">
+        <h4>步骤3：创建运行时管理器（只需继承一次）</h4>
+        <pre><code>public class BackpackManager : YusBaseManager&lt;BackpackTable, BackpackData&gt;
+{
+    public static BackpackManager Instance { get; private set; }
+    
+    private void Awake()
+    {
+        if (Instance == null) { Instance = this; DontDestroyOnLoad(gameObject); }
+        else Destroy(gameObject);
+    }
+
+    protected override string SaveFileName => "PlayerBackpack"; // 存档文件名
+
+    // 示例：使用物品
+    public void UseItem(int itemId)
+    {
+        var item = DataList.Find(x => x.id == itemId);
+        if (item != null)
+        {
+            item.durability -= 10;
+            Save();                    // 自动二进制存档
+            Dev_WriteBackToExcel();    // 调试时反写回 Excel
+        }
+    }
+}</code></pre>
+        <p>挂到场景任意 GameObject 即可，推荐做成单例。</p>
+    </div>
+
+    <div class="tutorial-step">
+        <h4>步骤4：Fungus 对话系统完美集成（开箱即用）</h4>
+        <p>已内置 3 个 Fungus Command：</p>
+        <ul>
+            <li><strong>Dialogue Trigger Condition</strong> → 判断对话是否可触发</li>
+            <li><strong>Increment Dialogue Count</strong> → 触发次数+1</li>
+            <li><strong>Set Dialogue Trigger</strong> → 强制设置可触发状态</li>
+        </ul>
+        <p>配合 <code>DialogueKeyManager.cs</code> 使用，支持运行时动态添加对话键。</p>
+    </div>
+
+    <h3>进阶功能展示</h3>
+
+    <div class="highlight-box">
+        <h4>资源自动重连（解决存档后图片丢失）</h4>
+        <p>存档只存名字，读档后自动根据 ID 从配置表把 Sprite/Prefab 重新塞回去，<strong>永不丢失图片</strong>。</p>
+    </div>
+
+    <div class="highlight-box">
+        <h4>Excel 反写（调试神器）</h4>
+        <p>运行时改了耐久、开关状态 → 右键管理器 → “开发者/反写回 Excel” → Excel 文件被实时更新！</p>
+    </div>
+
+    <div class="highlight-box">
+        <h4>支持运行时动态添加数据</h4>
+        <pre><code>// DialogueKeyManager 示例
+DialogueKeyManager.Instance.AddDynamicDialogue(
+    newId: 999,
+    npcId: 1,
+    text: "这是运行时生成的对话！",
+    initialCanTrigger: true
+);</code></pre>
+    </div>
+
+    <h3>目录结构一览（建议）</h3>
+    <pre class="folder-tree">
+Assets/ExcelTool/
+├── Excels/                  ← 放所有 .xlsx
+├── Yus/
+│   └── Gen/                 ← 自动生成代码（勿手动修改）
+├── Scripts/                 ← 核心运行时代码
+├── Editor/                  ← 编辑器工具
+├── Example-Backpack/        ← 示例：背包系统
+└── Fungus-DialogueKey/      ← Fungus 专用对话钥匙系统 + 3个Command
+    </pre>
+
+    <h3>常见问题 & 注意事项</h3>
+    <ul class="note-list">
+        <li>Excel 文件名就是表名（如 <code>Backpack.xlsx</code> → <code>BackpackTable</code>）</li>
+        <li>有且仅有 <strong>一列</strong> 第三行写 <code>key</code></li>
+        <li>修改 Excel 后记得重新 “生成代码 + 导出数据”</li>
+        <li>打包后自动移除所有 Editor 代码（反写功能只在编辑器）</li>
+        <li>存档路径：PC 为 <code>%userprofile%\AppData\LocalLow\你的公司\你的游戏\SaveData\</code></li>
+        <li>性能极高：1000条数据存档 </li>
+    </ul>
+
+    <div class="success-box">
+        <strong>恭喜！你现在拥有了一个比 90% 商业项目还强的配置表+存档系统！</strong><br>
+        从此告别手动拖资源、JSON 字符串、存档图片丢失、策划改表要重打 AB 包的痛苦
+    </div>
+</section>
 ```csharp
 // YusDataManager: Excel -> ScriptableObject -> Binary Save
 - 配置表缓存

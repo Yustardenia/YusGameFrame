@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class SceneAudioManager : MonoBehaviour
 {
@@ -18,6 +19,9 @@ public class SceneAudioManager : MonoBehaviour
     // 用于记录被“临时中断”的音乐状态
     private AudioClip _lastMusicClip;
     private float _lastMusicTime;
+    
+    // 用于控制淡入淡出的协程
+    private Coroutine _fadeCoroutine;
 
     private void Awake()
     {
@@ -74,28 +78,42 @@ public class SceneAudioManager : MonoBehaviour
     /// <summary>
     /// [基础] 播放指定 AudioClip
     /// </summary>
-    public void PlayMusic(AudioClip clip)
+    public void PlayMusic(AudioClip clip, float fadeDuration = 0f)
     {
         if (clip == null) return;
         
         // 如果是同一首且正在播放，就不重置了
         if (musicSource.clip == clip && musicSource.isPlaying) return;
 
+        // 停止之前的淡入淡出（如果有）
+        if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+
         musicSource.clip = clip;
         musicSource.loop = true; // 确保是循环的
         musicSource.time = 0;    // 重置播放进度
-        musicSource.Play();
+        
+        if (fadeDuration > 0)
+        {
+            musicSource.volume = 0;
+            musicSource.Play();
+            _fadeCoroutine = StartCoroutine(FadeMusicRoutine(AudioData.MusicVolume, fadeDuration));
+        }
+        else
+        {
+            musicSource.volume = AudioData.MusicVolume;
+            musicSource.Play();
+        }
     }
 
     /// <summary>
     /// [重载] 通过名字在库里查找并播放音乐 (例如: "BossTheme")
     /// </summary>
-    public void PlayMusic(string musicName)
+    public void PlayMusic(string musicName, float fadeDuration = 0f)
     {
         SoundItem item = FindSoundItem(musicName);
         if (item != null)
         {
-            PlayMusic(item.clip);
+            PlayMusic(item.clip, fadeDuration);
         }
         else
         {
@@ -128,9 +146,41 @@ public class SceneAudioManager : MonoBehaviour
     /// <summary>
     /// 彻底停止音乐（进度归零）
     /// </summary>
-    public void StopMusic()
+    public void StopMusic(float fadeDuration = 0f)
     {
-        musicSource.Stop();
+        if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+
+        if (fadeDuration > 0 && musicSource.isPlaying)
+        {
+            _fadeCoroutine = StartCoroutine(FadeMusicRoutine(0, fadeDuration, true));
+        }
+        else
+        {
+            musicSource.Stop();
+        }
+    }
+    
+    private IEnumerator FadeMusicRoutine(float targetVolume, float duration, bool stopOnComplete = false)
+    {
+        float startVolume = musicSource.volume;
+        float timer = 0;
+        
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            musicSource.volume = Mathf.Lerp(startVolume, targetVolume, timer / duration);
+            yield return null;
+        }
+        
+        musicSource.volume = targetVolume;
+        
+        if (stopOnComplete)
+        {
+            musicSource.Stop();
+            musicSource.volume = AudioData.MusicVolume; 
+        }
+        
+        _fadeCoroutine = null;
     }
     
 

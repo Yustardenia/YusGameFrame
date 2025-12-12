@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class BackpackData : IYusBinaryData, IYusCloneable<BackpackData>
@@ -10,7 +11,7 @@ public class BackpackData : IYusBinaryData, IYusCloneable<BackpackData>
     public string logicType;
     public string desc;
     public float durability;
-    public Sprite icon;
+    public string icon;
 
     public BackpackData Clone() {
         BackpackData copy = new BackpackData();
@@ -25,18 +26,23 @@ public class BackpackData : IYusBinaryData, IYusCloneable<BackpackData>
 
     public void Write(BinaryWriter bw) {
         bw.Write(id);
-        bw.Write(name);
-        bw.Write(logicType);
-        bw.Write(desc);
+        bw.Write(name ?? "");
+        bw.Write(logicType ?? "");
+        bw.Write(desc ?? "");
         bw.Write(durability);
-        bw.Write(icon != null ? icon.name : "");
+        bw.Write(icon ?? "");
     }
-    public void Read(BinaryReader br) {
+
+    public void Read(BinaryReader br, int version) {
         id = br.ReadInt32();
         name = br.ReadString();
         logicType = br.ReadString();
         desc = br.ReadString();
         durability = br.ReadSingle();
-        br.ReadString();
+        icon = br.ReadString();
+    }
+
+    public void Read(BinaryReader br) {
+        Read(br, 1);
     }
 }

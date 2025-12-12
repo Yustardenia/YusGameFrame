@@ -99,9 +99,9 @@ public class YusDataManager
 
                 for (int i = 0; i < count; i++)
                 {
-                    TData data = new TData();
-                    data.Read(br); // 调用接口方法，无反射
-                    list.Add(data);
+                    TData item = new TData();
+                    item.Read(br, version);
+                    list.Add(item);
                 }
             }
         }

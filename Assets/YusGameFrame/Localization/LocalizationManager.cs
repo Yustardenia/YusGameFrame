@@ -4,13 +4,6 @@ using System.Reflection;
 
 namespace YusGameFrame.Localization
 {
-    // 语言枚举，对应 Excel 中的列名 (建议小写以匹配字段)
-    public enum Language
-    {
-        zh_cn,
-        en_us,
-    }
-
     public class LocalizationManager : YusBaseManager<LocalizationTable, LocalizationData>
     {
         public static LocalizationManager Instance { get; private set; }

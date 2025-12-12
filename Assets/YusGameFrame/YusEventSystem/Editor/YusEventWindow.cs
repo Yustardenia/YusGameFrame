@@ -14,6 +14,7 @@ public class YusEventWindow : EditorWindow
     private Vector2 scrollRight;
     private string newEventName = "ON_NEW_EVENT";
     private int selectedTab = 0; // 0=管理, 1=调试
+    private string searchFilter = ""; // 搜索过滤
 
     // 缓存
     private List<string> existingEvents = new List<string>();
@@ -95,12 +96,27 @@ public class YusEventWindow : EditorWindow
 
         // 左栏：订阅者状态
         EditorGUILayout.BeginVertical("box", GUILayout.Width(position.width * 0.6f));
+        
+        // 搜索栏
+        EditorGUILayout.BeginHorizontal();
         GUILayout.Label($"🔥 活跃事件 ({table.Count})", EditorStyles.boldLabel);
+        GUILayout.FlexibleSpace();
+        searchFilter = EditorGUILayout.TextField(searchFilter, EditorStyles.toolbarSearchField, GUILayout.Width(200));
+        if (GUILayout.Button("X", EditorStyles.toolbarButton, GUILayout.Width(20))) searchFilter = "";
+        EditorGUILayout.EndHorizontal();
+
         scrollLeft = EditorGUILayout.BeginScrollView(scrollLeft);
 
         foreach (var kvp in table)
         {
             if (kvp.Value == null) continue;
+            
+            // 过滤逻辑
+            if (!string.IsNullOrEmpty(searchFilter) && 
+                !kvp.Key.ToLower().Contains(searchFilter.ToLower())) 
+            {
+                continue;
+            }
 
             // 获取调用列表 (谁订阅了)
             var invocationList = kvp.Value.GetInvocationList();
@@ -115,7 +131,19 @@ public class YusEventWindow : EditorWindow
             {
                 string targetName = d.Target != null ? d.Target.ToString() : "Static";
                 string methodName = d.Method.Name;
+                
+                EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField($"  ↳ {targetName} . {methodName}()");
+                
+                // Ping 按钮
+                if (d.Target is MonoBehaviour mb)
+                {
+                    if (GUILayout.Button("Ping", EditorStyles.miniButton, GUILayout.Width(40)))
+                    {
+                        EditorGUIUtility.PingObject(mb.gameObject);
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.EndVertical();
         }

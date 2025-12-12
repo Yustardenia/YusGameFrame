@@ -11,21 +11,21 @@ public static class YusEventExtensions
     public static void YusRegister(this MonoBehaviour mono, string eventName, Action handler)
     {
         YusEventManager.Instance.AddListener(eventName, handler);
-        mono.GetCleaner().AddRecord(eventName, handler);
+        mono.GetCleaner().AddRecord(() => YusEventManager.Instance.RemoveListener(eventName, handler));
     }
 
     // 1参数
     public static void YusRegister<T>(this MonoBehaviour mono, string eventName, Action<T> handler)
     {
         YusEventManager.Instance.AddListener(eventName, handler);
-        mono.GetCleaner().AddRecord(eventName, handler);
+        mono.GetCleaner().AddRecord(() => YusEventManager.Instance.RemoveListener(eventName, handler));
     }
 
     // 2参数
     public static void YusRegister<T1, T2>(this MonoBehaviour mono, string eventName, Action<T1, T2> handler)
     {
         YusEventManager.Instance.AddListener(eventName, handler);
-        mono.GetCleaner().AddRecord(eventName, handler);
+        mono.GetCleaner().AddRecord(() => YusEventManager.Instance.RemoveListener(eventName, handler));
     }
 
     // 获取或创建清理器组件
@@ -45,16 +45,13 @@ public static class YusEventExtensions
 /// <summary>
 /// 挂载在物体上的隐形组件，负责在销毁时退订事件
 /// </summary>
-/// <summary>
-/// 挂载在物体上的隐形组件，负责在销毁时退订事件
-/// </summary>
 public class YusEventAutoCleaner : MonoBehaviour
 {
-    private List<(string name, Delegate handler)> records = new List<(string, Delegate)>();
+    private List<Action> cleanupActions = new List<Action>();
 
-    public void AddRecord(string name, Delegate handler)
+    public void AddRecord(Action cleanupAction)
     {
-        records.Add((name, handler));
+        cleanupActions.Add(cleanupAction);
     }
 
     private void OnDestroy()
@@ -62,47 +59,17 @@ public class YusEventAutoCleaner : MonoBehaviour
         // 如果游戏关闭了，Instance 可能已经销毁，就不需要退订了
         if (YusEventManager.Instance == null) return;
 
-        // 遍历所有记录，通过反射找到对应的 RemoveListener 方法并调用
-        foreach (var record in records)
+        foreach (var action in cleanupActions)
         {
-            string eventName = record.name;
-            Delegate handler = record.handler;
-            Type handlerType = handler.GetType();
-
-            // 情况 1: 无参数 Action
-            if (handler is Action action)
+            try
             {
-                YusEventManager.Instance.RemoveListener(eventName, action);
-                continue;
+                action?.Invoke();
             }
-
-            // 情况 2: 泛型参数 (Action<T>, Action<T1, T2>...)
-            if (handlerType.IsGenericType)
+            catch (Exception e)
             {
-                // 获取委托的泛型参数 (例如 int, string)
-                Type[] genericArgs = handlerType.GetGenericArguments();
-
-                // 在 Manager 中查找名字叫 RemoveListener 的方法
-                var methods = typeof(YusEventManager).GetMethods();
-                foreach (var method in methods)
-                {
-                    if (method.Name == "RemoveListener" && method.IsGenericMethodDefinition)
-                    {
-                        // 检查泛型参数数量是否一致
-                        // 例如 RemoveListener<T> 有1个参数，Action<int> 也有1个参数
-                        if (method.GetGenericArguments().Length == genericArgs.Length)
-                        {
-                            // 构造具体的方法: RemoveListener<int>
-                            var specificMethod = method.MakeGenericMethod(genericArgs);
-                            
-                            // 调用方法: RemoveListener<int>(eventName, handler)
-                            specificMethod.Invoke(YusEventManager.Instance, new object[] { eventName, handler });
-                            break;
-                        }
-                    }
-                }
+                Debug.LogError($"[YusEventAutoCleaner] 退订失败: {e.Message}");
             }
         }
-        records.Clear();
+        cleanupActions.Clear();
     }
 }

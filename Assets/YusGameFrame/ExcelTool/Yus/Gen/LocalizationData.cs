@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class LocalizationData : IYusBinaryData, IYusCloneable<LocalizationData>
@@ -18,13 +19,18 @@ public class LocalizationData : IYusBinaryData, IYusCloneable<LocalizationData>
     }
 
     public void Write(BinaryWriter bw) {
-        bw.Write(key);
-        bw.Write(zh_cn);
-        bw.Write(en_us);
+        bw.Write(key ?? "");
+        bw.Write(zh_cn ?? "");
+        bw.Write(en_us ?? "");
     }
-    public void Read(BinaryReader br) {
+
+    public void Read(BinaryReader br, int version) {
         key = br.ReadString();
         zh_cn = br.ReadString();
         en_us = br.ReadString();
+    }
+
+    public void Read(BinaryReader br) {
+        Read(br, 1);
     }
 }
