@@ -11,7 +11,7 @@ public class YusInputCodeGenerator : EditorWindow
     private string scriptName = "PlayerController";
     private string mapName = "Gameplay"; 
 
-    [MenuItem("Tools/Yus Data/6. 输入脚本生成器 (Input Generator)")]
+    [MenuItem("Tools/Yus Data/E. 输入脚本生成器 (Input Generator)")]
     public static void ShowWindow()
     {
         GetWindow<YusInputCodeGenerator>("输入脚本生成器");

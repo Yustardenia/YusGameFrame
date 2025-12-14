@@ -8,7 +8,7 @@ public class YusFSMDebugger : EditorWindow
 {
     private Vector2 scrollPos;
 
-    [MenuItem("Tools/Yus Data/4. FSM 调试器 (State Machine)")]
+    [MenuItem("Tools/Yus Data/C. FSM 调试器 (State Machine)")]
     public static void ShowWindow()
     {
         GetWindow<YusFSMDebugger>("FSM 调试器");

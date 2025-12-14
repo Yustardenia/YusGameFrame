@@ -21,7 +21,7 @@ public class YusSingletonScanner : EditorWindow
     private List<SingletonInfo> results = new List<SingletonInfo>();
     private Vector2 scrollPos;
 
-    [MenuItem("Tools/Yus Data/7. 单例检查器 (Singleton Scanner)")]
+    [MenuItem("Tools/Yus Data/F. 单例检查器 (Singleton Scanner)")]
     public static void ShowWindow()
     {
         GetWindow<YusSingletonScanner>("单例检查器");

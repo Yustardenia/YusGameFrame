@@ -14,7 +14,7 @@ public class ExcelYusTool : EditorWindow
     public static string CODE_GEN_PATH = Application.dataPath + "/YusGameFrame/ExcelTool/Yus/Gen/";
     public static string SO_OUTPUT_PATH = "Assets/Resources/YusData/";
 
-    [MenuItem("Tools/Yus Data/1. 生成代码 (Gen Code)")]
+    [MenuItem("Tools/Yus Data/A.1 生成代码 (Gen Code)")]
     public static void GenerateCode()
     {
         if (!Directory.Exists(EXCEL_PATH)) { Debug.LogError("Excel目录不存在"); return; }
@@ -30,7 +30,7 @@ public class ExcelYusTool : EditorWindow
         Debug.Log("代码生成完毕！请等待编译。");
     }
 
-    [MenuItem("Tools/Yus Data/2. 导出数据到 SO (Export Data)")]
+    [MenuItem("Tools/Yus Data/A.2 导出数据到 SO (Export Data)")]
     public static void ExportData()
     {
         if (!Directory.Exists(SO_OUTPUT_PATH)) Directory.CreateDirectory(SO_OUTPUT_PATH);

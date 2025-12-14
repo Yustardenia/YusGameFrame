@@ -20,7 +20,7 @@ public class SimpleValueViewer : EditorWindow
     
     private List<SimpleDataCache> dataList = new List<SimpleDataCache>();
 
-    [MenuItem("Tools/Yus Data/简单值查看器 (Simple Viewer)")]
+    [MenuItem("Tools/Yus Data/A.3 简单值查看器 (Simple Viewer)")]
     public static void ShowWindow()
     {
         GetWindow<SimpleValueViewer>("简单值管理");

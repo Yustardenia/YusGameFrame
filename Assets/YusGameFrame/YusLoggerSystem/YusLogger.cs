@@ -172,7 +172,7 @@ public class YusLogger : MonoBehaviour
     }
     
 #if UNITY_EDITOR
-    [MenuItem("Tools/Yus Data/10. 导出当前日志 (Export Logs)")]
+    [MenuItem("Tools/Yus Data/I. 导出当前日志 (Export Logs)")]
     public static void MenuExport()
     {
         if (Instance != null)

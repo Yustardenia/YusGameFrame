@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class YusSaveEditorWindow : EditorWindow
 {
-    [MenuItem("Tools/Yus Data/11. 存档管理 (Save Manager)")]
+    [MenuItem("Tools/Yus Data/A.4 存档管理 (Save Manager)")]
     public static void ShowWindow()
     {
         GetWindow<YusSaveEditorWindow>("存档管理");

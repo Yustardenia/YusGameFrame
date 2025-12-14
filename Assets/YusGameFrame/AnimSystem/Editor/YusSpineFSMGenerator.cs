@@ -25,7 +25,7 @@ public class YusSpineFSMGenerator : EditorWindow
     private Object rawSpineData; // 没宏的时候用 Object 占位，防止界面报错
 #endif
 
-    [MenuItem("Tools/Yus Data/9. Spine FSM 生成器")]
+    [MenuItem("Tools/Yus Data/H. Spine FSM 生成器")]
     public static void ShowWindow()
     {
         GetWindow<YusSpineFSMGenerator>("Spine To FSM");

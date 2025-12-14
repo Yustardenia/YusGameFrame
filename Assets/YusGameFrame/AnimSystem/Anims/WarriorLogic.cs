@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem; // 引入输入系统
 
@@ -26,6 +27,7 @@ public partial class WarriorController
         fsm.Start<WarriorIdleState>();
         
         Debug.Log("战士初始化完成！");
+ 
     }
 
     // 输入回调：更新缓存
@@ -47,6 +49,7 @@ public partial class WarriorController
             }
         }
     }
+   
 }
 
 // =========================================================

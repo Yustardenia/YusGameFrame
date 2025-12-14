@@ -11,7 +11,7 @@ public class YusAnimFSMGenerator : EditorWindow
     private string className = "Player"; // 生成的类名前缀，如 Player
     private string savePath = "Assets/YusGameFrame/AnimSystem/Anims/";
 
-    [MenuItem("Tools/Yus Data/8. 动画状态机生成器 (Anim To FSM)")]
+    [MenuItem("Tools/Yus Data/G. 动画状态机生成器 (Anim To FSM)")]
     public static void ShowWindow()
     {
         GetWindow<YusAnimFSMGenerator>("Anim To FSM");

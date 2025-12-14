@@ -17,7 +17,7 @@ public class YusPoolDebugger : EditorWindow
     private float lastUpdateTime;
     private const float UPDATE_INTERVAL = 0.5f; // 每0.5秒更新一次活跃统计，防止卡顿
 
-    [MenuItem("Tools/Yus Data/5. 对象池监视器 (Pool Monitor)")]
+    [MenuItem("Tools/Yus Data/D. 对象池监视器 (Pool Monitor)")]
     public static void ShowWindow()
     {
         GetWindow<YusPoolDebugger>("对象池监视器");

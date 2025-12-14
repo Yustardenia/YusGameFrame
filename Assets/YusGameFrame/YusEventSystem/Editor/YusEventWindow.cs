@@ -19,7 +19,7 @@ public class YusEventWindow : EditorWindow
     // 缓存
     private List<string> existingEvents = new List<string>();
 
-    [MenuItem("Tools/Yus Data/3. 事件中心 (Event Center)")]
+    [MenuItem("Tools/Yus Data/B. 事件中心 (Event Center)")]
     public static void ShowWindow()
     {
         GetWindow<YusEventWindow>("事件中心");
