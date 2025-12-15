@@ -28,6 +28,13 @@ public static class YusEventExtensions
         mono.GetCleaner().AddRecord(() => YusEventManager.Instance.RemoveListener(eventName, handler));
     }
 
+    // 3参数
+    public static void YusRegister<T1, T2, T3>(this MonoBehaviour mono, string eventName, Action<T1, T2, T3> handler)
+    {
+        YusEventManager.Instance.AddListener(eventName, handler);
+        mono.GetCleaner().AddRecord(() => YusEventManager.Instance.RemoveListener(eventName, handler));
+    }
+
     // 获取或创建清理器组件
     private static YusEventAutoCleaner GetCleaner(this MonoBehaviour mono)
     {

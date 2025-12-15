@@ -48,6 +48,23 @@ public abstract class BasePanel : MonoBehaviour
     }
 
     /// <summary>
+    /// 当面板被暂停（被其他面板覆盖）
+    /// </summary>
+    public virtual void OnPause()
+    {
+        canvasGroup.blocksRaycasts = false; // 暂停交互
+    }
+
+    /// <summary>
+    /// 当面板恢复（上层面板关闭）
+    /// </summary>
+    public virtual void OnResume()
+    {
+        canvasGroup.blocksRaycasts = true; // 恢复交互
+        transform.SetAsLastSibling(); // 确保在最上层
+    }
+
+    /// <summary>
     /// 刷新数据（由子类实现具体逻辑）
     /// </summary>
     public virtual void UpdateView() { }

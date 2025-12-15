@@ -12,6 +12,9 @@ namespace YusGameFrame.Localization
     /// </summary>
     public class FungusLocalizationBridge : MonoBehaviour, ISubstitutionHandler
     {
+        // 缓存正则表达式，避免每次调用都重新编译
+        private static readonly Regex KeyRegex = new Regex(@"\{\$([\w\.-]+)\}", RegexOptions.Compiled);
+
         private void OnEnable()
         {
             // 注册到 Fungus 的替换系统 (改为 OnEnable 以确保尽早注册)
@@ -33,9 +36,8 @@ namespace YusGameFrame.Localization
             bool modified = false;
             string s = input.ToString();
             
-            // 匹配 {$Key} 格式
-            // 优化正则：支持点号和连字符，例如 {$Category.Key} 或 {$Key-Name}
-            var matches = Regex.Matches(s, @"\{\$([\w\.-]+)\}");
+            // 使用缓存的正则
+            var matches = KeyRegex.Matches(s);
             
             if (matches.Count > 0)
             {

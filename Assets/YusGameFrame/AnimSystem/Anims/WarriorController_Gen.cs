@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(Animator))]
 public partial class WarriorController : MonoBehaviour
 {
     public YusFSM<WarriorController> fsm;

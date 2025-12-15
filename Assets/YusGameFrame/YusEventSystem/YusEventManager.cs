@@ -8,11 +8,27 @@ using UnityEngine;
 public class YusEventManager : MonoBehaviour
 {
     // --- 单例模式 (由 YusSingletonManager 统一管理) ---
-    public static YusEventManager Instance { get; private set; }
+    private static YusEventManager _instance;
+    public static YusEventManager Instance 
+    { 
+        get 
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<YusEventManager>();
+            }
+            return _instance;
+        }
+    }
 
     private void Awake()
     {
-        Instance = this;
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        _instance = this;
     }
 
     // 存储表
@@ -95,8 +111,14 @@ public class YusEventManager : MonoBehaviour
 #endif
         if (eventTable.TryGetValue(eventName, out Delegate d))
         {
-            if (d is Action callback) callback.Invoke();
-            // else Debug.LogError($"[YusEvent] 事件 {eventName} 参数不匹配 (应无参数)"); // 暂时屏蔽报错，防止滥用
+            if (d is Action callback) 
+            {
+                callback.Invoke();
+            }
+            else if (d != null)
+            {
+                YusLogger.Warning($"[YusEvent] 广播 {eventName} 失败: 参数不匹配。监听者类型: {d.GetType()}，广播类型: 无参数");
+            }
         }
     }
 
@@ -107,7 +129,14 @@ public class YusEventManager : MonoBehaviour
 #endif
         if (eventTable.TryGetValue(eventName, out Delegate d))
         {
-            if (d is Action<T> callback) callback.Invoke(arg1);
+            if (d is Action<T> callback) 
+            {
+                callback.Invoke(arg1);
+            }
+            else if (d != null)
+            {
+                YusLogger.Warning($"[YusEvent] 广播 {eventName} 失败: 参数不匹配。监听者类型: {d.GetType()}，广播类型: Action<{typeof(T).Name}>");
+            }
         }
     }
 
@@ -118,7 +147,14 @@ public class YusEventManager : MonoBehaviour
 #endif
         if (eventTable.TryGetValue(eventName, out Delegate d))
         {
-            if (d is Action<T1, T2> callback) callback.Invoke(arg1, arg2);
+            if (d is Action<T1, T2> callback) 
+            {
+                callback.Invoke(arg1, arg2);
+            }
+            else if (d != null)
+            {
+                YusLogger.Warning($"[YusEvent] 广播 {eventName} 失败: 参数不匹配。监听者类型: {d.GetType()}，广播类型: Action<{typeof(T1).Name}, {typeof(T2).Name}>");
+            }
         }
     }
 
@@ -129,7 +165,14 @@ public class YusEventManager : MonoBehaviour
 #endif
         if (eventTable.TryGetValue(eventName, out Delegate d))
         {
-            if (d is Action<T1, T2, T3> callback) callback.Invoke(arg1, arg2, arg3);
+            if (d is Action<T1, T2, T3> callback) 
+            {
+                callback.Invoke(arg1, arg2, arg3);
+            }
+            else if (d != null)
+            {
+                YusLogger.Warning($"[YusEvent] 广播 {eventName} 失败: 参数不匹配。监听者类型: {d.GetType()}，广播类型: Action<{typeof(T1).Name}, {typeof(T2).Name}, {typeof(T3).Name}>");
+            }
         }
     }
 

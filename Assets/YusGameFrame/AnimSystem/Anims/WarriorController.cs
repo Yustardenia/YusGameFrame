@@ -5,7 +5,8 @@ using UnityEngine.InputSystem; // 引入输入系统
 // =========================================================
 // 1. 扩展控制器：负责初始化和组件获取
 // =========================================================
-public partial class WarriorController
+[RequireComponent(typeof(Animator))]
+public partial class WarriorController 
 {
     // 定义一些逻辑需要的组件和变量
     public Rigidbody rb;

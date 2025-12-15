@@ -11,8 +11,8 @@ namespace YusGameFrame.Localization
         [Header("当前语言")]
         public Language currentLanguage = Language.zh_cn;
 
-        // 缓存：Key -> Data
-        private Dictionary<string, LocalizationData> _keyMap = new Dictionary<string, LocalizationData>();
+        // 优化：直接缓存 Key -> 当前语言文本，避免每次 GetString 都反射
+        private Dictionary<string, string> _localizedStrings = new Dictionary<string, string>();
 
         protected override string SaveFileName => "LocalizationSave"; 
         private const string PREFS_KEY = "Yus_Language_Setting";
@@ -20,43 +20,75 @@ namespace YusGameFrame.Localization
         private void Awake()
         {
             Instance = this;
-            // 读取语言设置
-            if (PlayerPrefs.HasKey(PREFS_KEY))
+            LoadLanguageSetting();
+        }
+
+        private void LoadLanguageSetting()
+        {
+            try
             {
-                string langStr = PlayerPrefs.GetString(PREFS_KEY);
-                if (System.Enum.TryParse(langStr, out Language savedLang))
+                if (PlayerPrefs.HasKey(PREFS_KEY))
                 {
-                    currentLanguage = savedLang;
+                    string langStr = PlayerPrefs.GetString(PREFS_KEY);
+                    if (System.Enum.TryParse(langStr, out Language savedLang))
+                    {
+                        currentLanguage = savedLang;
+                    }
                 }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[LocalizationManager] 加载语言设置失败: {e.Message}");
             }
         }
 
         protected override void OnLoadSuccess(bool isNewGame)
         {
-            _keyMap.Clear();
-            // 假设 LocalizationData 有一个名为 'key' 的字段
-            // 我们通过反射或者假设用户会在 Excel 里把 Key 列命名为 'key'
-            foreach (var data in DataList)
-            {
-                // 为了通用性，我们这里用反射获取 key，或者直接访问 data.key (如果确定有)
-                // 这里我们假设生成的类有 key 字段
-                var keyField = typeof(LocalizationData).GetField("key");
-                if (keyField != null)
-                {
-                    string keyVal = keyField.GetValue(data) as string;
-                    if (!string.IsNullOrEmpty(keyVal) && !_keyMap.ContainsKey(keyVal))
-                    {
-                        _keyMap.Add(keyVal, data);
-                    }
-                }
-            }
+            RefreshLocalizedStrings();
             
-            Debug.Log($"[LocalizationManager] 加载了 {_keyMap.Count} 条本地化数据。当前语言: {currentLanguage}");
+            Debug.Log($"[LocalizationManager] 加载了 {_localizedStrings.Count} 条本地化数据。当前语言: {currentLanguage}");
             
             // 广播一次事件，确保那些比管理器先初始化的 UI 组件能得到刷新
             if (YusEventManager.Instance != null)
             {
                 YusEventManager.Instance.Broadcast(YusEvents.OnLanguageChanged);
+            }
+        }
+
+        private void RefreshLocalizedStrings()
+        {
+            _localizedStrings.Clear();
+
+            if (DataList == null || DataList.Count == 0) return;
+
+            // 1. 获取当前语言对应的字段信息 (只反射一次)
+            System.Type dataType = typeof(LocalizationData);
+            FieldInfo langField = dataType.GetField(currentLanguage.ToString());
+
+            if (langField == null)
+            {
+                Debug.LogError($"[LocalizationManager] 找不到语言字段: {currentLanguage}。请检查 LocalizationData 类是否包含该字段。");
+                return;
+            }
+
+            // 2. 遍历数据并缓存
+            foreach (var data in DataList)
+            {
+                if (data == null) continue;
+
+                // 直接访问 key 字段
+                string keyVal = data.key; 
+
+                if (string.IsNullOrEmpty(keyVal)) continue;
+
+                // 获取对应语言的值
+                string localizedVal = langField.GetValue(data) as string;
+
+                // 如果翻译存在，则存入
+                if (!string.IsNullOrEmpty(localizedVal))
+                {
+                    _localizedStrings[keyVal] = localizedVal;
+                }
             }
         }
 
@@ -69,17 +101,16 @@ namespace YusGameFrame.Localization
         {
             if (string.IsNullOrEmpty(key)) return "";
 
-            if (_keyMap.TryGetValue(key, out var data))
+            if (_localizedStrings.TryGetValue(key, out string val))
             {
-                // 获取当前语言对应的字段
-                var langField = typeof(LocalizationData).GetField(currentLanguage.ToString());
-                if (langField != null)
-                {
-                    string val = langField.GetValue(data) as string;
-                    if (!string.IsNullOrEmpty(val)) return val;
-                }
+                return val;
             }
             
+            // 找不到时的警告 (可选，开发模式下开启)
+            #if UNITY_EDITOR
+            // Debug.LogWarning($"[LocalizationManager] 缺少翻译 Key: {key} (Language: {currentLanguage})");
+            #endif
+
             // 找不到则返回 key 自身
             return key;
         }
@@ -89,9 +120,19 @@ namespace YusGameFrame.Localization
             if (currentLanguage == newLang) return;
             currentLanguage = newLang;
             
+            // 刷新缓存
+            RefreshLocalizedStrings();
+
             // 保存设置
-            PlayerPrefs.SetString(PREFS_KEY, currentLanguage.ToString());
-            PlayerPrefs.Save();
+            try
+            {
+                PlayerPrefs.SetString(PREFS_KEY, currentLanguage.ToString());
+                PlayerPrefs.Save();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[LocalizationManager] 保存语言设置失败: {e.Message}");
+            }
 
             YusEventManager.Instance.Broadcast(YusEvents.OnLanguageChanged);
         }
