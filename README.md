@@ -22,7 +22,7 @@ YusGameFrame 是一个为Unity游戏开发精心打造的模块化框架，涵�
 
 ### ✨ 核心特点
 
-- 🎯 **模块化设计** - 20+独立模块，按需使用，互不干扰
+- 🎯 **模块化设计** - 22+独立模块，按需使用，互不干扰
 - 🚀 **零GC优化** - 对象池、计时器等核心系统完全零垃圾回收
 - 🔧 **开箱即用** - 无需复杂配置，拖入即用
 - 📊 **可视化调试** - 内置编辑器工具，实时监控系统状态
@@ -30,6 +30,7 @@ YusGameFrame 是一个为Unity游戏开发精心打造的模块化框架，涵�
 - 💾 **强大的配置表系统** - Excel一键导入，支持热更新
 - 🎮 **新输入系统集成** - 完整封装Unity Input System
 - 🔊 **专业音频管理** - BGM/SFX分离，支持临时切换和自动恢复
+- ⚡ **协程统一管理** - 无需MonoBehaviour的协程系统，支持标签和Owner绑定
 - 📝 **完整文档** - 每个模块都有详细的中英文档和代码示例
 
 ### 🎯 适用场景
@@ -256,6 +257,20 @@ public class QuickStartExample : MonoBehaviour
 <td>✅ 稳定</td>
 </tr>
 
+<tr>
+<td><strong>CoroutineSystem</strong></td>
+<td>协程统一管理系统，无需MonoBehaviour即可启动协程</td>
+<td>Owner绑定、标签管理、句柄控制、延迟/重复任务</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>TMProAnimation</strong></td>
+<td>TextMeshPro文本动画效果扩展，与Fungus对话系统集成</td>
+<td>心跳、旋转、下坠、故障特效、link标签支持</td>
+<td>✅ 稳定</td>
+</tr>
+
 </table>
 
 ---
@@ -285,7 +300,9 @@ YusGameFrame/
 │       ├── YusFSM/             # 状态机系统
 │       ├── YusFolderImporter/  # 文件夹导入器
 │       ├── YusLoggerSystem/    # 日志系统
-│       └── YusSingletonManager/# 单例管理器
+│       ├── YusSingletonManager/# 单例管理器
+│       ├── CoroutineSystem/    # 协程管理系统
+│       └── TMProAnimation/     # TextMeshPro动画效果
 ├── Packages/                   # Unity包依赖
 ├── ProjectSettings/            # 项目设置
 └── README.md                   # 本文档
@@ -317,6 +334,8 @@ YusGameFrame/
 - [18. Fungus - 对话系统集成](#18-fungus)
 - [19. SingletonScanner - 单例扫描器](#19-singletonscanner)
 - [20. YusFolderImporter - 文件夹导入器](#20-yusfolderimporter)
+- [21. CoroutineSystem - 协程管理系统](#21-coroutinesystem)
+- [22. TMProAnimation - 文本动画效果](#22-tmproanimation)
 
 ---
 <a name="1-attributes"></a>
@@ -2306,6 +2325,735 @@ void Start()
 
 ---
 
+<a name="21-coroutinesystem"></a>
+## 21. CoroutineSystem - 协程统一管理系统 ⭐NEW
+
+一套**无需MonoBehaviour即可启动协程**的强大管理系统，支持Owner绑定、标签管理、句柄控制，完美解决协程管理混乱、泄漏和难以追踪的问题。
+
+**核心功能展示：**
+- 无需MonoBehaviour启动协程
+- Owner生命周期自动绑定
+- 标签批量管理
+- 句柄精确控制
+- 延迟/重复任务快捷接口
+- 异常捕获和日志输出
+- 编辑器实时监控
+
+### 核心架构图
+
+```
+任意代码位置
+  ↓ YusCoroutine.Run/Delay/Repeat
+YusCoroutineManager (DontDestroyOnLoad单例)
+  ↓ 返回 YusCoroutineHandle
+使用中
+  ↓ Owner销毁自动停止 / 标签批量停止 / 句柄手动停止
+自动清理
+```
+
+### 核心类详解
+
+#### YusCoroutine 静态接口类
+
+提供简洁的静态方法，无需访问单例：
+
+```csharp
+public static class YusCoroutine
+{
+    // 运行标准协程
+    public static YusCoroutineHandle Run(IEnumerator routine, Object owner = null, string tag = null)
+    
+    // 延迟执行（替代Invoke）
+    public static YusCoroutineHandle Delay(float seconds, Action action, Object owner = null, bool unscaledTime = false, string tag = null)
+    
+    // 下一帧执行
+    public static YusCoroutineHandle NextFrame(Action action, Object owner = null, string tag = null)
+    
+    // 重复执行（替代InvokeRepeating）
+    public static YusCoroutineHandle Repeat(float interval, Action action, int repeatCount = -1, float firstDelay = 0f, Object owner = null, bool unscaledTime = false, string tag = null)
+    
+    // 批量停止
+    public static int StopTag(string tag)
+    public static int StopOwner(Object owner)
+    public static void StopAll()
+}
+```
+
+#### YusCoroutineHandle 句柄结构
+
+轻量级协程控制句柄：
+
+```csharp
+public readonly struct YusCoroutineHandle
+{
+    public int Id { get; }
+    public bool IsValid { get; }  // 检查协程是否还在运行
+    public void Stop()            // 停止此协程
+}
+```
+
+#### YusCoroutineManager 管理器单例
+
+全局协程管理器，自动创建并挂载到YusSingletonManager下：
+
+- 自动Owner销毁检测
+- 异常捕获和日志输出
+- 编辑器调试信息支持
+- DontDestroyOnLoad持久化
+
+### 使用教程（3分钟上手）
+
+#### 基础用法
+
+```csharp
+// 1. 最简单的延迟调用（替代Invoke）
+YusCoroutine.Delay(3f, () => {
+    Debug.Log("3秒后执行");
+});
+
+// 2. 下一帧执行
+YusCoroutine.NextFrame(() => {
+    // 确保在Start后执行
+    InitializeComponents();
+});
+
+// 3. 重复执行（替代InvokeRepeating）
+YusCoroutine.Repeat(1f, () => {
+    Debug.Log("每秒执行一次");
+}, repeatCount: 10);  // 执行10次后自动停止
+
+// 4. 无限循环
+YusCoroutine.Repeat(0.5f, () => {
+    CheckGameState();
+}, repeatCount: -1);  // -1表示无限循环
+```
+
+#### Owner绑定（自动清理）
+
+```csharp
+public class EnemyAI : MonoBehaviour
+{
+    void Start()
+    {
+        // 绑定到this，敌人销毁时协程自动停止
+        YusCoroutine.Delay(5f, () => {
+            Attack();
+        }, owner: this);
+        
+        // 巡逻逻辑，敌人死亡自动停止
+        YusCoroutine.Repeat(3f, () => {
+            MoveToNextWaypoint();
+        }, repeatCount: -1, owner: this);
+    }
+}
+```
+
+#### 标签管理（批量控制）
+
+```csharp
+public class UIManager : MonoBehaviour
+{
+    void ShowTips()
+    {
+        // 所有提示都使用同一个标签
+        YusCoroutine.Delay(2f, () => HideTip1(), tag: "ui_tips");
+        YusCoroutine.Delay(3f, () => HideTip2(), tag: "ui_tips");
+        YusCoroutine.Delay(5f, () => HideTip3(), tag: "ui_tips");
+    }
+    
+    void CloseAllTips()
+    {
+        // 一键停止所有提示相关的协程
+        int count = YusCoroutine.StopTag("ui_tips");
+        Debug.Log($"停止了 {count} 个提示协程");
+    }
+}
+```
+
+#### 句柄控制（精确管理）
+
+```csharp
+public class SkillSystem : MonoBehaviour
+{
+    private YusCoroutineHandle _cooldownHandle;
+    
+    public void UseSkill()
+    {
+        if (_cooldownHandle.IsValid)
+        {
+            Debug.Log("技能冷却中...");
+            return;
+        }
+        
+        // 释放技能
+        CastSkill();
+        
+        // 开始冷却
+        _cooldownHandle = YusCoroutine.Delay(5f, () => {
+            Debug.Log("冷却完成");
+        });
+    }
+    
+    public void ResetCooldown()
+    {
+        // 手动停止冷却
+        _cooldownHandle.Stop();
+    }
+}
+```
+
+#### 运行标准协程
+
+```csharp
+public class CustomBehavior : MonoBehaviour
+{
+    void Start()
+    {
+        // 无需继承MonoBehaviour也能启动协程
+        YusCoroutine.Run(ComplexLogic(), owner: this);
+    }
+    
+    IEnumerator ComplexLogic()
+    {
+        Debug.Log("开始");
+        yield return new WaitForSeconds(1f);
+        
+        Debug.Log("第一阶段");
+        yield return new WaitForSeconds(2f);
+        
+        Debug.Log("第二阶段");
+        yield return new WaitForSeconds(1f);
+        
+        Debug.Log("完成");
+    }
+}
+```
+
+### 高级特性
+
+#### 不受时间缩放影响
+
+```csharp
+// 暂停菜单的倒计时（即使Time.timeScale=0也继续）
+YusCoroutine.Delay(60f, () => {
+    ShowTimeoutWarning();
+}, unscaledTime: true);
+
+// 不受时间缩放的重复任务
+YusCoroutine.Repeat(1f, () => {
+    UpdateRealTimeUI();
+}, repeatCount: -1, unscaledTime: true);
+```
+
+#### 首次延迟的重复任务
+
+```csharp
+// 3秒后开始，然后每1秒执行一次
+YusCoroutine.Repeat(
+    interval: 1f,
+    action: () => SpawnEnemy(),
+    repeatCount: -1,
+    firstDelay: 3f
+);
+```
+
+#### 异常安全
+
+```csharp
+// 协程中的异常会被捕获并输出到YusLogger
+YusCoroutine.Run(RiskyOperation(), owner: this);
+
+IEnumerator RiskyOperation()
+{
+    yield return new WaitForSeconds(1f);
+    
+    // 即使这里抛出异常，也不会导致程序崩溃
+    throw new Exception("测试异常");
+    
+    yield return null;  // 不会执行到这里
+}
+// 输出：[YusCoroutine] Exception in coroutine (id=1, tag=null): ...
+```
+
+### 编辑器工具
+
+#### YusCoroutineDebugger 实时监控窗口
+
+菜单：**Tools → Yus Tools → 协程监视器**
+
+功能：
+- 实时显示所有运行中的协程
+- 查看协程ID、标签、Owner信息
+- 显示运行时长和启动帧数
+- 检测Owner已销毁的泄漏协程
+- 一键停止所有协程
+- 搜索和过滤功能
+
+### 实战示例
+
+#### 技能系统完整示例
+
+```csharp
+public class PlayerSkills : MonoBehaviour
+{
+    private YusCoroutineHandle _fireballCooldown;
+    private YusCoroutineHandle _shieldDuration;
+    
+    public void CastFireball()
+    {
+        if (_fireballCooldown.IsValid)
+        {
+            Debug.Log("火球术冷却中");
+            return;
+        }
+        
+        // 释放火球
+        SpawnFireball();
+        
+        // 开始冷却
+        _fireballCooldown = YusCoroutine.Delay(3f, () => {
+            Debug.Log("火球术可用");
+        }, owner: this);
+    }
+    
+    public void ActivateShield(float duration)
+    {
+        // 先停止旧的护盾
+        _shieldDuration.Stop();
+        
+        // 激活护盾
+        EnableShieldEffect();
+        
+        // duration秒后自动关闭
+        _shieldDuration = YusCoroutine.Delay(duration, () => {
+            DisableShieldEffect();
+        }, owner: this);
+    }
+}
+```
+
+#### Buff系统示例
+
+```csharp
+public class BuffSystem : MonoBehaviour
+{
+    // 所有Buff使用统一标签，方便批量清除
+    private const string BUFF_TAG = "player_buffs";
+    
+    public void ApplySpeedBuff(float duration, float multiplier)
+    {
+        // 激活加速
+        player.speedMultiplier = multiplier;
+        
+        // duration秒后恢复
+        YusCoroutine.Delay(duration, () => {
+            player.speedMultiplier = 1f;
+        }, owner: player, tag: BUFF_TAG);
+    }
+    
+    public void ApplyDamageOverTime(float duration, float damagePerSecond)
+    {
+        // 每秒造成伤害
+        YusCoroutine.Repeat(1f, () => {
+            player.TakeDamage(damagePerSecond);
+        }, repeatCount: (int)duration, owner: player, tag: BUFF_TAG);
+    }
+    
+    public void ClearAllBuffs()
+    {
+        // 一键清除所有Buff效果
+        int count = YusCoroutine.StopTag(BUFF_TAG);
+        Debug.Log($"清除了 {count} 个Buff");
+    }
+}
+```
+
+#### AI巡逻示例
+
+```csharp
+public class PatrolAI : MonoBehaviour
+{
+    [SerializeField] private Transform[] waypoints;
+    private int currentWaypointIndex;
+    
+    void Start()
+    {
+        // 每3秒移动到下一个巡逻点
+        YusCoroutine.Repeat(3f, () => {
+            MoveToNextWaypoint();
+        }, repeatCount: -1, owner: this, tag: "ai_patrol");
+    }
+    
+    void MoveToNextWaypoint()
+    {
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        transform.position = waypoints[currentWaypointIndex].position;
+    }
+    
+    void OnDestroy()
+    {
+        // Owner绑定会自动清理，但也可以手动停止
+        YusCoroutine.StopOwner(this);
+    }
+}
+```
+
+### 与其他方案对比
+
+| 方案 | 需要MonoBehaviour | Owner绑定 | 标签管理 | 句柄控制 | 异常安全 |
+|------|------------------|----------|---------|---------|---------|
+| StartCoroutine | ✅ 必须 | ❌ | ❌ | ❌ | ❌ |
+| Invoke/InvokeRepeating | ✅ 必须 | ❌ | ❌ | ❌ | ❌ |
+| YusTimer | ❌ 不需要 | ✅ | ❌ | ✅ | ✅ |
+| YusCoroutine | ❌ 不需要 | ✅ | ✅ | ✅ | ✅ |
+
+### 性能特点
+
+- **内存占用**：每个协程仅一个TaskInfo对象 + Unity原生Coroutine
+- **CPU开销**：几乎为零，仅额外的Owner销毁检测
+- **GC压力**：仅在启动/停止时有少量分配，运行中零GC
+- **适用场景**：适合替代Invoke、InvokeRepeating，以及需要集中管理的协程逻辑
+
+### 常见问题
+
+**Q: YusCoroutine和YusTimer有什么区别？**  
+A: 
+- YusTimer：纯C#实现，零GC，适合简单的倒计时和重复任务
+- YusCoroutine：基于Unity协程，支持复杂的yield逻辑（WaitForSeconds、WaitUntil等）
+- 建议：简单延迟用Timer，复杂流程用Coroutine
+
+**Q: 会不会和原生StartCoroutine冲突？**  
+A: 完全不冲突，可以混用。YusCoroutine只是提供了更强大的管理能力。
+
+**Q: 性能如何？**  
+A: 底层仍是Unity协程，性能几乎相同。额外开销仅为字典查找和Owner检测，可忽略不计。
+
+**Q: 必须挂载YusCoroutineManager吗？**  
+A: 不需要。首次调用时会自动创建，并尝试挂载到YusSingletonManager下。
+
+**Q: 如何在非MonoBehaviour类中使用？**  
+A: 直接调用YusCoroutine的静态方法即可，无需任何MonoBehaviour。
+
+---
+
+<a name="22-tmproanimation"></a>
+## 22. TMProAnimation - 文本动画效果系统 ⭐NEW
+
+为TextMeshPro文本提供**开箱即用的动画效果**，完美集成Fungus对话系统，支持心跳、旋转、下坠、故障等赛博朋克风格的文本特效。
+
+**核心功能展示：**
+- 4种内置动画效果
+- 自定义Glitch故障特效
+- 与Fungus link标签无缝集成
+- 运行时自动注册
+- 零配置即用
+
+### 核心特性
+
+#### 内置动画效果
+
+1. **Heartbeat（心跳）** - 文字像心脏一样有节奏地缩放
+2. **Spin（旋转）** - 字符原地旋转
+3. **Rain（下坠）** - 文字向下坠落的阶梯效果
+4. **Glitch（故障）** - 赛博朋克风格的故障闪烁和位移
+
+### 核心类详解
+
+#### CustomTMProEffects 效果注册类
+
+自动在游戏启动时注册所有自定义效果：
+
+```csharp
+[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+public static void RegisterCustomEffects()
+{
+    // 在场景加载前自动注册所有效果
+    TMProLinkAnimLookup.AddHelper("heartbeat", new PulseEffect() { ... });
+    TMProLinkAnimLookup.AddHelper("spin", new PivotEffect() { ... });
+    TMProLinkAnimLookup.AddHelper("rain", new AscendEffect() { ... });
+    TMProLinkAnimLookup.AddHelper("glitch", new GlitchEffect() { ... });
+}
+```
+
+#### GlitchEffect 自定义故障特效
+
+完整实现的赛博朋克故障效果：
+
+```csharp
+public class GlitchEffect : BaseEffect
+{
+    public float intensity = 1f;  // 故障强度
+    public float speed = 10f;     // 故障速度
+    
+    // 位移和缩放变换
+    public override Matrix4x4 TransFunc(int index)
+    
+    // 颜色变化（偶尔闪红）
+    public override Color32 ColorFunc(int index, Color32 col)
+}
+```
+
+### 使用教程
+
+#### 在Fungus对话中使用
+
+```
+Say: 我的心<link="heartbeat">扑通扑通</link>跳个不停！
+
+Say: 系统正在<link="spin">处理中</link>，请稍候...
+
+Say: 看那<link="rain">雨滴</link>从天而降。
+
+Say: <link="glitch">ERROR: SYSTEM MALFUNCTION</link>
+```
+
+#### 在普通TextMeshPro中使用
+
+```csharp
+// 1. 确保Text组件挂载了 TMProLinkAnimator
+TextMeshProUGUI text = GetComponent<TextMeshProUGUI>();
+text.gameObject.AddComponent<TMProLinkAnimator>();
+
+// 2. 在文本中使用link标签
+text.text = "这是<link=\"heartbeat\">心跳效果</link>！";
+text.text = "系统<link=\"glitch\">故障</link>中...";
+```
+
+#### 在脚本中动态使用
+
+```csharp
+public class DialogueController : MonoBehaviour
+{
+    [SerializeField] private TextMeshProUGUI dialogueText;
+    
+    void ShowDialogue(string npcName, string message)
+    {
+        // 根据NPC情绪添加不同效果
+        if (npcName == "Robot")
+        {
+            // 机器人说话带故障效果
+            dialogueText.text = $"<link=\"glitch\">{message}</link>";
+        }
+        else if (npcName == "LoveInterest")
+        {
+            // 恋爱对象说话带心跳效果
+            dialogueText.text = $"<link=\"heartbeat\">{message}</link>";
+        }
+        else
+        {
+            dialogueText.text = message;
+        }
+    }
+}
+```
+
+### 效果详解
+
+#### 1. Heartbeat（心跳）效果
+
+```csharp
+TMProLinkAnimLookup.AddHelper("heartbeat", new PulseEffect()
+{
+    mode = TMPLinkAnimatorMode.PerWord,    // 按词缩放
+    speed = 8f,                             // 脉动速度
+    scale = new Vector3(0.15f, 0.15f, 0),   // 缩放幅度15%
+});
+```
+
+**适用场景**：
+- 表达心情激动
+- 强调重要信息
+- 爱情相关对话
+
+**示例**：
+```
+"我真的<link=\"heartbeat\">非常喜欢</link>这个！"
+```
+
+#### 2. Spin（旋转）效果
+
+```csharp
+TMProLinkAnimLookup.AddHelper("spin", new PivotEffect()
+{
+    mode = TMPLinkAnimatorMode.PerCharacter,  // 按字符旋转
+    speed = 2f,                                // 旋转速度
+    degScale = 20f                             // 旋转角度幅度
+});
+```
+
+**适用场景**：
+- 表示加载/处理中
+- 表达眩晕感
+- 营造动态感
+
+**示例**：
+```
+"系统正在<link=\"spin\">计算</link>中..."
+```
+
+#### 3. Rain（下坠）效果
+
+```csharp
+TMProLinkAnimLookup.AddHelper("rain", new AscendEffect()
+{
+    mode = TMPLinkAnimatorMode.PerCharacter,
+    totalStep = -0.5f  // 负值表示向下坠落
+});
+```
+
+**适用场景**：
+- 表达悲伤、失落
+- 描述下落动作
+- 营造沉重氛围
+
+**示例**：
+```
+"我的心情像<link=\"rain\">雨滴</link>一样低落..."
+```
+
+#### 4. Glitch（故障）效果
+
+```csharp
+TMProLinkAnimLookup.AddHelper("glitch", new GlitchEffect()
+{
+    mode = TMPLinkAnimatorMode.PerCharacter,
+    intensity = 2.0f,  // 故障强度
+    speed = 15f        // 故障速度
+});
+```
+
+**适用场景**：
+- 赛博朋克风格游戏
+- 表示系统错误
+- AI/机器人对话
+- 黑客/科技元素
+
+**示例**：
+```
+"<link=\"glitch\">ERROR: MEMORY CORRUPTION DETECTED</link>"
+"我是<link=\"glitch\">机械生命体</link>007号"
+```
+
+### 高级用法
+
+#### 创建自定义效果
+
+```csharp
+// 在CustomTMProEffects.RegisterCustomEffects()中添加：
+
+// 示例：彩虹渐变效果
+TMProLinkAnimLookup.AddHelper("rainbow", new CustomRainbowEffect()
+{
+    mode = TMPLinkAnimatorMode.PerCharacter,
+    speed = 5f
+});
+
+// 自定义效果类
+public class CustomRainbowEffect : BaseEffect
+{
+    public float speed = 5f;
+    
+    public override Color32 ColorFunc(int index, Color32 col)
+    {
+        float hue = (Time.time * speed + index * 0.1f) % 1f;
+        Color rainbow = Color.HSVToRGB(hue, 1f, 1f);
+        return rainbow;
+    }
+}
+```
+
+#### 组合多种效果
+
+```
+"<link=\"heartbeat\"><link=\"glitch\">重要警告</link></link>"
+```
+
+注意：不是所有效果组合都能产生好的视觉效果，建议测试后使用。
+
+### 与Fungus集成示例
+
+#### 完整对话场景
+
+```
+// NPC: 机器人AI
+Say: 你好，人类。我是<link="spin">处理单元</link>XJ-9。
+
+Say: 检测到<link="glitch">异常数据</link>...
+
+Say: <link="glitch">WARNING: SYSTEM INTEGRITY COMPROMISED</link>
+
+// NPC: 恋爱对象
+Say: 见到你，我的心<link="heartbeat">怦怦直跳</link>...
+
+// 环境描述
+Say: <link="rain">雨滴</link>从破碎的天窗落下。
+```
+
+### 性能优化建议
+
+1. **避免过长文本使用动画**
+   ```
+   // ❌ 不推荐：整段文字都加效果
+   "<link=\"glitch\">这是一段很长很长的文字...</link>"
+   
+   // ✅ 推荐：只对关键词加效果
+   "这是一段很长的文字，其中<link=\"glitch\">关键词</link>有效果"
+   ```
+
+2. **控制同屏效果数量**
+   - 同时显示的动画文字建议 < 50字符
+   - Glitch效果因为计算复杂，建议 < 20字符
+
+3. **移动平台优化**
+   ```csharp
+   // 在低端设备上降低效果速度
+   #if UNITY_ANDROID || UNITY_IOS
+       speed = 5f;  // 降低速度减少计算
+   #else
+       speed = 15f; // PC全速
+   #endif
+   ```
+
+### 常见问题
+
+**Q: 为什么我的文本没有动画效果？**  
+A: 确保：
+1. Text组件是TextMeshProUGUI（不是普通Text）
+2. GameObject上挂载了TMProLinkAnimator组件
+3. 使用了正确的link标签语法：`<link="effectName">文字</link>`
+
+**Q: 可以在运行时动态注册新效果吗？**  
+A: 可以，但建议在游戏启动时注册。如需运行时注册：
+```csharp
+TMProLinkAnimLookup.AddHelper("myeffect", new MyCustomEffect());
+```
+
+**Q: 效果不够明显怎么办？**  
+A: 调整效果参数，例如：
+```csharp
+// 增强心跳效果
+scale = new Vector3(0.3f, 0.3f, 0),  // 从0.15增加到0.3
+speed = 12f                          // 从8增加到12
+```
+
+**Q: 如何禁用所有动画效果？**  
+A: 
+```csharp
+// 方法1：移除TMProLinkAnimator组件
+Destroy(text.GetComponent<TMProLinkAnimator>());
+
+// 方法2：移除所有link标签
+text.text = Regex.Replace(text.text, @"<link=""[^""]*"">(.*?)</link>", "$1");
+```
+
+**Q: 性能影响大吗？**  
+A: 
+- Heartbeat/Spin/Rain: 几乎无影响
+- Glitch: 因包含随机计算，略有影响（每字符 < 0.01ms）
+- 建议移动平台谨慎使用大量Glitch效果
+
+---
+
 ## ❓ 常见问题（FAQ）
 
 ### 通用问题
@@ -2539,8 +3287,8 @@ SOFTWARE.
 
 ## 📊 项目统计
 
-- **模块数量**: 20+
-- **代码行数**: 15000+
+- **模块数量**: 22+
+- **代码行数**: 16000+
 - **文档页数**: 本README
 - **支持Unity版本**: 2022.3+
 - **许可证**: MIT
@@ -2550,9 +3298,11 @@ SOFTWARE.
 ## 🗺️ 路线图
 
 ### v1.0（当前版本）
-- ✅ 核心20个模块
+- ✅ 核心22个模块
 - ✅ 完整中英文文档
 - ✅ 编辑器工具集
+- ✅ 协程管理系统
+- ✅ TextMeshPro动画效果
 
 ### v1.1（计划中）
 - 🔄 网络模块（HTTP/WebSocket）
@@ -2611,7 +3361,7 @@ YusGameFrame is a modular framework meticulously crafted for Unity game developm
 
 ### ✨ Core Features
 
-- 🎯 **Modular Design** - 20+ independent modules, use as needed
+- 🎯 **Modular Design** - 22+ independent modules, use as needed
 - 🚀 **Zero-GC Optimized** - Core systems like object pool and timer are completely GC-free
 - 🔧 **Ready to Use** - No complex configuration needed
 - 📊 **Visual Debugging** - Built-in editor tools for real-time system monitoring
@@ -2619,6 +3369,7 @@ YusGameFrame is a modular framework meticulously crafted for Unity game developm
 - 💾 **Powerful Config System** - One-click Excel import with hot reload support
 - 🎮 **Input System Integration** - Complete wrapper for Unity Input System
 - 🔊 **Professional Audio Management** - BGM/SFX separation with temporary switching
+- ⚡ **Unified Coroutine Management** - Coroutine system without MonoBehaviour, supports tags and owner binding
 - 📝 **Complete Documentation** - Detailed bilingual docs and code examples for each module
 
 ### 🎯 Use Cases
@@ -2845,13 +3596,27 @@ public class QuickStartExample : MonoBehaviour
 <td>✅ Stable</td>
 </tr>
 
+<tr>
+<td><strong>CoroutineSystem</strong></td>
+<td>Unified coroutine management system without requiring MonoBehaviour</td>
+<td>Owner binding, tag management, handle control, delay/repeat tasks</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>TMProAnimation</strong></td>
+<td>TextMeshPro text animation effects extension, integrated with Fungus</td>
+<td>Heartbeat, spin, rain, glitch effects, link tag support</td>
+<td>✅ Stable</td>
+</tr>
+
 </table>
 
 ---
 
 ## 💡 Key Modules Overview
 
-### Timer System ⭐NEW
+### Timer System ⭐UPDATED
 High-performance, zero-GC timer system perfect for replacing coroutines in delay scenarios. Supports object pooling, automatic cleanup, and GameObject lifecycle binding.
 
 ```csharp
@@ -2882,7 +3647,7 @@ YusLogger.Error("Failed to load config");
 YusLogger.Instance.ExportToFile(path);
 ```
 
-### Singleton Manager ⭐NEW
+### Singleton Manager ⭐UPDATED
 Central hub for managing all singleton systems, solving the problem of scattered DontDestroyOnLoad objects.
 
 ```csharp
@@ -2891,6 +3656,36 @@ var mgr = YusSingletonManager.Instance;
 mgr.Event.TriggerEvent("GameStart");
 mgr.Pool.Get("Enemies/Goblin");
 mgr.Audio.PlayMusic("MainTheme");
+```
+
+### Coroutine System ⭐NEW
+Unified coroutine management system that doesn't require MonoBehaviour. Supports owner binding, tag management, and precise control via handles.
+
+```csharp
+// Simple delay (replaces Invoke)
+YusCoroutine.Delay(3f, () => Debug.Log("3 seconds later"));
+
+// With owner binding (auto-stops when owner is destroyed)
+YusCoroutine.Delay(5f, () => Attack(), owner: this);
+
+// Repeat task (replaces InvokeRepeating)
+YusCoroutine.Repeat(1f, () => UpdateLogic(), repeatCount: -1, owner: this);
+
+// Tag-based batch control
+YusCoroutine.StopTag("ui_effects");
+```
+
+### TMProAnimation System ⭐NEW
+TextMeshPro text animation effects extension, seamlessly integrated with Fungus dialogue system. Includes built-in effects: heartbeat, spin, rain, and cyberpunk-style glitch.
+
+```csharp
+// In Fungus dialogue
+Say: My heart is <link="heartbeat">beating fast</link>!
+Say: <link="glitch">ERROR: SYSTEM MALFUNCTION</link>
+
+// In regular TextMeshPro
+text.text = "System <link=\"spin\">processing</link>...";
+text.text = "<link=\"rain\">Rain drops</link> falling down.";
 ```
 
 ---
