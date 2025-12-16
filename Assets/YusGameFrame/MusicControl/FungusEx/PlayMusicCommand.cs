@@ -20,7 +20,8 @@ public class PlayMusicCommand : Command
         }
         else
         {
-            SceneAudioManager.Instance.PlayMusic(musicName);
+            var audio = SceneAudioManager.Instance;
+            if (audio != null) audio.PlayMusic(musicName);
         }
         
         Continue();

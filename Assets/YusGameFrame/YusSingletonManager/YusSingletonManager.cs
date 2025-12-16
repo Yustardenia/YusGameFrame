@@ -16,9 +16,16 @@ public class YusSingletonManager : MonoBehaviour
     public YusEventManager Event;
     public YusResManager Res;
     public YusInputManager Input;
+    public YusCoroutineManager Coroutine;
     public SceneAudioManager Audio;
     public YusPoolManager Pool;
     public UIManager UI;
+
+    [Header("=== Input ===")]
+    [SerializeField] private bool autoCreateInputManager = true;
+
+    [Header("=== Coroutine ===")]
+    [SerializeField] private bool autoCreateCoroutineManager = true;
 
     [Header("=== 业务逻辑系统 ===")]
     public BubbleManager Bubble;
@@ -51,7 +58,25 @@ public class YusSingletonManager : MonoBehaviour
         // 如果 Inspector 没赋值，尝试获取
         if (!Event) Event = GetComponentInChildren<YusEventManager>();
         if (!Res) Res = GetComponentInChildren<YusResManager>();
-        if (!Input) Input = GetComponentInChildren<YusInputManager>();
+        if (!Input) Input = GetComponentInChildren<YusInputManager>(true);
+        if (!Input) Input = FindObjectOfType<YusInputManager>();
+        if (!Input && autoCreateInputManager)
+        {
+            var go = new GameObject(nameof(YusInputManager));
+            go.transform.SetParent(transform);
+            Input = go.AddComponent<YusInputManager>();
+        }
+        if (!Input && YusInputManager.Instance) Input = YusInputManager.Instance;
+
+        if (!Coroutine) Coroutine = GetComponentInChildren<YusCoroutineManager>(true);
+        if (!Coroutine) Coroutine = FindObjectOfType<YusCoroutineManager>();
+        if (!Coroutine && autoCreateCoroutineManager)
+        {
+            var go = new GameObject(nameof(YusCoroutineManager));
+            go.transform.SetParent(transform);
+            Coroutine = go.AddComponent<YusCoroutineManager>();
+        }
+
         if (!Audio) Audio = GetComponentInChildren<SceneAudioManager>();
         if (!Pool) Pool = GetComponentInChildren<YusPoolManager>();
         if (!UI) UI = GetComponentInChildren<UIManager>();
@@ -68,7 +93,7 @@ public class YusSingletonManager : MonoBehaviour
         if (mb == null) return;
         
         // 检查是否是核心字段之一
-        if (mb == Event || mb == Res || mb == Input || mb == Audio || mb == Pool || mb == UI || mb == Bubble || mb == DialogueKey || mb == Player)
+        if (mb == Event || mb == Res || mb == Input || mb == Coroutine || mb == Audio || mb == Pool || mb == UI || mb == Bubble || mb == DialogueKey || mb == Player)
             return;
 
         if (!otherSingletons.Contains(mb))

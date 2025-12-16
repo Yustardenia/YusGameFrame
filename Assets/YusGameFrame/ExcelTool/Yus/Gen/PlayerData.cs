@@ -45,8 +45,4 @@ public class PlayerData : IYusBinaryData, IYusCloneable<PlayerData>
         location = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
         map = br.ReadString();
     }
-
-    public void Read(BinaryReader br) {
-        Read(br, 1);
-    }
 }

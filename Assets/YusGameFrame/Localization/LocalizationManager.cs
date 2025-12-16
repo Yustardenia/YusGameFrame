@@ -1,6 +1,6 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
-using System.Reflection;
+using UnityEngine;
 
 namespace YusGameFrame.Localization
 {
@@ -11,11 +11,16 @@ namespace YusGameFrame.Localization
         [Header("当前语言")]
         public Language currentLanguage = Language.zh_cn;
 
-        // 优化：直接缓存 Key -> 当前语言文本，避免每次 GetString 都反射
-        private Dictionary<string, string> _localizedStrings = new Dictionary<string, string>();
+        [Header("默认语言 / Fallback")]
+        public Language defaultLanguage = Language.zh_cn;
 
-        protected override string SaveFileName => "LocalizationSave"; 
+        [SerializeField] private List<LanguageFallbackRule> fallbackRules = new List<LanguageFallbackRule>();
+
+        protected override string SaveFileName => "LocalizationSave";
         private const string PREFS_KEY = "Yus_Language_Setting";
+
+        private readonly Dictionary<string, LocalizationData> _dataByKey =
+            new Dictionary<string, LocalizationData>(StringComparer.Ordinal);
 
         private void Awake()
         {
@@ -27,114 +32,167 @@ namespace YusGameFrame.Localization
         {
             try
             {
-                if (PlayerPrefs.HasKey(PREFS_KEY))
+                if (!PlayerPrefs.HasKey(PREFS_KEY)) return;
+
+                string langStr = PlayerPrefs.GetString(PREFS_KEY);
+                if (Enum.TryParse(langStr, out Language savedLang))
                 {
-                    string langStr = PlayerPrefs.GetString(PREFS_KEY);
-                    if (System.Enum.TryParse(langStr, out Language savedLang))
-                    {
-                        currentLanguage = savedLang;
-                    }
+                    currentLanguage = savedLang;
                 }
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.LogError($"[LocalizationManager] 加载语言设置失败: {e.Message}");
             }
         }
 
+        public override void InitData()
+        {
+            DataList = YusDataManager.Instance.CreateRuntimeListFromConfig<LocalizationTable, LocalizationData>();
+            OnLoadSuccess(true);
+        }
+
         protected override void OnLoadSuccess(bool isNewGame)
         {
-            RefreshLocalizedStrings();
-            
-            Debug.Log($"[LocalizationManager] 加载了 {_localizedStrings.Count} 条本地化数据。当前语言: {currentLanguage}");
-            
-            // 广播一次事件，确保那些比管理器先初始化的 UI 组件能得到刷新
+            BuildKeyIndex();
+
+            Debug.Log($"[LocalizationManager] 加载了 {_dataByKey.Count} 条本地化数据。当前语言: {currentLanguage}");
+
             if (YusEventManager.Instance != null)
             {
                 YusEventManager.Instance.Broadcast(YusEvents.OnLanguageChanged);
             }
         }
 
-        private void RefreshLocalizedStrings()
+        private void BuildKeyIndex()
         {
-            _localizedStrings.Clear();
-
+            _dataByKey.Clear();
             if (DataList == null || DataList.Count == 0) return;
 
-            // 1. 获取当前语言对应的字段信息 (只反射一次)
-            System.Type dataType = typeof(LocalizationData);
-            FieldInfo langField = dataType.GetField(currentLanguage.ToString());
-
-            if (langField == null)
-            {
-                Debug.LogError($"[LocalizationManager] 找不到语言字段: {currentLanguage}。请检查 LocalizationData 类是否包含该字段。");
-                return;
-            }
-
-            // 2. 遍历数据并缓存
             foreach (var data in DataList)
             {
                 if (data == null) continue;
 
-                // 直接访问 key 字段
-                string keyVal = data.key; 
-
+                string keyVal = data.key;
                 if (string.IsNullOrEmpty(keyVal)) continue;
 
-                // 获取对应语言的值
-                string localizedVal = langField.GetValue(data) as string;
-
-                // 如果翻译存在，则存入
-                if (!string.IsNullOrEmpty(localizedVal))
+                if (_dataByKey.ContainsKey(keyVal))
                 {
-                    _localizedStrings[keyVal] = localizedVal;
+                    Debug.LogWarning($"[LocalizationManager] 重复 Key: {keyVal}，将以后者覆盖。");
                 }
+
+                _dataByKey[keyVal] = data;
             }
         }
 
-        /// <summary>
-        /// 获取本地化文本
-        /// </summary>
-        /// <param name="key">Excel中的Key</param>
-        /// <returns>对应语言的文本，如果找不到则返回Key本身</returns>
-        public string GetString(string key)
+        private IEnumerable<Language> EnumerateFallbackChain(Language fromLanguage)
+        {
+            HashSet<Language> visited = new HashSet<Language>();
+            visited.Add(fromLanguage);
+
+            for (int i = 0; i < fallbackRules.Count; i++)
+            {
+                var rule = fallbackRules[i];
+                if (rule == null) continue;
+                if (rule.from != fromLanguage) continue;
+
+                if (rule.to != null)
+                {
+                    for (int j = 0; j < rule.to.Count; j++)
+                    {
+                        var lang = rule.to[j];
+                        if (visited.Add(lang))
+                        {
+                            yield return lang;
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            if (visited.Add(defaultLanguage))
+            {
+                yield return defaultLanguage;
+            }
+        }
+
+        private string GetRawString(string key)
         {
             if (string.IsNullOrEmpty(key)) return "";
 
-            if (_localizedStrings.TryGetValue(key, out string val))
+            if (!_dataByKey.TryGetValue(key, out LocalizationData data) || data == null)
+            {
+                return key;
+            }
+
+            if (LocalizationDataLanguageAccessor.TryGet(data, currentLanguage, out string val) &&
+                !string.IsNullOrEmpty(val))
             {
                 return val;
             }
-            
-            // 找不到时的警告 (可选，开发模式下开启)
-            #if UNITY_EDITOR
-            // Debug.LogWarning($"[LocalizationManager] 缺少翻译 Key: {key} (Language: {currentLanguage})");
-            #endif
 
-            // 找不到则返回 key 自身
+            foreach (var fallbackLang in EnumerateFallbackChain(currentLanguage))
+            {
+                if (LocalizationDataLanguageAccessor.TryGet(data, fallbackLang, out string fallbackVal) &&
+                    !string.IsNullOrEmpty(fallbackVal))
+                {
+                    return fallbackVal;
+                }
+            }
+
             return key;
+        }
+
+        public string GetString(string key)
+        {
+            return GetRawString(key);
+        }
+
+        public string GetString(string key, params object[] args)
+        {
+            string raw = GetRawString(key);
+            if (args == null || args.Length == 0) return raw;
+
+            try
+            {
+                return string.Format(raw, args);
+            }
+            catch (Exception)
+            {
+                return raw;
+            }
+        }
+
+        public string GetStringIcu(string key, IReadOnlyDictionary<string, object> args)
+        {
+            string raw = GetRawString(key);
+            return IcuMessageFormatter.Format(raw, args, currentLanguage);
         }
 
         public void ChangeLanguage(Language newLang)
         {
             if (currentLanguage == newLang) return;
             currentLanguage = newLang;
-            
-            // 刷新缓存
-            RefreshLocalizedStrings();
 
-            // 保存设置
             try
             {
                 PlayerPrefs.SetString(PREFS_KEY, currentLanguage.ToString());
                 PlayerPrefs.Save();
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Debug.LogError($"[LocalizationManager] 保存语言设置失败: {e.Message}");
             }
 
             YusEventManager.Instance.Broadcast(YusEvents.OnLanguageChanged);
         }
+    }
+
+    [Serializable]
+    public class LanguageFallbackRule
+    {
+        public Language from;
+        public List<Language> to = new List<Language>();
     }
 }

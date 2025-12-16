@@ -16,11 +16,13 @@ public class SwitchMusicCommand : Command
     {
         if (mode == Mode.Switch)
         {
-            SceneAudioManager.Instance.SwitchMusicTemporary(musicName);
+            var audio = SceneAudioManager.Instance;
+            if (audio != null) audio.SwitchMusicTemporary(musicName);
         }
         else
         {
-            SceneAudioManager.Instance.ReturnToPreviousMusic();
+            var audio = SceneAudioManager.Instance;
+            if (audio != null) audio.ReturnToPreviousMusic();
         }
         Continue();
     }

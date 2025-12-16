@@ -3,7 +3,32 @@ using System.Collections;
 
 public class SceneAudioManager : MonoBehaviour
 {
-    public static SceneAudioManager Instance { get; private set; }
+    private static SceneAudioManager _instance;
+    private static bool _isQuitting;
+
+    public static SceneAudioManager Instance
+    {
+        get
+        {
+            if (_isQuitting) return null;
+            if (_instance != null) return _instance;
+
+            // Prefer the globally-managed instance (if present).
+            var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance : FindObjectOfType<YusSingletonManager>();
+            if (mgr != null && mgr.Audio != null)
+            {
+                _instance = mgr.Audio;
+                return _instance;
+            }
+
+            _instance = FindObjectOfType<SceneAudioManager>();
+            if (_instance != null) return _instance;
+
+            var go = new GameObject(nameof(SceneAudioManager));
+            _instance = go.AddComponent<SceneAudioManager>();
+            return _instance;
+        }
+    }
 
     [Header("配置")]
     [SerializeField] private AudioClip defaultBGM;
@@ -21,11 +46,38 @@ public class SceneAudioManager : MonoBehaviour
     private float _lastMusicTime;
     
     // 用于控制淡入淡出的协程
-    private Coroutine _fadeCoroutine;
+    private YusCoroutineHandle _fadeHandle;
 
     private void Awake()
     {
-        Instance = this;
+        // If a global instance already exists, treat this component as "scene config":
+        // apply it to the global instance, then destroy this duplicate.
+        if (_instance != null && _instance != this)
+        {
+            _instance.ApplySceneConfigFrom(this);
+            Destroy(gameObject);
+            return;
+        }
+
+        // If there's a YusSingletonManager in the scene and it already has (or will have) an Audio child,
+        // prefer that as the global instance; this component becomes pure "scene config".
+        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance : FindObjectOfType<YusSingletonManager>();
+        if (mgr != null)
+        {
+            var managedAudio = mgr.GetComponentInChildren<SceneAudioManager>(true);
+            if (managedAudio != null && managedAudio != this)
+            {
+                managedAudio.defaultBGM = defaultBGM;
+                managedAudio.playBgmOnStart = playBgmOnStart;
+                managedAudio.audioLibraries = audioLibraries;
+
+                Destroy(gameObject);
+                return;
+            }
+        }
+
+        _instance = this;
+        TryAttachToSingletonManagerOrPersist(mgr);
 
         if (audioLibraries != null)
         {
@@ -42,6 +94,57 @@ public class SceneAudioManager : MonoBehaviour
 
         UpdateMusicVolume(AudioData.MusicVolume);
         UpdateSFXVolume(AudioData.SFXVolume);
+
+        if (playBgmOnStart && defaultBGM != null)
+        {
+            PlayMusic(defaultBGM);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_instance == this) _instance = null;
+    }
+
+    private void OnApplicationQuit()
+    {
+        _isQuitting = true;
+    }
+
+    private void TryAttachToSingletonManagerOrPersist(YusSingletonManager mgr = null)
+    {
+        if (mgr == null) mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance : FindObjectOfType<YusSingletonManager>();
+        if (mgr != null)
+        {
+            if (transform.parent != mgr.transform)
+            {
+                transform.SetParent(mgr.transform, false);
+            }
+
+            if (mgr.Audio == null) mgr.Audio = this;
+            return;
+        }
+
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void ApplySceneConfigFrom(SceneAudioManager sceneConfig)
+    {
+        if (sceneConfig == null) return;
+
+        // Libraries: replace if the scene provides any (so each scene can own its own library set).
+        if (sceneConfig.audioLibraries != null && sceneConfig.audioLibraries.Length > 0)
+        {
+            audioLibraries = sceneConfig.audioLibraries;
+            foreach (var lib in audioLibraries) if (lib != null) lib.Initialize();
+        }
+
+        // BGM defaults: update and optionally auto-play for this scene.
+        playBgmOnStart = sceneConfig.playBgmOnStart;
+        if (sceneConfig.defaultBGM != null)
+        {
+            defaultBGM = sceneConfig.defaultBGM;
+        }
 
         if (playBgmOnStart && defaultBGM != null)
         {
@@ -86,7 +189,7 @@ public class SceneAudioManager : MonoBehaviour
         if (musicSource.clip == clip && musicSource.isPlaying) return;
 
         // 停止之前的淡入淡出（如果有）
-        if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+        if (_fadeHandle.IsValid) _fadeHandle.Stop();
 
         musicSource.clip = clip;
         musicSource.loop = true; // 确保是循环的
@@ -96,7 +199,7 @@ public class SceneAudioManager : MonoBehaviour
         {
             musicSource.volume = 0;
             musicSource.Play();
-            _fadeCoroutine = StartCoroutine(FadeMusicRoutine(AudioData.MusicVolume, fadeDuration));
+            _fadeHandle = YusCoroutine.Run(FadeMusicRoutine(AudioData.MusicVolume, fadeDuration), this, tag: "SceneAudioManager.FadeMusic");
         }
         else
         {
@@ -148,11 +251,11 @@ public class SceneAudioManager : MonoBehaviour
     /// </summary>
     public void StopMusic(float fadeDuration = 0f)
     {
-        if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+        if (_fadeHandle.IsValid) _fadeHandle.Stop();
 
         if (fadeDuration > 0 && musicSource.isPlaying)
         {
-            _fadeCoroutine = StartCoroutine(FadeMusicRoutine(0, fadeDuration, true));
+            _fadeHandle = YusCoroutine.Run(FadeMusicRoutine(0, fadeDuration, true), this, tag: "SceneAudioManager.FadeMusic");
         }
         else
         {
@@ -180,7 +283,7 @@ public class SceneAudioManager : MonoBehaviour
             musicSource.volume = AudioData.MusicVolume; 
         }
         
-        _fadeCoroutine = null;
+        _fadeHandle = default;
     }
     
 

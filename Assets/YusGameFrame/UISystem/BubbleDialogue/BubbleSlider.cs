@@ -77,7 +77,7 @@ public class BubbleSlider : MonoBehaviour
         Clear(); // 这里现在调用的是改过的 Release 逻辑
         foreach (var data in history)
         {
-            yield return StartCoroutine(AddBubbleCoroutine(data));
+            yield return AddBubbleCoroutine(data);
         }
     }
 }

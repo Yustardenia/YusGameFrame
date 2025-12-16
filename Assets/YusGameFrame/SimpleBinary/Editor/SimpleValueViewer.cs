@@ -1,48 +1,46 @@
-using UnityEngine;
-using UnityEditor;
-using System.IO;
-using System.Text;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
+using UnityEngine;
 
 public class SimpleValueViewer : EditorWindow
 {
     private Vector2 scrollPos;
     private string savePath;
-    
-    // 缓存读取到的数据，避免每帧都读文件
+
     private class SimpleDataCache
     {
         public string key;
         public string type;
         public object value;
-        public bool isDirty; // 是否被修改过
+        public bool isDirty;
     }
-    
-    private List<SimpleDataCache> dataList = new List<SimpleDataCache>();
 
-    [MenuItem("Tools/Yus Data/A.3 简单值查看器 (Simple Viewer)")]
+    private readonly List<SimpleDataCache> dataList = new List<SimpleDataCache>();
+
+    [MenuItem("Tools/Yus Data/A.3 Simple Value Viewer")]
     public static void ShowWindow()
     {
-        GetWindow<SimpleValueViewer>("简单值管理");
+        GetWindow<SimpleValueViewer>("Simple Value Viewer");
     }
 
     private void OnEnable()
     {
-        // 获取运行时脚本定义的路径
         savePath = SimpleSingleValueSaver.SAVE_PATH;
         RefreshData();
     }
 
     private void OnGUI()
     {
-        GUILayout.Label("简单二进制数据管理器 (YusSimple)", EditorStyles.boldLabel);
-        
+        GUILayout.Label("YusSimple (Single Value Saves)", EditorStyles.boldLabel);
+
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("刷新列表", GUILayout.Height(30)))
+        if (GUILayout.Button("Refresh", GUILayout.Height(30)))
         {
             RefreshData();
         }
-        if (GUILayout.Button("打开存档文件夹", GUILayout.Height(30)))
+        if (GUILayout.Button("Open Folder", GUILayout.Height(30)))
         {
             if (!Directory.Exists(savePath)) Directory.CreateDirectory(savePath);
             EditorUtility.RevealInFinder(savePath);
@@ -50,28 +48,25 @@ public class SimpleValueViewer : EditorWindow
         EditorGUILayout.EndHorizontal();
 
         GUILayout.Space(10);
-        
+
         if (dataList.Count == 0)
         {
-            GUILayout.Label("暂无存档数据");
+            GUILayout.Label("No data.");
             return;
         }
 
-        // 表头
         EditorGUILayout.BeginHorizontal("box");
-        GUILayout.Label("Key (文件名)", GUILayout.Width(150));
-        GUILayout.Label("Type", GUILayout.Width(50));
-        GUILayout.Label("Value (可编辑)", GUILayout.ExpandWidth(true));
-        GUILayout.Label("操作", GUILayout.Width(60));
+        GUILayout.Label("Key", GUILayout.Width(180));
+        GUILayout.Label("Type", GUILayout.Width(220));
+        GUILayout.Label("Value", GUILayout.ExpandWidth(true));
+        GUILayout.Label("Action", GUILayout.Width(60));
         EditorGUILayout.EndHorizontal();
 
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-
         for (int i = 0; i < dataList.Count; i++)
         {
             DrawItem(dataList[i]);
         }
-
         EditorGUILayout.EndScrollView();
     }
 
@@ -79,60 +74,54 @@ public class SimpleValueViewer : EditorWindow
     {
         EditorGUILayout.BeginHorizontal("box");
 
-        // 1. Key
-        GUILayout.Label(item.key, GUILayout.Width(150));
-        
-        // 2. Type
-        GUILayout.Label(item.type, EditorStyles.miniLabel, GUILayout.Width(50));
+        GUILayout.Label(item.key, GUILayout.Width(180));
+        GUILayout.Label(ShortTypeName(item.type), EditorStyles.miniLabel, GUILayout.Width(220));
 
-        // 3. Value (根据类型显示不同的控件)
         object oldVal = item.value;
         object newVal = oldVal;
 
         switch (item.type)
         {
             case "int":
-                newVal = EditorGUILayout.IntField((int)oldVal);
+                newVal = EditorGUILayout.IntField(oldVal is int i ? i : 0);
                 break;
             case "float":
-                newVal = EditorGUILayout.FloatField((float)oldVal);
+                newVal = EditorGUILayout.FloatField(oldVal is float f ? f : 0f);
                 break;
             case "bool":
-                newVal = EditorGUILayout.Toggle((bool)oldVal);
+                newVal = EditorGUILayout.Toggle(oldVal is bool b && b);
                 break;
             case "string":
-                newVal = EditorGUILayout.TextField((string)oldVal);
+                newVal = EditorGUILayout.TextField(oldVal as string ?? "");
                 break;
             default:
-                GUILayout.Label(oldVal.ToString());
+                EditorGUILayout.SelectableLabel(FormatValue(oldVal), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 break;
         }
 
-        // 检测数值是否改变
-        if (!object.Equals(oldVal, newVal))
+        if (!Equals(oldVal, newVal))
         {
             item.value = newVal;
             item.isDirty = true;
         }
 
-        // 4. Save/Delete Buttons
         GUI.color = item.isDirty ? Color.green : Color.white;
-        if (GUILayout.Button(item.isDirty ? "保存" : "Del", GUILayout.Width(60)))
+        if (GUILayout.Button(item.isDirty ? "Save" : "Del", GUILayout.Width(60)))
         {
             if (item.isDirty)
             {
                 SaveItemToDisk(item);
                 item.isDirty = false;
-                GUI.FocusControl(null); // 取消焦点，防止输入框未提交
-                ShowNotification(new GUIContent("保存成功"));
+                GUI.FocusControl(null);
+                ShowNotification(new GUIContent("Saved"));
             }
             else
             {
-                if (EditorUtility.DisplayDialog("删除", $"确定要删除 {item.key} 吗?", "删除", "取消"))
+                if (EditorUtility.DisplayDialog("Delete", $"Delete '{item.key}'?", "Delete", "Cancel"))
                 {
                     SimpleSingleValueSaver.Delete(item.key);
                     RefreshData();
-                    GUIUtility.ExitGUI(); // 防止删除后重绘报错
+                    GUIUtility.ExitGUI();
                 }
             }
         }
@@ -149,63 +138,66 @@ public class SimpleValueViewer : EditorWindow
         string[] files = Directory.GetFiles(savePath, "*.yus");
         foreach (var file in files)
         {
-            try
-            {
-                using (var br = new BinaryReader(File.Open(file, FileMode.Open)))
-                {
-                    // 简单校验 Header
-                    byte[] magic = br.ReadBytes(4);
-                    if (Encoding.UTF8.GetString(magic) != "YUSV") continue; // 跳过非单值文件
+            if (!SimpleSingleValueSaver.TryReadFile(file, out var type, out var val)) continue;
 
-                    int version = br.ReadInt32();
-                    string type = ReadString(br);
-                    object val = ReadValue(br, type);
-
-                    dataList.Add(new SimpleDataCache
-                    {
-                        key = Path.GetFileNameWithoutExtension(file),
-                        type = type,
-                        value = val,
-                        isDirty = false
-                    });
-                }
-            }
-            catch
+            dataList.Add(new SimpleDataCache
             {
-                // 忽略读取错误的文件
-            }
+                key = Path.GetFileNameWithoutExtension(file),
+                type = type,
+                value = val,
+                isDirty = false
+            });
         }
     }
 
-    // 复用一下读取逻辑 (为了Editor独立性，这里稍微冗余一点也没事)
-    private string ReadString(BinaryReader br)
+    private static void SaveItemToDisk(SimpleDataCache item)
     {
-        int len = br.ReadInt32();
-        return Encoding.UTF8.GetString(br.ReadBytes(len));
-    }
-
-    private object ReadValue(BinaryReader br, string type)
-    {
-        switch (type)
-        {
-            case "int": return br.ReadInt32();
-            case "float": return br.ReadSingle();
-            case "bool": return br.ReadByte() != 0;
-            case "string": return ReadString(br);
-            default: return "Unknown";
-        }
-    }
-
-    private void SaveItemToDisk(SimpleDataCache item)
-    {
-        // 利用反射调用运行时脚本的保存逻辑，或者直接调用 Save 方法
-        // 这里为了方便，直接根据类型分发调用泛型 Save
         switch (item.type)
         {
-            case "int": SimpleSingleValueSaver.Save(item.key, (int)item.value); break;
-            case "float": SimpleSingleValueSaver.Save(item.key, (float)item.value); break;
-            case "bool": SimpleSingleValueSaver.Save(item.key, (bool)item.value); break;
-            case "string": SimpleSingleValueSaver.Save(item.key, (string)item.value); break;
+            case "int":
+                SimpleSingleValueSaver.Save(item.key, (int)item.value);
+                return;
+            case "float":
+                SimpleSingleValueSaver.Save(item.key, (float)item.value);
+                return;
+            case "bool":
+                SimpleSingleValueSaver.Save(item.key, (bool)item.value);
+                return;
+            case "string":
+                SimpleSingleValueSaver.Save(item.key, (string)item.value);
+                return;
+            default:
+                EditorUtility.DisplayDialog("Unsupported", $"Editing/saving this type is not supported here: {item.type}", "OK");
+                return;
         }
+    }
+
+    private static string ShortTypeName(string typeStr)
+    {
+        if (string.IsNullOrEmpty(typeStr)) return "null";
+        if (typeStr == "int" || typeStr == "float" || typeStr == "bool" || typeStr == "string") return typeStr;
+
+        int comma = typeStr.IndexOf(',');
+        string name = comma >= 0 ? typeStr.Substring(0, comma) : typeStr;
+
+        int lastDot = name.LastIndexOf('.');
+        if (lastDot >= 0) name = name.Substring(lastDot + 1);
+
+        return name;
+    }
+
+    private static string FormatValue(object val)
+    {
+        if (val == null) return "null";
+        if (val is string s) return s;
+
+        try
+        {
+            string json = EditorJsonUtility.ToJson(val, true);
+            if (!string.IsNullOrEmpty(json) && json != "{}") return json;
+        }
+        catch { }
+
+        return val.ToString();
     }
 }

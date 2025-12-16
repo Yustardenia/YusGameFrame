@@ -15,7 +15,8 @@ public class PlaySFXCommand : Command
     {
         if (!string.IsNullOrEmpty(soundName))
         {
-            SceneAudioManager.Instance.PlaySFX(soundName);
+            var audio = SceneAudioManager.Instance;
+            if (audio != null) audio.PlaySFX(soundName);
         }
 
         if (waitUntilFinished)

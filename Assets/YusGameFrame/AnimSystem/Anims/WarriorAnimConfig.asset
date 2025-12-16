@@ -10,13 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: edbad78863a18104b8048b35bcc82035, type: 3}
-  m_Name: WarriorAnimConfig
+  m_Name: 
   m_EditorClassIdentifier: 
   states:
-  - stateName: Idle
+  - path: Base_Layer/Idle
+    stateName: Idle
     hash: 2081823275
-  - stateName: Run
+  - path: Base_Layer/Run
+    stateName: Run
     hash: 1748754976
-  - stateName: Attack
+  - path: Base_Layer/Attack
+    stateName: Attack
     hash: 1080829965
   parameters: []
+  transitions: []

@@ -19,3 +19,6 @@ MonoBehaviour:
   - key: testname
     zh_cn: "\u4EBA"
     en_us: person
+  - key: t1
+    zh_cn: "<link=\"glitch\">\u662F\u6545\u969C\uFF01~!</link>"
+    en_us: <link="wave">wave, wave, wave, alright</link>

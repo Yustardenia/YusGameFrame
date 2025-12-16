@@ -91,7 +91,7 @@ public class YusResManager : MonoBehaviour
     // ================================================
     public void LoadAsync<T>(string path, Action<T> callback, LoadMode mode = LoadMode.Resources) where T : UnityEngine.Object
     {
-        StartCoroutine(LoadAsyncRoutine(path, callback, mode));
+        YusCoroutine.Run(LoadAsyncRoutine(path, callback, mode), this, tag: "YusResManager.LoadAsync");
     }
 
     private IEnumerator LoadAsyncRoutine<T>(string path, Action<T> callback, LoadMode mode) where T : UnityEngine.Object
@@ -121,7 +121,7 @@ public class YusResManager : MonoBehaviour
 
             case LoadMode.AssetBundle:
                 // AB 异步加载逻辑比较复杂，需要先 LoadBundleAsync 再 LoadAssetAsync
-                yield return StartCoroutine(LoadFromAssetBundleAsync<T>(path, (res) => result = res));
+                yield return LoadFromAssetBundleAsync<T>(path, (res) => result = res);
                 break;
 
             case LoadMode.Addressables:

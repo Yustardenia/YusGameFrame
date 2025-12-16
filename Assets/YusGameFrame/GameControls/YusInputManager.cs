@@ -1,73 +1,194 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System;
 
 public class YusInputManager : MonoBehaviour
 {
     public static YusInputManager Instance { get; private set; }
-    public GameControls controls; // 生成的 C# 类
+
+    [Header("Init")]
+    [SerializeField] private bool autoLoadBindingOverrides = true;
+    [SerializeField] private string bindingOverridesKey = "KeyBindings";
+
+    public GameControls controls;
+
+    private int uiLockCount;
+    private int disableAllLockCount;
+
+    public int UiLockCount => uiLockCount;
+    public int DisableAllLockCount => disableAllLockCount;
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
 
-        controls = new GameControls();
-        EnableGameplay(); // 默认开启游戏操作
+        if (controls == null) controls = new GameControls();
+
+        if (autoLoadBindingOverrides)
+        {
+            LoadBindingOverrides();
+        }
+
+        ApplyLocks();
     }
 
-    // ===========================================
-    // 1. 模式切换 (核心：控制输入开关)
-    // ===========================================
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
 
-    /// <summary>
-    /// 开启游戏操作 (移动、攻击)，关闭 UI 操作
-    /// </summary>
+        if (controls != null)
+        {
+            controls.Disable();
+            controls.Dispose();
+            controls = null;
+        }
+    }
+
+    public IDisposable AcquireUI()
+    {
+        uiLockCount++;
+        ApplyLocks();
+        return new InputModeHandle(this, InputModeHandle.Mode.UI);
+    }
+
+    public IDisposable AcquireDisableAll()
+    {
+        disableAllLockCount++;
+        ApplyLocks();
+        return new InputModeHandle(this, InputModeHandle.Mode.DisableAll);
+    }
+
     public void EnableGameplay()
     {
-        controls.UI.Disable();
-        controls.Gameplay.Enable();
-        // 锁定鼠标
-        // Cursor.lockState = CursorLockMode.Locked; 
+        uiLockCount = 0;
+        disableAllLockCount = 0;
+        ApplyLocks();
     }
 
-    /// <summary>
-    /// 开启 UI 操作，禁止游戏操作 (对话、暂停时调用)
-    /// </summary>
     public void EnableUI()
     {
-        controls.Gameplay.Disable();
-        controls.UI.Enable();
-        // 解锁鼠标
-        // Cursor.lockState = CursorLockMode.None;
+        disableAllLockCount = 0;
+        uiLockCount = 1;
+        ApplyLocks();
     }
 
-    /// <summary>
-    /// 全局禁止 (过场动画)
-    /// </summary>
     public void DisableAll()
     {
-        controls.Gameplay.Disable();
-        controls.UI.Disable();
+        disableAllLockCount = 1;
+        ApplyLocks();
     }
 
-    // ===========================================
-    // 2. 改键功能 (Rebinding)
-    // ===========================================
-    
-    // 保存改键数据
+    private void ReleaseUI()
+    {
+        if (uiLockCount > 0) uiLockCount--;
+        ApplyLocks();
+    }
+
+    private void ReleaseDisableAll()
+    {
+        if (disableAllLockCount > 0) disableAllLockCount--;
+        ApplyLocks();
+    }
+
+    private void ApplyLocks()
+    {
+        if (controls == null) return;
+
+        if (disableAllLockCount > 0)
+        {
+            controls.Gameplay.Disable();
+            controls.UI.Disable();
+            return;
+        }
+
+        if (uiLockCount > 0)
+        {
+            controls.Gameplay.Disable();
+            controls.UI.Enable();
+            return;
+        }
+
+        controls.UI.Disable();
+        controls.Gameplay.Enable();
+    }
+
+    public InputAction GetAction(string mapName, string actionName)
+    {
+        if (controls == null || controls.asset == null) return null;
+
+        var map = controls.asset.FindActionMap(mapName, false);
+        if (map == null)
+        {
+            Debug.LogWarning($"[YusInputManager] ActionMap not found: {mapName}");
+            return null;
+        }
+
+        var action = map.FindAction(actionName, false);
+        if (action == null)
+        {
+            Debug.LogWarning($"[YusInputManager] Action not found: {mapName}/{actionName}");
+            return null;
+        }
+
+        return action;
+    }
+
     public void SaveBindingOverrides()
     {
+        if (controls == null) return;
         string json = controls.SaveBindingOverridesAsJson();
-        SimpleSingleValueSaver.Save("KeyBindings", json);
+        SimpleSingleValueSaver.Save(bindingOverridesKey, json);
     }
 
-    // 加载改键数据
     public void LoadBindingOverrides()
     {
-        string json = SimpleSingleValueSaver.Load<string>("KeyBindings", "");
+        if (controls == null) return;
+        string json = SimpleSingleValueSaver.Load<string>(bindingOverridesKey, "");
         if (!string.IsNullOrEmpty(json))
         {
             controls.LoadBindingOverridesFromJson(json);
         }
     }
+
+    private sealed class InputModeHandle : IDisposable
+    {
+        internal enum Mode { UI, DisableAll }
+
+        private YusInputManager manager;
+        private Mode mode;
+        private bool disposed;
+
+        public InputModeHandle(YusInputManager manager, Mode mode)
+        {
+            this.manager = manager;
+            this.mode = mode;
+        }
+
+        public void Dispose()
+        {
+            if (disposed) return;
+            disposed = true;
+
+            if (manager == null) return;
+
+            switch (mode)
+            {
+                case Mode.UI:
+                    manager.ReleaseUI();
+                    break;
+                case Mode.DisableAll:
+                    manager.ReleaseDisableAll();
+                    break;
+            }
+
+            manager = null;
+        }
+    }
 }
+

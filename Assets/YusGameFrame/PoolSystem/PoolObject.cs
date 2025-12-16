@@ -3,9 +3,9 @@ using System.Collections;
 
 public class PoolObject : MonoBehaviour
 {
-    // 归属的池子名称 (通常是 Prefab 路径)
+    // 归属的池子名称(通常是 Prefab 路径)
     public string PoolName { get; private set; }
-    
+
     // 是否正在使用中
     public bool IsInUse { get; private set; }
 
@@ -25,8 +25,8 @@ public class PoolObject : MonoBehaviour
     public void OnRecycle()
     {
         IsInUse = false;
-        StopAllCoroutines(); // 停止所有协程，防止回收后逻辑还在跑
-        
+        YusCoroutine.StopOwner(this); // 停止所有绑定到本对象的协程，防止回收后逻辑还在跑
+
         var poolables = GetComponents<IPoolable>();
         foreach (var p in poolables) p.OnRecycle();
     }
@@ -36,17 +36,11 @@ public class PoolObject : MonoBehaviour
     {
         if (delay > 0)
         {
-            StartCoroutine(DelayRecycle(delay));
+            YusCoroutine.Delay(delay, () => YusPoolManager.Instance.Release(this.gameObject), this, tag: "PoolObject.ReturnToPool");
         }
         else
         {
             YusPoolManager.Instance.Release(this.gameObject);
         }
-    }
-
-    private IEnumerator DelayRecycle(float time)
-    {
-        yield return new WaitForSeconds(time);
-        YusPoolManager.Instance.Release(this.gameObject);
     }
 }

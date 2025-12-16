@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YusGameFrame 系统评估报告</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#0f1730; --card:#111b36; --text:#e8eefc; --muted:#a9b6d6;
+      --line:rgba(255,255,255,.10); --accent:#7aa2ff; --good:#39d98a; --warn:#ffcc66; --bad:#ff5c7a;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; background:radial-gradient(1200px 600px at 20% 0%, rgba(122,162,255,.25), transparent 60%),
+      radial-gradient(900px 500px at 90% 10%, rgba(57,217,138,.15), transparent 60%),
+      var(--bg);
+      color:var(--text); font-family:var(--sans); line-height:1.6;
+    }
+    a{ color:var(--accent); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+    header{
+      padding:28px 18px 8px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:0 18px 40px; }
+    h1{ margin:0; font-size:28px; letter-spacing:.2px; }
+    .meta{ margin-top:8px; color:var(--muted); font-size:13px; }
+    .pill{
+      display:inline-block; padding:2px 10px; border:1px solid var(--line); border-radius:999px; margin-right:8px;
+      background:rgba(255,255,255,.04);
+    }
+    main{ padding-top:18px; }
+    .grid{ display:grid; grid-template-columns: 340px 1fr; gap:16px; }
+    @media (max-width: 980px){ .grid{ grid-template-columns:1fr; } }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line); border-radius:14px; padding:14px 14px 12px;
+    }
+    .card h2{ margin:0 0 8px; font-size:16px; }
+    .card p{ margin:6px 0; color:var(--muted); }
+    .toc a{ display:block; padding:6px 8px; border-radius:10px; color:var(--text); }
+    .toc a:hover{ background:rgba(122,162,255,.10); text-decoration:none; }
+    .toc .small{ color:var(--muted); font-size:12px; margin-top:10px; }
+    code, pre{ font-family:var(--mono); }
+    .kbd{ font-family:var(--mono); padding:1px 6px; border:1px solid var(--line); border-radius:6px; background:rgba(0,0,0,.25); }
+    .table{
+      width:100%; border-collapse:collapse; font-size:13px; overflow:hidden; border-radius:12px;
+      border:1px solid var(--line);
+    }
+    .table th, .table td{ padding:10px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+    .table th{ text-align:left; color:#cdd8f5; background:rgba(255,255,255,.04); font-weight:600; }
+    .table tr:last-child td{ border-bottom:none; }
+    .tag{
+      display:inline-block; padding:1px 8px; border-radius:999px; border:1px solid var(--line);
+      background:rgba(255,255,255,.04); color:var(--muted); font-size:12px;
+    }
+    .score{ font-family:var(--mono); font-weight:700; }
+    .s-good{ color:var(--good); }
+    .s-warn{ color:var(--warn); }
+    .s-bad{ color:var(--bad); }
+    section.sys{ margin-top:16px; }
+    section.sys > h3{
+      margin:0; padding:14px 14px; border-radius:14px; border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(122,162,255,.12), rgba(255,255,255,.03));
+      font-size:17px;
+    }
+    .sys .body{ margin-top:10px; display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width: 980px){ .sys .body{ grid-template-columns:1fr; } }
+    .kv{ margin:0; padding:0; list-style:none; }
+    .kv li{ padding:8px 10px; border:1px solid var(--line); border-radius:12px; background:rgba(0,0,0,.18); }
+    .kv b{ color:#dbe5ff; }
+    .list{ margin:0; padding-left:18px; color:var(--muted); }
+    .list li{ margin:4px 0; }
+    .warnbox{
+      margin-top:12px; padding:10px 12px; border-radius:12px;
+      border:1px solid rgba(255,204,102,.35); background:rgba(255,204,102,.08); color:#ffe3a8;
+      font-size:13px;
+    }
+    footer{ margin-top:26px; color:var(--muted); font-size:12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>YusGameFrame 系统评估报告</h1>
+      <div class="meta">
+        <span class="pill">范围：<code>Assets/YusGameFrame/*</code></span>
+        <span class="pill">Git：<code>a80ce5e</code></span>
+        <span class="pill">日期：2025-12-16</span>
+      </div>
+      <div class="meta">
+        说明：本报告基于静态代码阅读与结构梳理（未运行项目 / 未做性能采样）。第三方库（如 Fungus / NaughtyAttributes）只做集成与风险层面的评估。
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <aside class="card toc">
+        <h2>目录</h2>
+        <a href="#summary">总体结论</a>
+        <a href="#matrix">系统一览表</a>
+        <a href="#priorities">优先级建议</a>
+        <div class="small">逐系统评估</div>
+        <a href="#sys-anim">AnimSystem</a>
+        <a href="#sys-attributes">Attributes</a>
+        <a href="#sys-editorpromax">EditorProMax</a>
+        <a href="#sys-exceltool">ExcelTool</a>
+        <a href="#sys-fungus">Fungus</a>
+        <a href="#sys-gamecontrols">GameControls</a>
+        <a href="#sys-localization">Localization</a>
+        <a href="#sys-music">MusicControl</a>
+        <a href="#sys-pool">PoolSystem</a>
+        <a href="#sys-res">ResLoadSystem</a>
+        <a href="#sys-simplebinary">SimpleBinary</a>
+        <a href="#sys-singletonscanner">SingletonScanner</a>
+        <a href="#sys-timer">Timer</a>
+        <a href="#sys-tmproanim">TMProAnimation</a>
+        <a href="#sys-ui">UISystem</a>
+        <a href="#sys-exporter">YusAssetExporter</a>
+        <a href="#sys-event">YusEventSystem</a>
+        <a href="#sys-importer">YusFolderImporter</a>
+        <a href="#sys-fsm">YusFSM</a>
+        <a href="#sys-logger">YusLoggerSystem</a>
+        <a href="#sys-singletonmgr">YusSingletonManager</a>
+        <a href="#sys-packages">Packages</a>
+      </aside>
+
+      <div>
+        <section class="card" id="summary">
+          <h2>总体结论</h2>
+          <p>
+            YusGameFrame 的主体思路清晰：以 <code>YusEventSystem</code> + 多个 MonoBehaviour 单例模块（输入、资源、音频、池、计时、UI、数据表）
+            组合成“可拼装的中小型项目框架”。整体可用性较强，工程化工具链（ExcelTool、若干 Editor 工具）覆盖面广。
+          </p>
+          <div class="warnbox">
+            主要结构性风险集中在：单例初始化顺序/存在性假设、事件系统的字符串+类型运行时校验、资源/Addressables 句柄管理、以及部分模块的扫描/反射开销与可关闭性。
+          </div>
+        </section>
+
+        <section class="card" id="matrix" style="margin-top:16px">
+          <h2>系统一览表（主观评分）</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:170px">系统</th>
+                <th>定位</th>
+                <th style="width:160px">关键入口</th>
+                <th style="width:90px">成熟度</th>
+                <th style="width:90px">风险</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><a href="#sys-exceltool">ExcelTool</a></td><td>Excel→代码/SO→运行时数据→二进制存档/回写</td><td><code>YusDataManager</code></td><td class="score s-good">8.5</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-event">YusEventSystem</a></td><td>事件总线 + 自动退订</td><td><code>YusEventManager</code></td><td class="score s-good">8.0</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-res">ResLoadSystem</a></td><td>资源加载抽象（Resources/Editor/AB/Addressables）</td><td><code>YusResManager</code></td><td class="score s-warn">7.0</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-ui">UISystem</a></td><td>Panel 栈 + 数据库</td><td><code>UIManager</code></td><td class="score s-warn">7.0</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-pool">PoolSystem</a></td><td>资源路径池化 + 调试器</td><td><code>YusPoolManager</code></td><td class="score s-warn">7.2</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-timer">Timer</a></td><td>计时任务 + 容器 + 对象池</td><td><code>YusTimer</code></td><td class="score s-good">8.0</td><td class="score s-good">低</td></tr>
+              <tr><td><a href="#sys-gamecontrols">GameControls</a></td><td>InputSystem 封装 + 自动退订 + 改键存档</td><td><code>YusInputManager</code></td><td class="score s-warn">6.8</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-music">MusicControl</a></td><td>音频库 + BGM/SFX + 音量设置</td><td><code>SceneAudioManager</code></td><td class="score s-warn">7.2</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-localization">Localization</a></td><td>本地化（Excel 表）+ UI/Fungus 集成</td><td><code>LocalizationManager</code></td><td class="score s-warn">7.3</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-attributes">Attributes</a></td><td>自定义特性工具集 + NaughtyAttributes</td><td><code>MyAttributes</code></td><td class="score s-warn">7.0</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-anim">AnimSystem</a></td><td>Animator/Spine → FSM 代码生成</td><td><code>YusAnimFSMGenerator</code></td><td class="score s-warn">6.8</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-fsm">YusFSM</a></td><td>轻量泛型 FSM（状态缓存）</td><td><code>YusFSM&lt;T&gt;</code></td><td class="score s-good">7.8</td><td class="score s-good">低</td></tr>
+              <tr><td><a href="#sys-logger">YusLoggerSystem</a></td><td>运行期日志收集 + CSV 导出</td><td><code>YusLogger</code></td><td class="score s-warn">6.8</td><td class="score s-good">低</td></tr>
+              <tr><td><a href="#sys-editorpromax">EditorProMax</a></td><td>编辑器效率工具合集</td><td><code>AssetDetective</code></td><td class="score s-warn">6.5</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-singletonmgr">YusSingletonManager</a></td><td>单例总入口/服务定位</td><td><code>YusSingletonManager</code></td><td class="score s-warn">6.7</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-singletonscanner">SingletonScanner</a></td><td>编辑器：检查单例是否挂载</td><td><code>YusSingletonScanner</code></td><td class="score s-warn">6.6</td><td class="score s-good">低</td></tr>
+              <tr><td><a href="#sys-exporter">YusAssetExporter</a></td><td>编辑器：资产导出向导</td><td><code>YusAdvancedExporter</code></td><td class="score s-warn">6.4</td><td class="score s-good">低</td></tr>
+              <tr><td><a href="#sys-importer">YusFolderImporter</a></td><td>编辑器：外部文件夹导入</td><td><code>YusFolderImporter</code></td><td class="score s-warn">6.2</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-simplebinary">SimpleBinary</a></td><td>极简 key-value 二进制存储</td><td><code>SimpleSingleValueSaver</code></td><td class="score s-good">7.6</td><td class="score s-good">低</td></tr>
+              <tr><td><a href="#sys-tmproanim">TMProAnimation</a></td><td>Fungus TMP Link 特效扩展</td><td><code>CustomTMProEffects</code></td><td class="score s-warn">6.3</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-fungus">Fungus</a></td><td>第三方可视化叙事/脚本系统</td><td><code>Assets/YusGameFrame/Fungus</code></td><td class="score s-good">—</td><td class="score s-warn">中</td></tr>
+              <tr><td><a href="#sys-packages">Packages</a></td><td>占位目录（当前无代码）</td><td><code>Assets/YusGameFrame/Packages</code></td><td class="score s-good">—</td><td class="score s-good">低</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card" id="priorities" style="margin-top:16px">
+          <h2>优先级建议（建议按顺序做）</h2>
+          <ul class="list">
+            <li><b>统一单例生命周期与初始化顺序</b>：尽量让 <code>YusSingletonManager</code> 成为“唯一创建者”，避免各系统自己 <code>Instance=this</code> 且互相假设存在（尤其是 <code>YusEventManager</code>）。</li>
+            <li><b>事件系统容错</b>：对 Broadcast 的监听器调用增加异常隔离（单个监听器异常不影响链路），并给出可选的“事件队列/延迟派发”。</li>
+            <li><b>资源系统内存与 Addressables 句柄</b>：缓存需可回收、可统计；Addressables 必须有 Release 策略（否则泄漏风险高）。</li>
+            <li><b>工具类“重操作”加可取消进度条</b>：AssetDetective / 重扫描类工具建议用 <code>DisplayCancelableProgressBar</code>，避免大项目卡死。</li>
+            <li><b>跨系统硬耦合收敛</b>：把业务示例（Bubble/DialogueKey/Player）与通用框架字段从 <code>YusSingletonManager</code> 拆开，变为可配置列表或独立 Boot 配置。</li>
+          </ul>
+        </section>
+
+        <!-- Per-system sections -->
+
+        <section class="sys" id="sys-anim">
+          <h3>AnimSystem</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：从 AnimatorController/Spine 动画资产生成 FSM 控制器与状态类（partial + hook）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/AnimSystem/Editor/YusAnimFSMGenerator.cs</code>、<code>Assets/YusGameFrame/AnimSystem/Editor/YusSpineFSMGenerator.cs</code>。</li>
+              <li><b>优势</b>：减少手写状态样板；生成代码支持“用户自定义 partial 方法”插入逻辑；Spine 支持通过 <code>YUS_SPINE</code> 宏隔离依赖。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：只取 Base Layer 的平铺 State；不处理子状态机/BlendTree/Transition 条件；生成代码里对资源加载（AnimatorConfigSO）只写了注释未实际使用；状态 hash 直接内联常量，调试可读性一般。</li>
+              <li><b>改进方向</b>：支持子状态机与参数/过渡条件生成；生成 <code>enum</code> 或常量映射提高可读性；可配置 CrossFade 时长/循环/一次播放；把生成输出与运行期依赖（FSM、资源加载）做更明确的边界。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-attributes">
+          <h3>Attributes</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：自定义属性工具（<code>[Get]</code>/<code>[Watch]</code>/<code>[KeepValue]</code>/<code>[SceneSelector]</code>）+ 集成 NaughtyAttributes。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/Attributes/MyAttributes/Editor/AutoGetInjector.cs</code>、<code>Assets/YusGameFrame/Attributes/MyAttributes/GlobalWatcher.cs</code>、<code>Assets/YusGameFrame/Attributes/MyAttributes/Editor/KeepValueProcessor.cs</code>。</li>
+              <li><b>优势</b>：提升迭代效率；运行时与编辑器阶段都做了自动注入/保留；实现思路直观，落地成本低。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：<code>GlobalWatcher</code> 每秒 <code>FindObjectsOfType&lt;MonoBehaviour&gt;</code> + 反射扫描，对大型场景有明显开销且不可一键关闭；AutoInjector 也用全量反射扫描；KeepValue 依赖 <code>JsonUtility</code> 对复杂类型/多态支持有限。</li>
+              <li><b>改进方向</b>：加总开关（开发/发布、运行期/编辑器）与频率配置；用 <code>TypeCache</code>（编辑器）或缓存字段列表降低反射成本；Watch 渲染支持折叠/搜索；KeepValue 增加类型白名单与异常提示（例如不支持 Dictionary）。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-editorpromax">
+          <h3>EditorProMax</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：编辑器效率工具合集（场景切换、代码行数、ToDo、收藏夹、资源侦探、文件夹染色）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/EditorProMax/Editor/AssetDetective.cs</code>、<code>Assets/YusGameFrame/EditorProMax/Editor/FolderColorizer.cs</code>。</li>
+              <li><b>优势</b>：工具覆盖面广，能直接提升日常效率；FolderColorizer 的数据持久化简单可靠（EditorPrefs）。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：AssetDetective 的“引用/重复”扫描对大工程可能非常慢且不可取消；Unused 扫描对 <code>Resources.Load</code> 动态路径天然误报；部分工具菜单命名/分类略分散。</li>
+              <li><b>改进方向</b>：为重扫描引入 <code>DisplayCancelableProgressBar</code>；限定扫描范围（仅 Prefab/Scene/Material 等）；把工具拆分为 asmdef（Editor-only）并补充“耗时提示”。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-exceltool">
+          <h3>ExcelTool</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：Excel 数据驱动闭环：生成 Data/Table 代码 → 导出 ScriptableObject → 运行时克隆 → 二进制存档 →（可选）回写 Excel。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/ExcelTool/Scripts/YusDataManager.cs</code>、<code>Assets/YusGameFrame/ExcelTool/Scripts/YusBaseManager.cs</code>、<code>Assets/YusGameFrame/ExcelTool/Editor/ExcelYusTool.cs</code>。</li>
+              <li><b>优势</b>：体系完整；二进制存档性能友好；有 Key 重复校验与资源重连（存档丢 UnityEngine.Object 引用的现实问题处理得很实用）。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：配置表默认走 <code>Resources</code>，规模变大后不利于分包与热更；版本号机制需要“真正的迁移策略”（生成类的 Read/Write 若字段变动，兼容风险会放大）；编辑器侧大量反射/IO 操作缺少取消与错误聚合。</li>
+              <li><b>改进方向</b>：引入每表 SchemaVersion + 自动迁移（按 version 分支读）；把配置表加载适配 Addressables/YooAsset（可选）；为生成/导出/回写增加详细校验报告（缺列/类型不匹配/非法路径）。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-fungus">
+          <h3>Fungus（第三方）</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：可视化叙事/对话/流程系统，仓库内自带完整源码。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/Fungus</code>（大量第三方代码）。</li>
+              <li><b>优势</b>：成熟度高、生态完善；本框架对其做了本地化/音频/数据键等集成扩展，组合后生产力强。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：体量巨大（升级/合并成本高）；一旦对第三方源码做本地修改，未来更新容易冲突；需要更清晰的“扩展点边界”（建议尽量通过自家代码扩展而非改库）。</li>
+              <li><b>改进方向</b>：尽量以 UPM/子模块管理版本；将集成代码集中在自家目录（如 Localization/MusicControl/ExcelTool 的 FungusEx），并记录改动清单与升级策略。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-gamecontrols">
+          <h3>GameControls</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：Unity InputSystem 封装（模式切换、事件绑定自动清理、改键存档）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/GameControls/YusInputManager.cs</code>、<code>Assets/YusGameFrame/GameControls/YusInputExtensions.cs</code>。</li>
+              <li><b>优势</b>：通过 AutoCleaner 解决“忘记反注册”的常见坑；EnableGameplay/EnableUI 的模式切换清晰；改键 JSON 持久化路径简单。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：<code>YusInputManager</code> 未处理重复实例、也未显式持久化（跨场景需依赖外部管理）；当前未看到默认调用 <code>LoadBindingOverrides()</code>；动作映射/控制方案在多人或多设备场景需要扩展。</li>
+              <li><b>改进方向</b>：把创建/保活交给 <code>YusSingletonManager</code>；在 Awake/Start 做 Load；对不同 ControlScheme/设备分别存储；若计划多人，建议转向 <code>PlayerInput</code> / 事件路由分发。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-localization">
+          <h3>Localization</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：基于 Excel 配置的本地化系统，支持 UI Text 与 Fungus 替换语法 <code>{$Key}</code>。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/Localization/LocalizationManager.cs</code>、<code>Assets/YusGameFrame/Localization/FungusLocalizationBridge.cs</code>、<code>Assets/YusGameFrame/Localization/LocalizedText.cs</code>。</li>
+              <li><b>优势</b>：语言切换有事件广播；把表数据缓存为 Key→字符串避免每次查询反射/遍历；Fungus Bridge 用编译正则，性能意识不错。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：语言字段名依赖 <code>LocalizationData</code> 字段与 enum 文本一致，重命名/列变更风险高；缺少 fallback（比如某语言缺翻译时回退默认语言）；UI 仅支持旧版 <code>UnityEngine.UI.Text</code>。</li>
+              <li><b>改进方向</b>：支持 fallback 链（例如 en_us 缺失→zh_cn）；提供 TMP 版本的 Localized 组件；将语言列映射生成到代码（避免反射字段查找）；支持格式化参数与复数规则（如 string.Format/ICU）。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-music">
+          <h3>MusicControl</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：BGM/SFX 播放、音量持久化、音频库（ScriptableObject），并提供 Fungus 命令。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/MusicControl/SceneAudioManager.cs</code>、<code>Assets/YusGameFrame/MusicControl/AudioLibrary.cs</code>、<code>Assets/YusGameFrame/MusicControl/AudioData.cs</code>。</li>
+              <li><b>优势</b>：AudioData 只负责数据/事件，播放由 SceneAudioManager 负责，职责拆分合理；支持淡入淡出与“临时切歌→恢复上一个进度”。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：SceneAudioManager 依赖事件系统存在；单例生命周期/跨场景策略未统一；Fungus 命令中 <code>restartIfSame</code> 字段未实际使用；未引入 AudioMixer，后续做分类/ducking 会受限。</li>
+              <li><b>改进方向</b>：用 AudioMixer 暴露 Music/SFX 混音组；实现 restartIfSame；支持 crossfade（两路 BGM source）；SFX 若需要 3D 或高并发可引入 source pool。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-pool">
+          <h3>PoolSystem</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：基于资源路径的对象池（Get/Release/Prewarm）+ Editor 监控工具。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/PoolSystem/YusPoolManager.cs</code>、<code>Assets/YusGameFrame/PoolSystem/PoolObject.cs</code>、<code>Assets/YusGameFrame/PoolSystem/Editor/YusPoolDebugger.cs</code>。</li>
+              <li><b>优势</b>：接口简单；PoolObject 支持延迟回收；Editor 监控提供活跃/闲置统计与预热入口。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：以 string path 为 key，缺少“容量上限/自动缩容”；取出时未重置 <code>localScale</code>；队列里若出现已 Destroy 的对象，当前逻辑没有清理；Debugger 的 Clear 仅清队列不销毁实例（容易误解）。</li>
+              <li><b>改进方向</b>：出池时统一 reset（位置/旋转/缩放）；Dequeue 时跳过 null；引入 per-pool 容量与 shrink；提供 <code>ClearPool(name)</code> 正确销毁；若 Unity 版本允许可用 <code>UnityEngine.Pool.ObjectPool</code> 重构。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-res">
+          <h3>ResLoadSystem</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：统一同步/异步资源加载，支持 Resources、EditorDatabase、AssetBundle、Addressables（宏开关）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/ResLoadSystem/YusResManager.cs</code>。</li>
+              <li><b>优势</b>：对多种加载模式的抽象清晰；带资源与 Bundle 缓存；异步接口简单（基于 Coroutine）。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：Addressables 未见 handle 释放路径（长期运行可能泄漏）；缓存是“强引用”且无引用计数/过期策略；LoadMode.EditorDatabase 在非编辑器下会静默返回 null（需要更明确的防误用提示）。</li>
+              <li><b>改进方向</b>：为 Addressables 引入 handle 表与 Release API；为缓存增加统计/上限/按场景清理策略；对 EditorDatabase 模式增加运行期保护（如在 Build 下直接报错/回退）。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-simplebinary">
+          <h3>SimpleBinary</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：简单 key-value 二进制存取（int/float/bool/string）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/SimpleBinary/SimpleSingleValueSaver.cs</code>。</li>
+              <li><b>优势</b>：实现小而稳；带 Magic/type 校验；相比 PlayerPrefs 更可控（可查看文件）。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：key 直接作为文件名，若包含非法字符会失败；类型支持面窄；无 TryLoad/错误分级。</li>
+              <li><b>改进方向</b>：对 key 做文件名净化（替换/哈希）；增加 TryLoad API；按需扩展 Json 存储或加密（若有反作弊需求）。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-singletonscanner">
+          <h3>SingletonScanner</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：编辑器扫描 MonoBehaviour 单例脚本（判断是否含 Instance/_instance），并检查场景是否有实例。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/SingletonScanner/Editor/YusSingletonScanner.cs</code>。</li>
+              <li><b>优势</b>：能快速发现“单例脚本写了但场景没挂”的低级错误；UI 交互友好。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：检测规则为启发式，可能误报/漏报；<code>FindObjectOfType</code> 不包含 inactive（会误判禁用组件）；对 ScriptableObject/纯静态服务无能为力。</li>
+              <li><b>改进方向</b>：增加“包含 inactive”扫描；允许配置：只扫描指定基类/接口；提供“一键在 Boot 场景创建并挂载”的修复操作。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-timer">
+          <h3>Timer</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：计时任务驱动器（Update 中 Tick），TimerTask 支持暂停/循环/真实时间/绑定 owner 自动取消，并提供 TimerContainer。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/Timer/YusTimer.cs</code>。</li>
+              <li><b>优势</b>：对象池 + UID 防止“任务被回收复用导致引用错乱”；API 链式易用；自动创建 YusTimer GameObject 兼容“忘了放场景”。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：TimerContainer 的“清理无效任务”触发点主要在 AddTimer 时，长生命周期容器可能积累；暂无全局暂停/按组暂停等更高级能力。</li>
+              <li><b>改进方向</b>：为 TimerContainer 增加定期清理；支持组/标签与统一暂停；如项目使用 async，可增加 await 支持（Task/UniTask 适配）。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-tmproanim">
+          <h3>TMProAnimation</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：注册 Fungus 的 TMP Link 动画特效（heartbeat/spin/rain/glitch）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/TMProAnimation/CustomTMProEffects.cs</code>。</li>
+              <li><b>优势</b>：扩展点清晰；效果参数可调；对叙事类项目很实用。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：强依赖 Fungus 的 TMProLinkAnimEffects；如果未来拆掉 Fungus，会导致编译失败；注册是否幂等依赖第三方实现。</li>
+              <li><b>改进方向</b>：用 asmdef 或 <code>#if</code> 宏包裹依赖；注册前检查是否已存在同名 helper，保证重复运行不报错。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-ui">
+          <h3>UISystem</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：Panel 管理（缓存 + 栈）与示例 UI（Bubble/PlayerStatus）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/UISystem/SO/UIManager.cs</code>、<code>Assets/YusGameFrame/UISystem/BasePanel.cs</code>、<code>Assets/YusGameFrame/UISystem/UIPanelDatabase.cs</code>。</li>
+              <li><b>优势</b>：结构简洁；CanvasGroup 控制交互与穿透；panel 栈提供基础“返回/覆盖”能力；与事件系统可联动。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：<code>BasePanel.isCacheable</code> 未被 UIManager 使用；UIPanelDatabase 每次 Find 线性查找；关闭非顶层 panel 时未处理“恢复下一层”的一致性；缺少动画、加载、遮罩等常用能力。</li>
+              <li><b>改进方向</b>：Database 初始化 dictionary；尊重 isCacheable（非缓存面板关闭后销毁）；提供过渡动画接口（或与 Tween 库集成）；加入 Back 键/输入系统联动与预加载。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-exporter">
+          <h3>YusAssetExporter</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：编辑器导出所选资产到外部文件夹（简单版 + 向导版）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/YusAssetExporter/Editor/YusAssetExporter.cs</code>、<code>Assets/YusGameFrame/YusAssetExporter/Editor/YusAdvancedExporter.cs</code>。</li>
+              <li><b>优势</b>：向导版保留 Assets 下相对结构，适合分享/归档；支持选择性导出与 meta 选项。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：简单版对同名文件/目录容易覆盖；未提供“依赖导出”（Prefab 依赖材质/贴图等）；导出过程不可取消。</li>
+              <li><b>改进方向</b>：支持“按依赖导出”（<code>AssetDatabase.GetDependencies</code>）；统一加入可取消进度；默认使用向导版或在简单版中加入“保留结构”选项。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-event">
+          <h3>YusEventSystem</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：字符串事件名的 Delegate 表（0~3 参）+ 扩展方法自动退订。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/YusEventSystem/YusEventManager.cs</code>、<code>Assets/YusGameFrame/YusEventSystem/YusEventExtensions.cs</code>、<code>Assets/YusGameFrame/YusEventSystem/YusEvents.cs</code>。</li>
+              <li><b>优势</b>：Add/Remove 做了类型检查；YusRegister 自动清理降低泄漏；事件常量集中在 YusEvents 减少拼写错误。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：仍是字符串事件名（编译期无法约束参数/名称）；Broadcast 监听器若抛异常会中断整条链；Instance 获取依赖场景存在对象（未自动创建）。</li>
+              <li><b>改进方向</b>：Broadcast 内部对每个 listener 异常隔离并记录；提供可选的 enum/强类型事件封装；把 EventManager 的创建/保活统一交给 SingletonManager 或 Bootstrap。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-importer">
+          <h3>YusFolderImporter</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：编辑器将外部文件夹复制进项目（支持 meta），用于替代 unitypackage 的某些场景。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/YusFolderImporter/Editor/YusFolderImporter.cs</code>。</li>
+              <li><b>优势</b>：对“增量同步外部资源”很方便；支持一键以当前选择目录作为目标。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：复制 meta 可能引入外部项目 GUID（有利于保持引用，但也可能与本项目资源管理策略冲突）；覆盖/合并风险高；进度条没有真实比例，且不可取消。</li>
+              <li><b>改进方向</b>：显示冲突清单并提供 dry-run；用可取消进度条；对常见无关文件夹（Library/Temp 等）做过滤；提供“只导入非 meta”默认模式说明。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-fsm">
+          <h3>YusFSM</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：轻量泛型 FSM，缓存状态实例，支持 PreviousState + Revert。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/YusFSM/YusFSM.cs</code>、<code>Assets/YusGameFrame/YusFSM/YusState.cs</code>。</li>
+              <li><b>优势</b>：实现简洁；状态缓存减少 GC；对代码生成（AnimSystem）非常友好。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：不支持带参切换、层级 FSM、过渡条件/事件；同一状态再次进入默认被禁止（某些场景可能需要可配置）。</li>
+              <li><b>改进方向</b>：加可选的“允许重复进入”；支持带参 <code>ChangeState(TArg)</code>；如果项目变复杂可引入层级状态机/子 FSM 组合。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-logger">
+          <h3>YusLoggerSystem</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：运行期日志收集（可抓 Unity 全局日志）+ CSV 导出（UTF-8 BOM）。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/YusLoggerSystem/YusLogger.cs</code>。</li>
+              <li><b>优势</b>：静态 API 方便替换 Debug.Log；导出 CSV 兼容 Excel；maxLogCount 防止内存无限增长。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：缺少运行期查看 UI/筛选；没有“落盘滚动”策略；在高频日志下仍会有一定分配成本（字符串/堆栈）。</li>
+              <li><b>改进方向</b>：提供简单 in-game console（筛选/搜索/复制）；加入日志等级与分类；必要时支持异步落盘与日志抽样。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-singletonmgr">
+          <h3>YusSingletonManager</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：统一的 DontDestroyOnLoad 根节点，集中引用各系统单例，并提供“其他单例注册”。</li>
+              <li><b>关键文件</b>：<code>Assets/YusGameFrame/YusSingletonManager/YusSingletonManager.cs</code>。</li>
+              <li><b>优势</b>：明确了“框架应有一个总入口”；通过 GetComponentInChildren 做了容错获取；便于在场景中一眼看到全局系统。</li>
+            </ul>
+            <ul class="kv">
+              <li><b>缺点</b>：混入了业务模块字段（Bubble/DialogueKey/Player），降低通用性；当前只是“引用收纳”，没有真正做到“缺失则创建/按序初始化”；各系统仍可能绕开它自行管理 Instance。</li>
+              <li><b>改进方向</b>：把业务字段拆到项目侧 Boot；SingletonManager 仅管理核心基础设施，并提供 <code>Get&lt;T&gt;()</code> / “必需组件列表”；让 Event/Res/Input/Audio/Pool/UI 的创建与持久化完全由它负责，减少隐式依赖。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sys" id="sys-packages">
+          <h3>Packages</h3>
+          <div class="body">
+            <ul class="kv">
+              <li><b>定位</b>：占位目录（当前无 C# 文件）。</li>
+              <li><b>建议</b>：若用于内置 UPM 包或第三方资源归档，建议补充 README 说明用途；否则可保持为空。</li>
+            </ul>
+            <div></div>
+          </div>
+        </section>
+
+        <footer class="card">
+          <div>
+            生成说明：本报告由代码扫描与阅读总结而来，适合作为“改进清单/架构体检”起点。若你希望我把其中 1~2 个高优先级问题直接改到代码里（例如：事件系统异常隔离、UIManager 尊重 isCacheable、Pool 出池 reset 等），告诉我你想先动哪几个。
+          </div>
+        </footer>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
+

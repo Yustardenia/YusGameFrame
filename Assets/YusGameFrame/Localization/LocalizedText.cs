@@ -9,6 +9,9 @@ namespace YusGameFrame.Localization
         [Tooltip("Excel 中的 Key")]
         public string key;
 
+        [Tooltip("string.Format 参数（可选）")]
+        public string[] formatArgs;
+
         private Text _textComponent;
 
         private void Awake()
@@ -31,7 +34,9 @@ namespace YusGameFrame.Localization
             
             if (LocalizationManager.Instance != null)
             {
-                _textComponent.text = LocalizationManager.Instance.GetString(key);
+                _textComponent.text = (formatArgs != null && formatArgs.Length > 0)
+                    ? LocalizationManager.Instance.GetString(key, formatArgs)
+                    : LocalizationManager.Instance.GetString(key);
             }
         }
     }

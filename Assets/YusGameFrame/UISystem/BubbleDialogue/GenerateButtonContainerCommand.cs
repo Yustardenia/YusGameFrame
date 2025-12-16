@@ -109,7 +109,7 @@ public class GenerateButtonContainerCommand : Command
         }
 
         // 4. 暂停 Fungus 流程，等待玩家选择
-        StartCoroutine(WaitForChoice());
+        YusCoroutine.Run(WaitForChoice(), this, tag: "GenerateButtonContainerCommand.WaitForChoice");
     }
 
     /// <summary>

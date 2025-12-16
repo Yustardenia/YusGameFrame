@@ -29,8 +29,4 @@ public class LocalizationData : IYusBinaryData, IYusCloneable<LocalizationData>
         zh_cn = br.ReadString();
         en_us = br.ReadString();
     }
-
-    public void Read(BinaryReader br) {
-        Read(br, 1);
-    }
 }

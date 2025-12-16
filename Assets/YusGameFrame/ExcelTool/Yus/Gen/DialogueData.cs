@@ -41,8 +41,4 @@ public class DialogueData : IYusBinaryData, IYusCloneable<DialogueData>
         dialogueText = br.ReadString();
         triggerConditionName = br.ReadString();
     }
-
-    public void Read(BinaryReader br) {
-        Read(br, 1);
-    }
 }

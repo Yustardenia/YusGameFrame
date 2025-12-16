@@ -41,8 +41,4 @@ public class BackpackData : IYusBinaryData, IYusCloneable<BackpackData>
         durability = br.ReadSingle();
         icon = br.ReadString();
     }
-
-    public void Read(BinaryReader br) {
-        Read(br, 1);
-    }
 }
