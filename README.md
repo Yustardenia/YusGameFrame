@@ -3685,7 +3685,7 @@ Say: <link="glitch">ERROR: SYSTEM MALFUNCTION</link>
 
 // In regular TextMeshPro
 text.text = "System <link=\"spin\">processing</link>...";
-text.text = "<link=\"rain\">Rain drops</link> falling down.";
+text.text = "<link=\"rain\">Raindrops</link> falling down.";
 ```
 
 ---
