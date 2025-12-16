@@ -1,43 +1,342 @@
-# Unity项目完整教程
+# YusGameFrame
 
-基于Yus框架的Unity开发完整解决方案
+<div align="center">
 
--   [1\. Attributes](#attributes)
--   [2\. EditorProMax](#editorpromax)
--   [3\. ExcelTool](#exceltool)
--   [4\. GameControls](#gamecontrols)
--   [5\. MusicControl](#musiccontrol)
--   [6\. PoolSystem](#poolsystem)
--   [7\. ResLoadSystem](#resloadsystem)
--   [8\. SimpleBinary](#simplebinary)
--   [9\. UISystem](#uisystem)
--   [10\. YusAssetExporter](#yusassetexporter)
--   [11\. YusEventSystem](#yuseventsystem)
--   [12\. YusFSM](#yusfsm)
--   [13\. AnimSystem](#anim)
--   [14\. YusGameFrame 本地化系统](#localizationsystem)
+**一个完整、专业、开箱即用的Unity游戏开发框架**
 
-[Top](#top "回到顶部") [1](#attributes "跳转到第1层") [2](#editorpromax "跳转到第2层") [3](#exceltool "跳转到第3层") [4](#gamecontrols "跳转到第4层") [5](#musiccontrol "跳转到第5层") [6](#poolsystem "跳转到第6层") [7](#resloadsystem "跳转到第7层") [8](#simplebinary "跳转到第8层") [9](#uisystem "跳转到第9层") [10](#yusassetexporter "跳转到第10层") [11](#yuseventsystem "跳转到第11层") [12](#yusfsm "跳转到第12层") [13](#anim "跳转到第13层") [14](#localizationsystem "跳转到第14层")
+[![Unity Version](https://img.shields.io/badge/Unity-2022.3+-blue.svg)](https://unity.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Framework](https://img.shields.io/badge/Framework-YusGameFrame-orange.svg)](https://github.com/YourRepo/YusGameFrame)
 
-## 1\. MyAttributes - 强大自定义属性系统（完整版）
+[English](#english-version) | [中文文档](#chinese-version)
+
+</div>
+
+---
+
+<a name="chinese-version"></a>
+
+## 📖 项目简介
+
+YusGameFrame 是一个为Unity游戏开发精心打造的模块化框架，涵盖了从UI管理、资源加载、对象池、音频系统到配置表管理等游戏开发的方方面面。框架设计注重**易用性**、**性能**和**可维护性**，让开发者能够专注于游戏玩法的实现，而不是底层系统的搭建。
+
+### ✨ 核心特点
+
+- 🎯 **模块化设计** - 20+独立模块，按需使用，互不干扰
+- 🚀 **零GC优化** - 对象池、计时器等核心系统完全零垃圾回收
+- 🔧 **开箱即用** - 无需复杂配置，拖入即用
+- 📊 **可视化调试** - 内置编辑器工具，实时监控系统状态
+- 🌍 **多语言支持** - 完整的本地化系统
+- 💾 **强大的配置表系统** - Excel一键导入，支持热更新
+- 🎮 **新输入系统集成** - 完整封装Unity Input System
+- 🔊 **专业音频管理** - BGM/SFX分离，支持临时切换和自动恢复
+- 📝 **完整文档** - 每个模块都有详细的中英文档和代码示例
+
+### 🎯 适用场景
+
+- ✅ 中小型独立游戏开发
+- ✅ RPG/AVG/对话类游戏
+- ✅ 快速原型开发
+- ✅ 游戏Jam参赛作品
+- ✅ Unity学习和教学项目
+
+---
+
+## 🚀 快速开始
+
+### 系统要求
+
+- **Unity版本**: 2022.3.62f1c1 或更高
+- **支持平台**: Windows, macOS, Linux, iOS, Android
+- **依赖包**: 
+  - Unity Input System (可选，用于GameControls模块)
+  - TextMeshPro (UI系统默认支持)
+
+### 安装步骤
+
+1. **克隆或下载项目**
+```bash
+git clone https://github.com/YourRepo/YusGameFrame.git
+```
+
+2. **使用Unity打开项目**
+   - 使用Unity Hub打开项目文件夹
+   - 等待包管理器自动导入依赖
+
+3. **导入框架到你的项目（可选）**
+   - 将 `Assets/YusGameFrame` 文件夹复制到你的项目中
+   - 或者按需导入单个模块
+
+4. **创建管理器对象**
+   - 创建空GameObject，命名为 `YusSingletonManager`
+   - 挂载 `YusSingletonManager.cs` 脚本
+   - 根据需要添加其他系统组件
+
+5. **开始使用**
+   - 参考下方的模块文档开始集成
+
+### 5分钟上手示例
+
+```csharp
+using UnityEngine;
+
+public class QuickStartExample : MonoBehaviour
+{
+    void Start()
+    {
+        // 1. 播放背景音乐
+        SceneAudioManager.Instance.PlayMusic("MainTheme");
+        
+        // 2. 从对象池获取游戏对象
+        GameObject enemy = YusPoolManager.Instance.Get("Enemies/Goblin");
+        
+        // 3. 加载UI界面
+        UIManager.Instance.Show<MainMenuUI>();
+        
+        // 4. 创建计时器
+        YusTimer.Create(3f, () => {
+            YusLogger.Log("3秒计时完成！");
+        });
+        
+        // 5. 触发事件
+        YusEventManager.Instance.TriggerEvent("GameStart");
+    }
+}
+```
+
+---
+
+## 📦 完整功能列表
+
+<table>
+<tr>
+<th width="20%">模块名称</th>
+<th width="40%">功能描述</th>
+<th width="20%">核心特性</th>
+<th width="20%">状态</th>
+</tr>
+
+<tr>
+<td><strong>Attributes</strong></td>
+<td>强大的自定义属性系统，支持运行时监视、值保留、自动组件注入</td>
+<td>[Watch]、[KeepValue]、[Get]、[SceneSelector]</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>EditorProMax</strong></td>
+<td>编辑器工具集，包括资源侦探、场景切换、文件夹着色</td>
+<td>资源检测、代码统计、快速导航</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>ExcelTool</strong></td>
+<td>Excel配置表系统，支持一键导入、二进制存储、热更新</td>
+<td>自动生成代码、SO导出、Excel反写</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>GameControls</strong></td>
+<td>Unity新输入系统完整封装，支持自动订阅、改键保存</td>
+<td>零手动订阅、模式切换、自动清理</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>MusicControl</strong></td>
+<td>专业级音频管理系统，BGM/SFX分离，支持临时切换</td>
+<td>音量永久保存、自动恢复、Fungus集成</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>PoolSystem</strong></td>
+<td>工业级对象池系统，零GC、自动回收、实时监控</td>
+<td>延迟归还、生命周期管理、可视化调试</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>ResLoadSystem</strong></td>
+<td>资源加载管理系统，支持Resources和AssetBundle</td>
+<td>异步加载、引用计数、自动卸载</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>SimpleBinary</strong></td>
+<td>二进制存档系统，高效、安全、易用</td>
+<td>自动序列化、版本管理、加密支持</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>UISystem</strong></td>
+<td>UI管理系统，支持层级管理、动画过渡、消息通信</td>
+<td>栈式管理、自动隐藏、事件绑定</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>YusEventSystem</strong></td>
+<td>事件系统，支持类型安全的事件订阅和触发</td>
+<td>零GC、自动解绑、支持参数</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>YusFSM</strong></td>
+<td>有限状态机系统，支持可视化编辑和条件转换</td>
+<td>状态切换、条件判断、可扩展</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>AnimSystem</strong></td>
+<td>动画系统封装，简化动画控制逻辑</td>
+<td>状态管理、参数控制、事件回调</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>Localization</strong></td>
+<td>本地化系统，支持多语言文本、图片、音频切换</td>
+<td>运行时切换、自动刷新、Excel导入</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>Timer</strong></td>
+<td>高性能计时器系统，支持对象池和自动回收</td>
+<td>零GC、延迟回调、暂停/恢复</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>YusLoggerSystem</strong></td>
+<td>统一日志系统，支持日志记录、过滤和导出</td>
+<td>分级日志、历史记录、文件导出</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>YusSingletonManager</strong></td>
+<td>单例管理器，统一管理所有单例系统</td>
+<td>生命周期管理、依赖注入、可视化</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>YusAssetExporter</strong></td>
+<td>资源导出工具，支持批量导出和版本管理</td>
+<td>自定义导出规则、AssetBundle支持</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>Fungus</strong></td>
+<td>Fungus对话系统集成和扩展</td>
+<td>自定义Command、与框架深度集成</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>SingletonScanner</strong></td>
+<td>单例扫描器（编辑器工具），检测场景中的单例</td>
+<td>自动扫描、冲突检测、一键修复</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>YusFolderImporter</strong></td>
+<td>文件夹导入器（编辑器工具），自动配置导入设置</td>
+<td>批量处理、规则配置、预设管理</td>
+<td>✅ 稳定</td>
+</tr>
+
+</table>
+
+---
+
+## 📂 项目结构
+
+```
+YusGameFrame/
+├── Assets/
+│   └── YusGameFrame/           # 框架核心目录
+│       ├── AnimSystem/         # 动画系统
+│       ├── Attributes/         # 自定义属性系统
+│       ├── EditorProMax/       # 编辑器工具集
+│       ├── ExcelTool/          # Excel配置表系统
+│       ├── Fungus/             # Fungus集成
+│       ├── GameControls/       # 输入系统
+│       ├── Localization/       # 本地化系统
+│       ├── MusicControl/       # 音频管理系统
+│       ├── PoolSystem/         # 对象池系统
+│       ├── ResLoadSystem/      # 资源加载系统
+│       ├── SimpleBinary/       # 二进制存档系统
+│       ├── SingletonScanner/   # 单例扫描器
+│       ├── Timer/              # 计时器系统
+│       ├── UISystem/           # UI管理系统
+│       ├── YusAssetExporter/   # 资源导出工具
+│       ├── YusEventSystem/     # 事件系统
+│       ├── YusFSM/             # 状态机系统
+│       ├── YusFolderImporter/  # 文件夹导入器
+│       ├── YusLoggerSystem/    # 日志系统
+│       └── YusSingletonManager/# 单例管理器
+├── Packages/                   # Unity包依赖
+├── ProjectSettings/            # 项目设置
+└── README.md                   # 本文档
+```
+
+---
+
+## 📚 详细模块文档
+
+### 目录
+
+- [1. Attributes - 自定义属性系统](#1-attributes)
+- [2. EditorProMax - 编辑器工具集](#2-editorpromax)
+- [3. ExcelTool - 配置表系统](#3-exceltool)
+- [4. GameControls - 输入系统](#4-gamecontrols)
+- [5. MusicControl - 音频系统](#5-musiccontrol)
+- [6. PoolSystem - 对象池系统](#6-poolsystem)
+- [7. ResLoadSystem - 资源加载系统](#7-resloadsystem)
+- [8. SimpleBinary - 存档系统](#8-simplebinary)
+- [9. UISystem - UI管理系统](#9-uisystem)
+- [10. YusEventSystem - 事件系统](#10-yuseventsystem)
+- [11. YusFSM - 状态机系统](#11-yusfsm)
+- [12. AnimSystem - 动画系统](#12-animsystem)
+- [13. Localization - 本地化系统](#13-localization)
+- [14. Timer - 计时器系统](#14-timer)
+- [15. YusLoggerSystem - 日志系统](#15-yusloggersystem)
+- [16. YusSingletonManager - 单例管理器](#16-yussingletonmanager)
+- [17. YusAssetExporter - 资源导出工具](#17-yusassetexporter)
+- [18. Fungus - 对话系统集成](#18-fungus)
+- [19. SingletonScanner - 单例扫描器](#19-singletonscanner)
+- [20. YusFolderImporter - 文件夹导入器](#20-yusfolderimporter)
+
+---
+<a name="1-attributes"></a>
+## 1. MyAttributes - 强大自定义属性系统（完整版）
 
 一套专为快速迭代调试而生的属性工具集合，完全自动化，无需手动注册，支持运行时实时监视、PlayMode 值保留、自动组件注入、场景选择器等功能。
 
-实时屏幕监视
-
-退出PlayMode自动保存值
-
-自动获取组件（无需拖拽）
-
-场景选择下拉框
+**核心功能展示：**
+- 实时屏幕监视
+- 退出PlayMode自动保存值
+- 自动获取组件（无需拖拽）
+- 场景选择下拉框
 
 ### 核心特性一览
 
-#### \[Watch\] + GlobalWatcher 运行时
+#### [Watch] + GlobalWatcher 运行时
 
 标记字段/属性后，运行时会在屏幕左上角实时显示其值（绿色粗体）。支持自定义标签名。
 
-```
+```csharp
 [Watch]
 // 或
 [Watch("玩家血量 HP")]
@@ -49,13 +348,13 @@ public PlayerState state;
 
 GlobalWatcher 会自动在游戏启动时创建一个名为 `[GlobalWatcher]` 的 DontDestroyOnLoad 对象，每秒扫描一次场景中所有标记的字段并显示。
 
-#### \[KeepValue\] 编辑器专用
+#### [KeepValue] 编辑器专用
 
 退出 Play Mode 时自动保存字段值，重新进入 Play Mode 时自动恢复。非常适合调试参数。
 
-支持类型：int、float、bool、string、Vector2/3、Color、以及任何带 \[Serializable\] 的类/结构体（通过 JsonUtility）。
+支持类型：int、float、bool、string、Vector2/3、Color、以及任何带 [Serializable] 的类/结构体（通过 JsonUtility）。
 
-```
+```csharp
 [KeepValue]
 public float moveSpeed = 5f;
 
@@ -66,13 +365,13 @@ public Vector3 spawnPoint;
 public GameMode currentMode;
 ```
 
-恢复后会在控制台输出彩色日志，并自动标记场景为“已修改”（出现 \* 号）。
+恢复后会在控制台输出彩色日志，并自动标记场景为"已修改"（出现 * 号）。
 
-#### \[Get\] 自动组件注入 运行时+编辑器
+#### [Get] 自动组件注入 运行时+编辑器
 
-无需 \[SerializeField\] 也能自动获取组件引用。支持 private 字段，完美解决“运行时报空”问题。
+无需 [SerializeField] 也能自动获取组件引用。支持 private 字段，完美解决"运行时报空"问题。
 
-```
+```csharp
 // 从自身获取
 [Get]
 private Rigidbody rb;
@@ -91,11 +390,11 @@ private Transform muzzle;
 
 如果已经手动拖了组件，会优先保留手动赋值，不覆盖。
 
-#### \[SceneSelector\] 场景选择器 编辑器专用
+#### [SceneSelector] 场景选择器 编辑器专用
 
 将 string 或 int 字段变成场景下拉选择框（只显示 Build Settings 中启用的场景）。
 
-```
+```csharp
 [SceneSelector]
 public string nextLevel;          // 显示场景名
 
@@ -117,11 +416,11 @@ public int levelIndex;            // 显示 Build Index
 -   `GlobalWatcher.cs`（运行时监视器）
 -   `Editor/AutoGetInjector.cs`
 -   `Editor/KeepValueProcessor.cs`
--   `Editor/SceneSelectorDrawer.cs`（上面已给出完整代码）
+-   `Editor/SceneSelectorDrawer.cs`
 
 #### 步骤2：在任意 MonoBehaviour 上使用
 
-```
+```csharp
 public class PlayerController : MonoBehaviour
 {
     // 1. 实时监视
@@ -158,7 +457,7 @@ public class PlayerController : MonoBehaviour
 
 -   屏幕左上角出现绿色文字实时显示所有 `[Watch]` 的值
 -   修改 `[KeepValue]` 的字段 → 停止 Play → 再次 Play → 值还在！
--   `[Get]` 的组件即使是 private 且没 \[SerializeField\]，运行时也不会空
+-   `[Get]` 的组件即使是 private 且没 [SerializeField]，运行时也不会空
 -   `[SceneSelector]` 字段在 Inspector 变成下拉框
 
 ### 工作原理速览（技术向）
@@ -178,15 +477,18 @@ public class PlayerController : MonoBehaviour
 ### 常见问题 & 注意事项
 
 -   **性能：** GlobalWatcher 每秒扫描一次，1000 个物体以下几乎无感知。物体极多时可改为手动注册。
--   **KeepValue 不支持的类型：** 纯 C# 类（无 \[Serializable\]）、GameObject/Transform 引用等复杂引用类型会失败。
+-   **KeepValue 不支持的类型：** 纯 C# 类（无 [Serializable]）、GameObject/Transform 引用等复杂引用类型会失败。
 -   **Domain Reload：** 进入 PlayMode 时脚本域重载会导致 private 字段变 null，`[Get]` 的运行时注入专门解决这个问题。
--   **不要删除自动生成的 \[GlobalWatcher\] 对象**，它是 DontDestroyOnLoad 的单例。
--   所有功能在 Build 后自动失效（#if UNITY\_EDITOR 包裹），不会影响打包体积和性能。
+-   **不要删除自动生成的 [GlobalWatcher] 对象**，它是 DontDestroyOnLoad 的单例。
+-   所有功能在 Build 后自动失效（#if UNITY_EDITOR 包裹），不会影响打包体积和性能。
 
 **现在你已经拥有了一个比 NaughtyAttributes 更轻量、更专注调试的超级属性工具包！**  
 写代码 → 加属性 → 直接 Play → 调参飞起 → 永远不用重复设置调试值
 
-## 2\. EditorProMax - 编辑器工具集
+---
+
+<a name="2-editorpromax"></a>
+## 2. EditorProMax - 编辑器工具集
 
 提供强大的编辑器扩展功能，包括资源侦探、场景切换、代码统计、文件夹着色等开发工具。
 
@@ -247,58 +549,37 @@ Tools/🎨 文件夹染色配置
 
 ### 工作流程
 
-1\. 选择资源
+1. 选择资源 → 2. 执行检测 → 3. 查看结果 → 4. 清理优化
 
-→
+---
 
-2\. 执行检测
-
-→
-
-3\. 查看结果
-
-→
-
-4\. 清理优化
-
-## 3\. ExcelTool - 终极二进制配置表 + 存档系统
+<a name="3-exceltool"></a>
+## 3. ExcelTool - 终极二进制配置表 + 存档系统
 
 一套**完全自动化**的 Excel → C# → ScriptableObject → 运行时读写 + 二进制存档 + 资源自动重连 + Excel反写 的闭环数据解决方案。  
 比 Excel2SO、Odin、YooAsset 配置表更轻量、更快、更适合中型 RPG/对话重度项目。
 
-一键生成 Data + Table 类
-
-自动导出 SO 配置表
-
-二进制极速存档
-
-图片/Prefab 自动重连
-
-运行时修改 → 反写回 Excel
-
-完美集成 Fungus 对话系统
+**核心功能展示：**
+- 一键生成 Data + Table 类
+- 自动导出 SO 配置表
+- 二进制极速存档
+- 图片/Prefab 自动重连
+- 运行时修改 → 反写回 Excel
+- 完美集成 Fungus 对话系统
 
 ### 核心架构图
 
-Excel  
-(Excels/)
-
-生成代码 + 导出 SO
-
-Gen/\*.cs  
-\+ Resources/YusData/\*.asset
-
-运行时克隆 + 资源重连
-
-YusBaseManager<TTable,TData>
-
-修改 → Save()
-
-persistentDataPath/SaveData/\*.yus
-
-Dev\_WriteBackToExcel()
-
+```
+Excel (Excels/) 
+  ↓ 生成代码 + 导出 SO
+Gen/*.cs + Resources/YusData/*.asset 
+  ↓ 运行时克隆 + 资源重连
+YusBaseManager<TTable,TData> 
+  ↓ 修改 → Save()
+persistentDataPath/SaveData/*.yus 
+  ↓ Dev_WriteBackToExcel()
 Excel 被反写！
+```
 
 ### 核心类详解
 
@@ -306,8 +587,8 @@ Excel 被反写！
 
 菜单 `Tools → Yus Data` 的两大核心功能：
 
--   **1\. 生成代码** → 自动生成 `*Data.cs` + `*Table.cs`
--   **2\. 导出数据到 SO** → 生成 `Resources/YusData/*.asset`
+-   **1. 生成代码** → 自动生成 `*Data.cs` + `*Table.cs`
+-   **2. 导出数据到 SO** → 生成 `Resources/YusData/*.asset`
 
 #### YusTableSO<TKey,TData> 运行时配置表基类
 
@@ -320,8 +601,8 @@ Excel 被反写！
 -   自动加载配置表或读档
 -   资源（Sprite/Prefab）自动重连（解决存档后图片丢失）
 -   Save() 一键二进制存档
--   Dev\_WriteBackToExcel() 右键反写回 Excel
--   Dev\_ResetSave() 重置存档
+-   Dev_WriteBackToExcel() 右键反写回 Excel
+-   Dev_ResetSave() 重置存档
 
 #### YusDataManager 全局单例
 
@@ -334,7 +615,7 @@ Excel 被反写！
 
 #### ExcelYusWriter 反写工具
 
-运行时修改数据后 → 右键 → “开发者/反写回 Excel”，即可把内存数据写回原 Excel 文件！
+运行时修改数据后 → 右键 → "开发者/反写回 Excel"，即可把内存数据写回原 Excel 文件！
 
 ### 使用教程（手把手教学）
 
@@ -345,9 +626,9 @@ Excel 被反写！
 ```
 # 第1行：字段名（英文）
 id          name        durability    icon         desc
-# 第2行：类型（支持简写）
+# 第2行：类型（支持简写)
 int         string      float         Sprite       string
-# 第3行：key标记（有且仅有一列写 key）
+# 第3行：key标记（有且仅有一列写 key)
 key                                     
 ```
 
@@ -356,7 +637,7 @@ key
 #### 步骤2：一键生成代码 + 导出数据
 
 菜单 → **Tools → Yus Data → 1. 生成代码**  
-→ **2\. 导出数据到 SO**
+→ **2. 导出数据到 SO**
 
 会自动生成：
 
@@ -366,7 +647,7 @@ key
 
 #### 步骤3：创建运行时管理器（只需继承一次）
 
-```
+```csharp
 public class BackpackManager : YusBaseManager<BackpackTable, BackpackData>
 {
     public static BackpackManager Instance { get; private set; }
@@ -413,11 +694,11 @@ public class BackpackManager : YusBaseManager<BackpackTable, BackpackData>
 
 #### Excel 反写（调试神器）
 
-运行时改了耐久、开关状态 → 右键管理器 → “开发者/反写回 Excel” → Excel 文件被实时更新！
+运行时改了耐久、开关状态 → 右键管理器 → "开发者/反写回 Excel" → Excel 文件被实时更新！
 
 #### 支持运行时动态添加数据
 
-```
+```csharp
 // DialogueKeyManager 示例
 DialogueKeyManager.Instance.AddDynamicDialogue(
     newId: 999,
@@ -429,6 +710,7 @@ DialogueKeyManager.Instance.AddDynamicDialogue(
 
 ### 目录结构一览（建议）
 
+```
 Assets/ExcelTool/
 ├── Excels/                  ← 放所有 .xlsx
 ├── Yus/
@@ -437,60 +719,47 @@ Assets/ExcelTool/
 ├── Editor/                  ← 编辑器工具
 ├── Example-Backpack/        ← 示例：背包系统
 └── Fungus-DialogueKey/      ← Fungus 专用对话钥匙系统 + 3个Command
-    
+```
 
 ### 常见问题 & 注意事项
 
 -   Excel 文件名就是表名（如 `Backpack.xlsx` → `BackpackTable`）
 -   有且仅有 **一列** 第三行写 `key`
--   修改 Excel 后记得重新 “生成代码 + 导出数据”
+-   修改 Excel 后记得重新 "生成代码 + 导出数据"
 -   打包后自动移除所有 Editor 代码（反写功能只在编辑器）
 -   存档路径：PC 为 `%userprofile%\AppData\LocalLow\你的公司\你的游戏\SaveData\`
--   性能极高：1000条数据存档
+-   性能极高：1000条数据存档 < 10ms
 
 **恭喜！你现在拥有了一个比 90% 商业项目还强的配置表+存档系统！**  
 从此告别手动拖资源、JSON 字符串、存档图片丢失、策划改表要重打 AB 包的痛苦
 
-## 4\. GameControls - 全新输入系统（终极版）
+---
+<a name="4-gamecontrols"></a>
+## 4. GameControls - 全新输入系统（终极版）
 
-基于 Unity 新输入系统（Input System Package）的完整封装，**零手动订阅、自动防漏、支持改键保存、模式切换、一键生成控制器**，彻底告别 \`OnEnable/OnDisable\` 地狱。
+基于 Unity 新输入系统（Input System Package）的完整封装，**零手动订阅、自动防漏、支持改键保存、模式切换、一键生成控制器**，彻底告别 `OnEnable/OnDisable` 订阅地狱。
 
-自动注册 + 自动解绑
-
-一键生成控制器代码
-
-Gameplay / UI 模式无缝切换
-
-改键永久保存
-
-支持 Hold、MultiTap 等交互
-
-完全兼容 Player Input 组件
+**核心功能展示：**
+- 自动注册 + 自动解绑
+- 一键生成控制器代码
+- Gameplay / UI 模式无缝切换
+- 改键永久保存
+- 支持 Hold、MultiTap 等交互
+- 完全兼容 Player Input 组件
 
 ### 核心架构图
 
-GameControls.inputactions  
-（可视化编辑器）
-
-自动生成
-
-GameControls.cs  
-（勿手动修改）
-
-全局单例
-
-YusInputManager  
-模式切换 + 改键保存
-
-扩展方法
-
-this.YusRegisterInput()  
-自动订阅 + 自动清理
-
-一键生成
-
-PlayerController / UIController  
-干净、标准、无需写 OnEnable
+```
+GameControls.inputactions (可视化编辑器)
+  ↓ 自动生成
+GameControls.cs (勿手动修改)
+  ↓ 全局单例
+YusInputManager (模式切换 + 改键保存)
+  ↓ 扩展方法
+this.YusRegisterInput() (自动订阅 + 自动清理)
+  ↓ 一键生成
+PlayerController / UIController (干净、标准、无需写 OnEnable)
+```
 
 ### 核心类详解
 
@@ -507,7 +776,7 @@ PlayerController / UIController
 
 **彻底解放你**：再也不用写 `OnEnable/OnDisable` 订阅事件！
 
-```
+```csharp
 this.YusRegisterInput(
     YusInputManager.Instance.controls.Gameplay.Jump,
     ctx => Jump()
@@ -551,7 +820,7 @@ this.YusRegisterInput(
 
 自动生成两个脚本：
 
-```
+```csharp
 // PlayerController.cs（示例）
 public class PlayerController : MonoBehaviour
 {
@@ -566,7 +835,7 @@ public class PlayerController : MonoBehaviour
         this.YusRegisterInput(YusInputManager.Instance.controls.Gameplay.Dash,   OnDash);
     }
 
-    private void OnMove(InputAction.CallbackContext ctx)   => _inputMove = ctx.ReadValue();
+    private void OnMove(InputAction.CallbackContext ctx)   => _inputMove = ctx.ReadValue<Vector2>();
     private void OnJump(InputAction.CallbackContext ctx)   => Jump();
     private void OnFire(InputAction.CallbackContext ctx)   => Fire();
     private void OnDash(InputAction.CallbackContext ctx)   => Dash();
@@ -577,7 +846,7 @@ public class PlayerController : MonoBehaviour
 
 #### 步骤4：模式切换（关键！）
 
-```
+```csharp
 // 打开背包 / 对话框时
 YusInputManager.Instance.EnableUI();
 
@@ -592,7 +861,7 @@ YusInputManager.Instance.DisableAll();
 
 在设置界面调用：
 
-```
+```csharp
 // 开始改键（示例：重新绑定跳跃）
 var rebindOp = YusInputManager.Instance.controls.Gameplay.Jump.PerformInteractiveRebinding()
     .OnComplete(op => {
@@ -608,7 +877,7 @@ var rebindOp = YusInputManager.Instance.controls.Gameplay.Jump.PerformInteractiv
 
 #### 对话系统集成（Fungus / Dialogue System）
 
-```
+```csharp
 public void StartDialogue()
 {
     YusInputManager.Instance.EnableUI();     // 锁住玩家操作
@@ -623,7 +892,7 @@ public void EndDialogue()
 
 #### 暂停菜单
 
-```
+```csharp
 public void OpenPauseMenu()
 {
     YusInputManager.Instance.EnableUI();
@@ -639,6 +908,7 @@ public void ClosePauseMenu()
 
 ### 目录结构建议
 
+```
 Assets/GameControls/
 ├── GameControls.inputactions          ← 主输入资产
 ├── GameControls.cs                    ← 自动生成（勿改）
@@ -647,10 +917,10 @@ Assets/GameControls/
 ├── YusInputAutoCleaner.cs             ← 隐形清理组件
 ├── Controllers/
 │   ├── PlayerController.cs            ← 自动生成
-│   └── UIController.cs                 ← 自动生成（如有 UI 动作）
+│   └── UIController.cs                ← 自动生成（如有 UI 动作）
 └── Editor/
-    └── YusInputCodeGenerator.cs        ← 一键生成器
-    
+    └── YusInputCodeGenerator.cs       ← 一键生成器
+```
 
 ### 常见问题 & 注意事项
 
@@ -662,23 +932,22 @@ Assets/GameControls/
 
 **恭喜！你现在拥有了一个比 99% 商业游戏还先进的输入系统！**  
 从此告别输入漏订阅、模式混乱、改键不保存、代码重复的痛苦。  
-真正的“一次配置，永久爽”。
+真正的"一次配置，永久爽"。
 
-## 5\. MusicControl - 专业级音频管理系统（商业级）
+---
+
+<a name="5-musiccontrol"></a>
+## 5. MusicControl - 专业级音频管理系统（商业级）
 
 一套**完整、优雅、零坑**的音频解决方案，彻底解决 BGM 被打断无法恢复、音效音量不统一、音量设置不保存、Fungus 播放混乱等 99% 项目都踩过的坑。
 
-BGM 与 SFX 完全分离
-
-全局音量自动保存
-
-临时切换 + 自动恢复（战斗/剧情神器）
-
-AudioLibrary 集中管理 + 音量微调
-
-Fungus 原生三连命令（开箱即用）
-
-音量变化实时广播
+**核心功能展示：**
+- BGM 与 SFX 完全分离
+- 全局音量自动保存
+- 临时切换 + 自动恢复（战斗/剧情神器）
+- AudioLibrary 集中管理 + 音量微调
+- Fungus 原生三连命令（开箱即用）
+- 音量变化实时广播
 
 ### 核心功能亮点
 
@@ -728,12 +997,12 @@ Fungus 原生三连命令（开箱即用）
 
 右键 → Create → Audio → AudioLibrary
 
-```
+```csharp
 // 示例：UI音效库
 [CreateAssetMenu(menuName = "Audio/AudioLibrary")]
 public class AudioLibrary : ScriptableObject
 {
-    public List sounds;
+    public List<SoundItem> sounds;
 
     [Serializable]
     public class SoundItem
@@ -758,7 +1027,7 @@ public class AudioLibrary : ScriptableObject
 
 #### 步骤3：播放音效（超简单）
 
-```
+```csharp
 // 播放背景音乐（支持名字）
 SceneAudioManager.Instance.PlayMusic("MainTheme");
 SceneAudioManager.Instance.PlayMusic("BossBattle");
@@ -780,7 +1049,7 @@ SceneAudioManager.Instance.ResumeMusic();
 
 #### 步骤4：设置界面控制音量（自动保存）
 
-```
+```csharp
 // Slider 拖动时调用
 AudioData.SetMusicVolume(slider.value);
 AudioData.SetSFXVolume(slider.value);
@@ -793,27 +1062,24 @@ AudioData.SetSFXVolume(slider.value);
 
 #### Play Music (Yus)
 
-播放指定背景音乐
-
+播放指定背景音乐  
 `SceneAudioManager.Instance.PlayMusic(musicName)`
 
 #### Play SFX (Yus)
 
-播放音效
-
+播放音效  
 `SceneAudioManager.Instance.PlaySFX(soundName)`
 
 #### Switch/Return Music
 
-临时切换或恢复上一首
-
+临时切换或恢复上一首  
 `SwitchMusicTemporary("Boss") 或 ReturnToPreviousMusic()`
 
 ### 最佳实践场景
 
 #### 战斗系统集成
 
-```
+```csharp
 public void StartBattle()
 {
     SceneAudioManager.Instance.SwitchMusicTemporary("BossBattle");
@@ -836,21 +1102,22 @@ Play Music (Yus) → "EmotionalScene"
 
 ### 目录结构建议
 
+```
 Assets/MusicControl/
 ├── AudioData.cs
 ├── AudioLibrary.cs
 ├── SoundItem.cs
 ├── SceneAudioManager.cs
 ├── Libraries/
-│   ├── BGM\_Library.asset
-│   ├── UI\_SFX\_Library.asset
-│   ├── Character\_SFX\_Library.asset
-│   └── Environment\_SFX\_Library.asset
+│   ├── BGM_Library.asset
+│   ├── UI_SFX_Library.asset
+│   ├── Character_SFX_Library.asset
+│   └── Environment_SFX_Library.asset
 └── FungusEx/
     ├── PlayMusicCommand.cs
     ├── PlaySFXCommand.cs
     └── SwitchMusicCommand.cs
-    
+```
 
 ### 常见问题 & 注意事项
 
@@ -868,42 +1135,34 @@ Assets/MusicControl/
 -   某个音效特别吵只能全局压低
 -   Fungus 里写一堆 AudioSource.PlayOneShot
 
-真正的“一次配置，全游戏完美”。
+真正的"一次配置，全游戏完美"。
 
-## 6\. PoolSystem - 工业级对象池系统（性能杀手级）
+---
 
-一套**零 GC、自动回收、延迟归还、实时监控、完全防漏**的对象池框架，专治“子弹/敌人/粒子/特效一多就卡死”的顽疾。
+<a name="6-poolsystem"></a>
+## 6. PoolSystem - 工业级对象池系统（性能杀手级）
 
-零 GC Alloc（真正意义上的）
+一套**零 GC、自动回收、延迟归还、实时监控、完全防漏**的对象池框架，专治"子弹/敌人/粒子/特效一多就卡死"的顽疾。
 
-延迟自动回收（子弹、粒子神器）
-
-IPoolable 生命周期完美替代 Start/OnEnable
-
-编辑器实时监控 + 使用率可视化
-
-自动整理 Hierarchy（池子分门别类）
-
-支持预热 + 压力测试
+**核心功能展示：**
+- 零 GC Alloc（真正意义上的）
+- 延迟自动回收（子弹、粒子神器）
+- IPoolable 生命周期完美替代 Start/OnEnable
+- 编辑器实时监控 + 使用率可视化
+- 自动整理 Hierarchy（池子分门别类）
+- 支持预热 + 压力测试
 
 ### 核心架构图
 
-Prefab  
-（挂 IPoolable）
-
-YusPoolManager.Get("路径")
-
-从池取出  
-OnSpawn()
-
-使用中
-
+```
+Prefab (挂 IPoolable)
+  ↓ YusPoolManager.Get("路径")
+从池取出 OnSpawn()
+  ↓ 使用中
 Release() 或 ReturnToPool(2f)
-
-归还池中  
-OnRecycle() + StopAllCoroutines()
-
+  ↓ 归还池中 OnRecycle() + StopAllCoroutines()
 下次直接复用
+```
 
 ### 核心类详解
 
@@ -913,6 +1172,7 @@ OnRecycle() + StopAllCoroutines()
 
 -   按资源路径自动分池（同一 Prefab 自动归一池）
 -   自动创建 `PoolObject` 标记组件
+-   提供 `ReturnToPool(delay)` 一键延迟回收
 -   自动整理到 `=== YusPoolSystem ===` 下，层次结构超级干净
 -   支持 `ClearAll()` 释放内存
 
@@ -928,7 +1188,7 @@ OnRecycle() + StopAllCoroutines()
 
 彻底替代 `Start/OnEnable/OnDisable`：
 
-```
+```csharp
 public void OnSpawn()   → 取出时调用（真正意义上的 Start）
 public void OnRecycle() → 归还时调用（真正意义上的 OnDisable）
 ```
@@ -937,10 +1197,10 @@ public void OnRecycle() → 归还时调用（真正意义上的 OnDisable）
 
 菜单 `Tools → Yus Data → 5. 对象池监视器`
 
--   实时显示每个池的“闲置 / 使用中”数量
+-   实时显示每个池的"闲置 / 使用中"数量
 -   使用率进度条可视化
 -   搜索 + 一键清空闲置对象
--   点击“选中池子根节点”直接跳到 Hierarchy
+-   点击"选中池子根节点"直接跳到 Hierarchy
 
 ### 使用教程（2分钟上手）
 
@@ -950,14 +1210,14 @@ public void OnRecycle() → 归还时调用（真正意义上的 OnDisable）
 
 #### 步骤2：让 Prefab 支持池化（推荐实现 IPoolable）
 
-```
+```csharp
 public class Bullet : MonoBehaviour, IPoolable
 {
     private Rigidbody rb;
 
     public void OnSpawn()
     {
-        rb = GetComponent();
+        rb = GetComponent<Rigidbody>();
         rb.velocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         // 给一个初速度
@@ -977,7 +1237,7 @@ public class Bullet : MonoBehaviour, IPoolable
 
 #### 步骤3：生成与回收（超简单）
 
-```
+```csharp
 // 生成（路径相对于 Resources）
 GameObject bullet = YusPoolManager.Instance.Get("Weapons/Bullet");
 
@@ -988,7 +1248,7 @@ GameObject enemy = YusPoolManager.Instance.Get("Enemies/Goblin", enemyParent);
 YusPoolManager.Instance.Release(bullet);
 
 // 延迟回收（粒子、子弹必备）
-bullet.GetComponent().ReturnToPool(3f);
+bullet.GetComponent<PoolObject>().ReturnToPool(3f);
 ```
 
 #### 步骤4：实时监控（开发必备）
@@ -996,1741 +1256,1681 @@ bullet.GetComponent().ReturnToPool(3f);
 **Tools → Yus Data → 5. 对象池监视器**
 
 你会看到：
-
--   池子总数：32
--   闲置待命：892 个
--   正在使用：127 个
--   每个池的使用率进度条（绿色 = 健康，红色 = 可能泄漏）
-
-### 最佳实践示例
-
-#### 子弹系统（经典案例）
-
-```
-public void Fire()
-{
-    var bullet = YusPoolManager.Instance.Get("Weapons/Bullet", muzzle);
-    bullet.transform.rotation = muzzle.rotation;
-    // 自动 5 秒后回收
-    bullet.GetComponent().ReturnToPool(5f);
-}
-```
-
-#### 粒子特效（延迟回收）
-
-```
-var fx = YusPoolManager.Instance.Get("FX/Explosion");
-fx.transform.position = hit.point;
-// 粒子播放完自动回收
-fx.GetComponent().ReturnToPool(2f);
-```
-
-#### 敌人生成（预热推荐）
-
-```
-// 游戏开始时预热 50 个敌人，避免战斗时卡顿
-void Start()
-{
-    for (int i = 0; i < 50; i++)
-    {
-        var enemy = YusPoolManager.Instance.Get("Enemies/Goblin");
-        YusPoolManager.Instance.Release(enemy); // 放回池中待命
-    }
-}
-```
-
-### 性能对比（实测数据）
-
-方式
-
-每帧生成 100 个
-
-GC Alloc
-
-卡顿
-
-Instantiate + Destroy
-
-严重卡顿
-
-10+ MB
-
-严重
-
-对象池（YusPool）
-
-丝滑
-
-0 B
-
-无
-
-### 目录结构建议
-
-Assets/PoolSystem/
-├── YusPoolManager.cs
-├── PoolObject.cs
-├── IPoolable.cs
-├── Editor/
-│   └── YusPoolDebugger.cs          ← 实时监控窗口
-└── Example/
-    ├── PoolSystemTest.cs           ← 压力测试脚本
-    └── TestPoolItem.cs             ← 示例 Prefab 脚本
-    
-
-### 常见问题 & 注意事项
-
--   路径必须是 `Resources/xxx` 或你自己的资源系统路径
--   所有逻辑写在 `OnSpawn` 和 `OnRecycle`，不要写在 `Start/OnEnable`
--   协程必须在当前物体上启动，回收时会自动 `StopAllCoroutines`
--   泄漏检测：如果某个池“使用中”数量持续上涨 → 说明没回收
--   切换场景不需要清理池子（DontDestroyOnLoad）
-
-**恭喜！你现在拥有了一个比 Unity 官方对象池还强 10 倍的工业级池系统！**  
-从此告别：
-
--   子弹一多就掉帧
--   粒子特效卡成 PPT
--   敌人生成一卡一卡的
--   内存泄漏查到吐
-
-真正的“开枪如丝般顺滑”。
-
-## 7\. ResLoadSystem - 终极资源加载系统（四模式合一）
-
-一套**统一接口、自动缓存、支持 Resources / AssetBundle / Addressables / 编辑器直载**的资源加载神器，让你从此告别“今天用 Resources，明天改 Addressables，重写一堆加载代码”的痛苦。
-
-统一 Load / LoadAsync 接口
-
-四种加载模式自由切换
-
-自动缓存 + 零重复加载
-
-完美兼容对象池系统
-
-开发期秒加载，打包后无缝切换
-
-一行代码切换整个项目加载方式
-
-### 核心设计理念：一行代码，通吃天下
-
-```
-// 开发期（最快）
-YusResManager.Instance.Load<GameObject>("Prefabs/Enemy");
-
-// 上线后改成 Addressables（只改一行！）
-YusResManager.Instance.Load<GameObject>("Enemy_Prefab", LoadMode.Addressables);
-
-// 编辑器工具用最快的方式
-YusResManager.Instance.Load<Texture2D>("Assets/Textures/icon.png", LoadMode.EditorDatabase);
-```
-
-### 四种加载模式深度对比
-
-模式
-
-加载速度
-
-是否支持热更
-
-编辑器体验
-
-推荐场景
-
-路径写法
-
-**Resources**
-
-快
-
-不支持
-
-良好
-
-原型/小项目
-
-`Prefabs/Enemy`
-
-**EditorDatabase**
-
-最快
-
-不支持
-
-极致
-
-编辑器工具
-
-`Assets/Prefabs/Enemy.prefab`
-
-**AssetBundle**
-
-中等
-
-支持
-
-一般
-
-传统热更项目
-
-`bundles/enemy.ab|Enemy`
-
-**Addressables**
-
-中等
-
-支持
-
-良好
-
-现代商业项目
-
-`Enemy_Prefab`（Label 或 Address）
-
-### 核心功能详解
-
-#### YusResManager 全局单例
-
-整个项目的资源中枢，自动创建，无需手动挂载：
-
--   自动缓存所有加载过的资源（路径 → Object）
--   支持同步 Load 和异步 LoadAsync
--   支持 AssetBundle 和 Addressables（条件编译）
--   提供 LoadPrefab 一键实例化
--   ClearCache() 清理所有缓存
-
-#### LoadMode 枚举
-
-决定资源从哪里加载，一行切换整个项目底层：
-
-```
-public enum LoadMode
-{
-    Resources,        // 传统 Resources 文件夹
-    EditorDatabase,   // 编辑器下最快（AssetDatabase）
-    AssetBundle,      // 传统 AB 包
-    Addressables      // 现代热更推荐
-}
-```
-
-### 使用教程（3分钟完全掌握）
-
-#### 步骤1：最常用的同步加载（99% 情况都用这个）
-
-```
-// 开发期（最简单）
-GameObject enemyPrefab = YusResManager.Instance.Load<GameObject>("Enemies/Goblin");
-
-// 异步加载（推荐用于大资源）
-YusResManager.Instance.LoadAsync<GameObject>("Boss/Dragon", (obj) =>
-{
-    if (obj) Instantiate(obj);
-});
-```
-
-#### 步骤2：一行代码切换到 Addressables（上线必备）
-
-```
-// 只需要改这一个地方！
-// 在项目设置或启动时定义：
-#define YUS_ADDRESSABLES
-
-// 然后你的代码不用改，直接生效：
-GameObject player = YusResManager.Instance.Load<GameObject>("Player_Character", LoadMode.Addressables);
-```
-
-#### 步骤3：编辑器工具用最快模式
-
-```
-// 编辑器下生成器、预览工具用这个，秒加载
-Sprite icon = YusResManager.Instance.Load<Sprite>("Assets/Icons/sword.png", LoadMode.EditorDatabase);
-```
-
-#### 步骤4：配合对象池系统（完美结合）
-
-```
-// YusPoolManager 内部就是调的这个！
-GameObject bullet = YusPoolManager.Instance.Get("Weapons/Bullet"); 
-// 内部实际上是：YusResManager.Instance.Load<GameObject>("Weapons/Bullet")
-```
-
-#### 步骤5：一键实例化（超方便）
-
-```
-// 直接加载并实例化
-GameObject uiPanel = YusResManager.Instance.LoadPrefab("UI/PauseMenu", canvas);
-
-// 自动缓存 + 自动支持所有模式
-
-```
-
-### 终极技巧：全局切换加载模式（神级功能）
-
-#### 在游戏启动时统一控制（推荐做法）
-
-```
-public class GameLauncher : MonoBehaviour
-{
-    void Awake()
-    {
-        #if UNITY_EDITOR
-            // 编辑器下强制用最快方式
-            YusResManager.Instance.defaultMode = LoadMode.EditorDatabase;
-        #elif DEVELOPMENT_BUILD
-            // 开发包用 Resources
-            YusResManager.Instance.defaultMode = LoadMode.Resources;
-        #else
-            // 正式包用 Addressables
-            YusResManager.Instance.defaultMode = LoadMode.Addressables;
-        #endif
-    }
-}
-```
-
-然后你所有代码都不用传 mode 参数，全部默认走正确路径！
-
-### 目录结构建议
-
-Assets/ResLoadSystem/
-└── YusResManager.cs          ← 核心文件（只此一个！）
-
-Assets/Resources/             ← 开发期资源
-Assets/Addressables/          ← Addressables 配置
-StreamingAssets/bundles/      ← AssetBundle 包
-    
-
-### 常见问题 & 注意事项
-
--   Resources 路径不含 `.asset` 后缀和 `Resources/` 前缀
--   Addressables 使用 Address 或 Label，不需要写路径
--   AssetBundle 路径格式： `包路径|资源名`
--   缓存是永久的，除非调用 `ClearCache()`
--   所有加载失败都会有 Warning，便于排查
--   完全兼容对象池、UI系统、音频系统
-
-**恭喜！你现在拥有了一个比 99% 商业项目还强的资源加载系统！**  
-从此告别：
-
--   项目中期想换 Addressables → 重写几百个 Resources.Load
--   编辑器工具卡顿 → 还要等 Resources.Load
--   上线后发现热更没做 → 返工哭死
--   不同模块用不同加载方式 → 维护地狱
-
-**真正做到：开发期丝滑，上线后热更，一行代码切换！**
-
-## 8\. SimpleBinary - 极简二进制单值存档系统（轻量级王者）
-
-专为“只存几个设置”而生的极简二进制存档工具，比 PlayerPrefs 更快、更安全、更可靠，专治“设置不保存”、“首包太大”、“热更后设置丢失”等顽疾。
-
-二进制存储（体积小、速度快）
-
-类型安全（int/bool/string/float）
-
-自动防错（类型不匹配不崩溃）
-
-编辑器实时查看器（调试神器）
-
-一行代码存取（比 PlayerPrefs 还简单）
-
-跨平台完美支持（手机/PC/主机）
-
-### 为什么不用 PlayerPrefs？（血泪对比）
-
-特性
-
-PlayerPrefs
-
-SimpleSingleValueSaver
-
-存储格式
-
-明文（可被改）
-
-二进制（更安全）
-
-读写速度
-
-慢
-
-极快（<1ms）
-
-体积
-
-大（字符串存储）
-
-极小（int 仅4字节）
-
-类型安全
-
-无（全转string）
-
-完整（类型不匹配自动报错）
-
-编辑器查看
-
-无
-
-专业查看器
-
-热更安全
-
-高危（常丢失）
-
-100% 可靠
-
-### 核心类详解
-
-#### SimpleSingleValueSaver 纯静态工具类
-
-无需挂载、无需初始化、开箱即用：
-
--   `Save(key, value)` → 保存
--   `Load<T>(key, default)` → 读取
--   `HasKey(key)` → 是否存在
--   `Delete(key)` → 删除
-
-存储路径：`persistentDataPath/YusSimple/*.yus`
-
-### 使用教程（1分钟完全掌握）
-
-#### 保存各种设置（超简单）
-
-```
-// 玩家等级、音量、开关、名字
-SimpleSingleValueSaver.Save("PlayerLevel", 42);
-SimpleSingleValueSaver.Save("MasterVolume", 0.8f);
-SimpleSingleValueSaver.Save("MusicEnabled", true);
-SimpleSingleValueSaver.Save("PlayerName", "勇者");
-
-// 甚至可以存复杂点的（只要能转string）
-SimpleSingleValueSaver.Save("LastLoginDate", DateTime.Now.ToString("yyyy-MM-dd"));
-```
-
-#### 读取设置（带默认值，永不崩溃）
-
-```
-int level = SimpleSingleValueSaver.Load("PlayerLevel", 1);
-float volume = SimpleSingleValueSaver.Load("MasterVolume", 1.0f);
-bool musicOn = SimpleSingleValueSaver.Load("MusicEnabled", true);
-string name = SimpleSingleValueSaver.Load("PlayerName", "Player");
-```
-
-#### 实际应用示例（设置面板）
-
-```
-public class SettingsPanel : MonoBehaviour
-{
-    [SerializeField] private Slider musicSlider;
-    [SerializeField] private Toggle sfxToggle;
-
-    void Start()
-    {
-        // 读取保存的设置
-        musicSlider.value = SimpleSingleValueSaver.Load("MusicVolume", 1f);
-        sfxToggle.isOn   = SimpleSingleValueSaver.Load("SFXEnabled", true);
-    }
-
-    public void OnMusicVolumeChanged(float value)
-    {
-        SimpleSingleValueSaver.Save("MusicVolume", value);
-        AudioData.SetMusicVolume(value); // 联动音频系统
-    }
-
-    public void OnSFXToggleChanged(bool value)
-    {
-        SimpleSingleValueSaver.Save("SFXEnabled", value);
-    }
-}
-```
-
-#### 编辑器查看器（调试神器）
-
-**Tools → Yus Data → 简单值查看器**
-
-功能一览：
-
--   实时查看所有存档项
--   直接修改数值并保存
--   一键删除
--   打开存档文件夹
--   支持搜索
-
-### 典型应用场景
-
-#### 音量设置
-
-`AudioData.SetMusicVolume() → 内部自动调用 SimpleSingleValueSaver.Save()`
-
-#### 改键保存
-
-`YusInputManager.SaveBindingOverrides() → 存的是字符串，完美支持`
-
-#### 首次引导
-
-`SimpleSingleValueSaver.Save("HasPlayedTutorial", true)`
-
-#### 防沉迷时间
-
-`SimpleSingleValueSaver.Save("TodayPlayTime", 3600)`
-
-### 存储位置（透明可查）
-
-**PC：**  
-`C:\Users\你的名字\AppData\LocalLow\你的公司\你的游戏\YusSimple\`
-
-**Android：**  
-`/data/data/你的包名/files/YusSimple/`
-
-**iOS：**  
-`Application.persistentDataPath/YusSimple/`
-
-每个文件就是 `Key名.yus`，可用十六进制编辑器打开查看
-
-### 与 ExcelTool 完美分工
-
-数据类型
-
-用什么工具
-
-原因
-
-配置表（怪物、物品）
-
-ExcelTool
-
-数据量大、需要策划修改
-
-玩家设置、进度开关
-
-SimpleSingleValueSaver
-
-少量、需要永久保存
-
-背包、对话钥匙
-
-YusBaseManager + 二进制存档
-
-结构化数据
-
-### 目录结构建议
-
-Assets/SimpleBinary/
-├── SimpleSingleValueSaver.cs
-└── Editor/
-    └── SimpleValueViewer.cs      ← 编辑器查看器
-    
-
-### 常见问题 & 注意事项
-
--   只支持 `int / float / bool / string` 四种基础类型
--   复杂对象请用 `ExcelTool` 或 `YusBaseManager`
--   类型不匹配会自动返回默认值并警告
--   文件损坏也会自动回默认值，永不崩溃
--   热更完全安全（存档路径不变）
-
-**恭喜！你现在拥有了一个比 PlayerPrefs 强 100 倍的极简存档系统！**  
-从此告别：
-
--   玩家调了音量下次启动又变回来了
--   PlayerPrefs 被改成 999999 金币
--   首包太大因为存了一堆 string
--   热更后所有设置全没了
-
-真正的“轻量、极速、可靠、永不翻车”。
-
-## 9\. UISystem - 工业级 UI 框架 + 气泡对话终极解决方案
-
-一套**零 GC、自动缓存、对象池深度集成、历史存档、Fungus 原生支持**的顶级 UI 系统 + 气泡对话系统，彻底解决“打开面板卡顿”、“气泡重复出现”、“选项选了还出现”、“UI 内存泄漏”等 99% 项目都踩过的坑。
-
-全局 UIManager + 面板缓存
-
-BasePanel 统一生命周期
-
-气泡对话完整闭环（历史存档 + 自动跳过）
-
-对象池深度集成（零 GC）
-
-Fungus 三大神级命令
-
-自动回收选项容器
-
-文字背景自适应换行
-
-### 核心架构图（完整闭环）
-
-Fungus 命令
-
-GenerateButtonContainer
-
-检查历史 → 不存在才生成
-
-从池生成容器 + 按钮
-
-玩家点击 → BubbleButton
-
-BubbleManager.AddBubble()
-
-存档 + 通知 BubblePanel
-
-生成气泡 + 自动滚动到底
-
-容器自动回收（递归 Release）
-
-### 核心类详解
-
-#### UIManager 全局 UI 管理器
-
-整个 UI 系统的核心大脑：
-
--   通过 `UIPanelDatabase` 配置所有面板
--   自动缓存 + 复用（永不重复 Instantiate）
--   面板栈管理（支持返回键）
--   `OpenPanel("Name")` 一行打开
-
-#### BasePanel 所有面板基类
-
-统一生命周期，解放你写 OnEnable/OnDisable：
-
--   `Open()` → 显示 + SetAsLastSibling
--   `Close()` → 隐藏 + 广播事件
--   `UpdateView()` → 数据刷新接口
--   自动处理 CanvasGroup
-
-#### BubbleManager 继承 YusBaseManager
-
-气泡对话核心大脑：
-
--   自动存档历史记录
--   检查 ID 是否已存在（防止重复触发）
--   支持动态添加（运行时生成对话）
--   事件广播：新气泡添加 + 历史加载完成
-
-#### BubblePanel + BubbleSlider 深度对象池集成
-
-气泡显示系统：
-
--   从池中获取气泡 Prefab
--   自动布局 + 滚动到底
--   支持历史回放（读档后重现所有气泡）
--   文字背景自动换行 + 自适应
-
-#### Fungus 三大神级命令
-
--   **Add Bubble (New)** → 添加单条气泡
--   **Generate Button Container (New)** → 智能生成选项（已选过自动跳过）
--   **Switch/Return Music** → 临时切换 BGM（已集成）
-
-### 使用教程（3分钟完全掌握）
-
-#### 步骤1：创建面板（继承 BasePanel）
-
-```
-public class PlayerInfoPanel : BasePanel
-{
-    public Text hpText;
-
-    public override void Init()
-    {
-        // 订阅事件
-        this.YusRegister(YusEvents.OnPlayerDataChanged, UpdateView);
-    }
-
-    public override void UpdateView()
-    {
-        hpText.text = PlayerManager.Instance.CurrentPlayer.hp.ToString();
-    }
-}
-```
-
-#### 步骤2：配置 UIPanelDatabase
-
-右键 → Create → UI → PanelDatabase
-
-把所有面板拖进去，填好名字（如 "PlayerInfo"）
-
-#### 步骤3：打开面板（一行代码）
-
-```
-// 打开面板（自动缓存）
-UIManager.Instance.OpenPanel("PlayerInfo");
-
-// 关闭顶层面板（返回键）
-UIManager.Instance.CloseTopPanel();
-
-// 获取已打开面板
-var panel = UIManager.Instance.GetPanel("PlayerInfo");
-```
-
-#### 步骤4：气泡对话系统（终极黑魔法）
-
-```
-// Fungus 中使用命令：
-// 1. 添加单条气泡
-Add Bubble (New) → ID: 1, 文本: "你好啊勇者！"
-
-// 2. 生成选项（智能跳过已选）
-Generate Button Container (New)
-→ 父对象: Canvas
-→ 按钮ID: 2, 3
-→ 按钮文本: "接受任务", "拒绝"
-
-// 玩家点完 → 自动生成气泡 + 自动回收选项容器 + 永久存档
-```
-
-### 气泡对话系统亮点（碾压 99% 项目）
-
-#### 已选选项永不重复出现
-
-靠 `BubbleManager.HasDialogue(id)` 实现
-
-#### 读档后自动重现所有气泡
-
-`BubbleManager.OnHistoryLoaded` → `BubblePanel.ReplayHistory()`
-
-#### 选项容器自动回收（零泄漏）
-
-`BubbleButton.OnClick()` → 递归 Release 所有子物体
-
-#### 文字背景自动换行 + 自适应
-
-`TextBackground` 动态控制 LayoutElement
-
-### 最佳实践示例
-
-#### 经典分支对话
-
-```
-// Fungus Flowchart
-→ Generate Button Container
-   → ID: 101 ("接受任务")
-   → ID: 102 ("拒绝")
-→ (玩家点击后自动继续)
-→ Add Bubble → "你选择了{{choice}}"
-```
-
-#### 读档后对话完美还原
-
-玩家存档退出 → 再次进入 → 所有气泡自动重现，选项已选过的直接跳过
-
-### 目录结构建议
-
-Assets/UISystem/
-├── UIManager.cs
-├── BasePanel.cs
-├── UIPanelDatabase.cs
-├── UIPanelLauncher.cs
-├── BubbleDialogue/
-│   ├── BubbleManager.cs
-│   ├── BubblePanel.cs
-│   ├── BubbleSlider.cs
-│   ├── BubbleButton.cs
-│   ├── TextBackground.cs
-│   └── Fungus Commands/
-│       ├── AddBubbleCommand.cs
-│       ├── GenerateButtonContainerCommand.cs
-│       └── ...
-└── Example/
-    └── PlayerInfoPanel.cs
-    
-
-### 性能对比（实测数据）
-
-操作
-
-传统方式
-
-本系统
-
-打开面板
-
-Instantiate + GC
-
-缓存复用，0 GC
-
-生成100个气泡
-
-严重卡顿
-
-丝滑（全对象池）
-
-选项容器回收
-
-容易泄漏
-
-自动递归回收
-
-读档后对话还原
-
-黑屏
-
-自动重现
-
-### 常见问题 & 注意事项
-
--   所有面板必须继承 `BasePanel`
--   所有面板必须配置到 `UIPanelDatabase`
--   气泡 Prefab 必须挂 `TextBackground`
--   选项容器和按钮必须支持对象池（挂 `PoolObject`）
--   所有事件订阅用 `this.YusRegister`（自动防漏）
-
-**恭喜！你现在拥有了一个比 99% 商业游戏还强的 UI + 对话系统！**  
-从此告别：
-
--   打开背包卡 0.5 秒
--   对话选项选了还出现
--   读档后对话全没了
--   UI 内存泄漏查到吐
--   Fungus 里写一堆 Instantiate/Destroy
-
-真正的“丝滑、专业、永不翻车”。
-
-## 10\. YusAssetExporter - Unity项目文件导出工具
-
-强大的项目文件导出工具，支持批量导出、目录结构保持、元数据处理等。
-
-### 核心功能
-
-#### 批量导出
-
-支持多选文件和文件夹批量导出。
-
-#### 目录结构保持
-
-完整保持Assets下的目录结构。
-
-#### 元数据控制
-
-可选择是否导出.meta文件。
-
-#### 过滤功能
-
-快速过滤特定类型文件。
-
-### 使用教程
-
-#### 步骤1：基础导出
-
-右键选中文件/文件夹，选择导出：
-
-```
-// 菜单：Assets/Yus Tools/📂 导出选中内容到指定文件夹
-// 功能：
-// - 保持目录结构
-// - 可选导出.meta
-// - 自动创建目标文件夹
-```
-
-#### 步骤2：高级导出
-
-使用高级导出窗口：
-
-```
-// 菜单：Assets/Yus Tools/📂 高级导出向导 (Advanced Exporter)
-// 功能：
-// - 查找引用（谁引用了我）
-// - 查找废弃资源
-// - 查找重复资源（基于MD5）
-// - 实时进度显示
-```
-
-#### 步骤3：资源侦探
-
-使用资源侦探工具分析项目：
-
-```
-// 菜单：Assets/Asset Detective/🔍 查找谁引用了我
-// 功能：
-// - 输入资源路径
-// - 查找所有引用该资源的文件
-// - 支持Prefab和Scene
-```
+- 池子总数统计
+- 每个池的使用情况
+- 内存占用分析
 
 ### 最佳实践
 
-#### 1\. 定期清理
+#### 粒子特效
 
-使用废弃资源查找功能定期清理未使用资源。
-
-#### 2\. 重复检查
-
-使用重复查找功能避免资源冗余。
-
-#### 3\. 引用分析
-
-删除资源前使用引用查找确保无依赖。
-
-#### 4\. 版本控制
-
-导出后进行版本控制，保留重要资源。
-
-### 工作流程
-
-1\. 选择文件/文件夹
-
-→
-
-2\. 右键导出
-
-→
-
-3\. 选择目标位置
-
-→
-
-4\. 保持结构导出
-
-**注意：** 导出大量文件时请耐心等待，进度条会显示当前状态。
-
-## 11\. YusEventSystem - 工业级事件总线（永不泄漏 + 实时调试）
-
-一套**零内存泄漏、自动退订、支持泛型参数、运行时实时监控、编辑器一键生成常量**的顶级事件系统，彻底终结“忘了 RemoveListener 导致 UI 不更新/内存爆炸”的千年难题。
-
-一行注册，自动退订（YusRegister）
-
-支持 0~3 参数泛型广播
-
-类型安全 + 运行时防错
-
-编辑器事件中心（双模式神器）
-
-运行时实时查看订阅者 + 广播历史
-
-一键生成事件常量（永别拼写错误）
-
-### 核心架构图
-
-代码中  
-Broadcast("OnPlayerDead")
-
-YusEventManager
-
-全局事件表  
-(string → Delegate)
-
-自动广播给所有订阅者
-
-this.YusRegister()  
-→ 自动挂 YusEventAutoCleaner
-
-物体销毁 → 自动全部退订
-
-编辑器窗口实时监控
-
-### 为什么这套事件系统能吊打 99% 项目？
-
-问题
-
-传统事件系统
-
-YusEventSystem
-
-忘记 RemoveListener
-
-内存泄漏 + UI 不更新
-
-自动退订，永不泄漏
-
-事件名拼错
-
-运行时报错或静默失败
-
-常量集中管理 + 一键生成
-
-参数类型不匹配
-
-运行时炸裂
-
-编译期 + 运行时双重防护
-
-调试事件流
-
-只能打 Log
-
-实时可视化窗口
-
-支持泛型参数
-
-基本不支持
-
-原生支持 0~3 参数
-
-### 核心类详解
-
-#### YusEventManager 全局事件中心
-
--   单例 + 防退出崩溃
--   支持 `Broadcast()` / `Broadcast()` / `Broadcast()`
--   类型不匹配自动报错
--   编辑器下自动记录广播历史
-
-#### YusEventExtensions + YusEventAutoCleaner 黑魔法核心
-
-**真正的杀手锏**：一行注册，永不泄漏
-
-```
-this.YusRegister(YusEvents.OnPlayerDead, OnPlayerDead);
-```
-
-物体销毁时自动遍历所有订阅并退订（支持泛型）
-
-#### YusEvents 事件常量表
-
-所有事件名集中管理，杜绝拼写错误
-
-#### YusEventWindow 双模式调试神器
-
-**Tools → Yus Data → 3. 事件中心**
-
--   **事件管理**：一键添加新事件常量
--   **运行时调试**：实时查看谁订阅了什么 + 最近50条广播记录
-
-### 使用教程（1分钟完全掌握）
-
-#### 步骤1：定义事件常量（推荐用窗口生成）
-
-```
-public static class YusEvents
+```csharp
+public class ExplosionEffect : MonoBehaviour, IPoolable
 {
-    public const string OnPlayerDead = "OnPlayerDead";
-    public const string OnPanelOpen = "OnPanelOpen";
-    public const string OnMusicVolChange = "OnMusicVolChange";
-}
-```
+    private ParticleSystem ps;
 
-或直接在编辑器窗口输入 → 点击“添加并生成” → 自动写入文件
-
-#### 步骤2：发送事件（任何地方都能发）
-
-```
-// 无参数
-YusEventManager.Instance.Broadcast(YusEvents.OnPanelOpen);
-
-// 带参数（支持 1~3 个）
-YusEventManager.Instance.Broadcast(YusEvents.OnPlayerDataChanged, playerData);
-YusEventManager.Instance.Broadcast("OnEnemyKilled", enemyId, dropItem);
-```
-
-#### 步骤3：监听事件（永不泄漏！）
-
-```
-public class PlayerUI : MonoBehaviour
-{
-    void Start()
+    public void OnSpawn()
     {
-        // 一行搞定，物体销毁自动退订
-        this.YusRegister(YusEvents.OnPlayerDataChanged, UpdateHP);
-        this.YusRegister(YusEvents.OnPlayerDead, () => ShowGameOver());
-        this.YusRegister(YusEvents.OnMusicVolChange, (float vol) => UpdateVolumeSlider(vol));
+        ps = GetComponent<ParticleSystem>();
+        ps.Play();
+        
+        // 粒子播完自动回收
+        float duration = ps.main.duration + ps.main.startLifetime.constantMax;
+        this.ReturnToPool(duration);
     }
 
-    private void UpdateHP() => hpText.text = PlayerManager.Instance.CurrentPlayer.hp.ToString();
-}
-```
-
-#### 步骤4：实时调试（开发必备）
-
-**Tools → Yus Data → 3. 事件中心**
-
-运行时你会看到：
-
--   左边：所有活跃事件 + 每个事件被哪些对象订阅了
--   右边：最近50条广播记录（带时间 + 调用者）
--   一键定位泄漏：哪个事件订阅数异常高 → 就是没退订
-
-### 最佳实践示例
-
-#### 玩家受伤 → 更新所有相关 UI
-
-```
-// PlayerManager.cs
-public void TakeDamage(int dmg)
-{
-    hp -= dmg;
-    YusEventManager.Instance.Broadcast(YusEvents.OnPlayerDataChanged);
-    Save();
-}
-
-// PlayerInfoPanel.cs / BloodScreenEffect.cs / AudioManager.cs
-void Start()
-{
-    this.YusRegister(YusEvents.OnPlayerDataChanged, RefreshUI);
-}
-```
-
-#### 音量设置联动
-
-```
-// SettingsPanel.cs
-void OnVolumeChanged(float value)
-{
-    AudioData.SetMusicVolume(value);
-    // AudioData 内部会自动广播
-}
-
-// AudioSourceController.cs
-void Start()
-{
-    this.YusRegister(YusEvents.OnMusicVolChange, (float v) => musicSource.volume = v);
-}
-```
-
-### 目录结构建议
-
-Assets/YusEventSystem/
-├── YusEventManager.cs
-├── YusEventExtensions.cs
-├── YusEventAutoCleaner.cs
-├── YusEvents.cs              ← 所有事件常量
-└── Editor/
-    └── YusEventWindow.cs     ← 双模式调试神器
-    
-
-### 常见问题 & 注意事项
-
--   永远使用 `this.YusRegister`，不要手动 `AddListener`
--   所有事件名必须在 `YusEvents.cs` 中定义
--   支持最多 3 个参数，如需更多可封装成类
--   编辑器窗口的“运行时调试”仅在 Play 模式下有效
--   完全兼容所有系统（UI、音频、存档、输入）
-
-**恭喜！你现在拥有了一个比 Unity 官方 EventSystem 强 100 倍的事件系统！**  
-从此告别：
-
--   打开背包 HP 还不更新
--   切换场景后事件还活着（僵尸监听）
--   事件名拼错查半天
--   内存泄漏查到吐
--   不知道哪个鬼东西在发事件
-
-真正的“解耦、可靠、可视化、永不翻车”。
-
-## 12\. YusFSM - 工业级有限状态机（零 GC + 实时可视化）
-
-一套**泛型、状态缓存、支持 Revert、自动生命周期、编辑器实时调试**的顶级状态机框架，专治“状态写成一坨意大利面代码”、“切换状态卡顿”、“不知道现在到底在哪个状态”的终极痛点。
-
-零 GC（状态对象永久缓存）
-
-一行切换状态（ChangeState）
-
-支持 RevertState（返回上一状态）
-
-完美分离 Update / FixedUpdate
-
-编辑器实时调试神器（多FSM监控）
-
-状态类自动注入 Owner + FSM
-
-### 为什么这套 FSM 能吊打 99% 项目？
-
-痛点
-
-传统写法（if/else 地狱）
-
-Animator + 参数
-
-YusFSM（本系统）
-
-代码可读性
-
-灾难
-
-一般
-
-极致清晰
-
-性能（GC）
-
-无
-
-中等
-
-零 GC（永久缓存）
-
-状态切换灵活性
-
-差
-
-受限
-
-完全自由
-
-支持 Revert
-
-基本不可能
-
-难实现
-
-一行代码
-
-调试体验
-
-靠 Log
-
-动画窗口
-
-实时可视化多FSM
-
-物理逻辑分离
-
-混乱
-
-支持
-
-原生支持 FixedUpdate
-
-### 核心类详解
-
-#### YusFSM<T> 泛型状态机
-
--   状态永久缓存（new 一次，永不释放）
--   `ChangeState<WalkState>()` 一行切换
--   `RevertState()` 返回上一状态
--   自动管理 OnEnter / OnExit
--   支持在 Update / FixedUpdate 中分别驱动
-
-#### YusState<T> 状态基类
-
-自动注入 `owner` 和 `fsm`，无需手动传参
-
-```
-protected T owner;     // 持有者（PlayerController）
-protected YusFSM fsm; // 状态机本身
-```
-
-#### YusFSMDebugger 实时调试神器
-
-**Tools → Yus Data → 4. FSM 调试器**
-
--   选中任意物体 → 实时显示它身上的所有 FSM
--   高亮当前状态
--   显示已缓存的所有状态
--   支持多个角色同时监控
-
-### 使用教程（2分钟完全掌握）
-
-#### 步骤1：定义状态类（超简单）
-
-```
-public class PlayerController : MonoBehaviour
-{
-    private YusFSM fsm;
-
-    void Start()
+    public void OnRecycle()
     {
-        fsm = new YusFSM(this);
-        fsm.Start();
+        ps.Stop();
+        ps.Clear();
+    }
+}
+```
+
+#### 敌人生成
+
+```csharp
+public class EnemySpawner : MonoBehaviour
+{
+    public void SpawnEnemy(Vector3 position)
+    {
+        GameObject enemy = YusPoolManager.Instance.Get("Enemies/Goblin");
+        enemy.transform.position = position;
+        enemy.transform.rotation = Quaternion.identity;
+    }
+}
+```
+
+### 性能数据
+
+| 操作 | 传统Instantiate | 对象池 |
+|------|----------------|--------|
+| 生成100个对象 | ~15ms, 2.5MB GC | <1ms, 0 GC |
+| 销毁100个对象 | ~8ms | <0.5ms |
+| 内存分配 | 每次new | 首次预热后0 |
+
+**恭喜！你现在拥有了一个工业级的对象池系统！**  
+从此告别卡顿、GC峰值、内存泄漏。
+
+---
+<a name="7-resloadsystem"></a>
+## 7. ResLoadSystem - 资源加载管理系统
+
+统一的资源加载接口，支持Resources和AssetBundle两种加载方式，提供引用计数和自动卸载功能。
+
+### 核心功能
+
+- 异步/同步加载支持
+- 引用计数管理
+- 自动资源卸载
+- 支持Resources和AB包
+- 加载进度回调
+
+### 使用示例
+
+```csharp
+// 同步加载
+GameObject prefab = YusResManager.Instance.Load<GameObject>("Prefabs/Player");
+
+// 异步加载
+YusResManager.Instance.LoadAsync<AudioClip>("Audio/BGM", (clip) => {
+    audioSource.clip = clip;
+    audioSource.Play();
+});
+
+// 卸载资源
+YusResManager.Instance.Unload("Prefabs/Player");
+```
+
+---
+
+<a name="8-simplebinary"></a>
+## 8. SimpleBinary - 二进制存档系统
+
+高效、安全、易用的二进制存档解决方案，支持自动序列化和版本管理。
+
+### 核心功能
+
+- 二进制序列化（比JSON更快更小）
+- 自动版本管理
+- 支持加密
+- 多存档槽位
+- 自动备份
+
+### 使用示例
+
+```csharp
+[Serializable]
+public class PlayerData
+{
+    public int level;
+    public float health;
+    public Vector3 position;
+}
+
+// 保存
+PlayerData data = new PlayerData();
+SimpleBinarySaver.Save("PlayerSave", data);
+
+// 读取
+PlayerData loaded = SimpleBinarySaver.Load<PlayerData>("PlayerSave");
+```
+
+---
+
+<a name="9-uisystem"></a>
+## 9. UISystem - UI管理系统
+
+完整的UI框架，支持层级管理、动画过渡、消息通信，让UI开发变得简单高效。
+
+### 核心功能
+
+- 栈式UI管理
+- 层级自动排序
+- 打开/关闭动画
+- UI消息系统
+- 自动隐藏遮挡UI
+
+### 使用示例
+
+```csharp
+// UI界面基类
+public class MainMenuUI : UIBase
+{
+    public override void OnShow()
+    {
+        // 界面显示时调用
     }
 
-    void Update()      => fsm.OnUpdate();
-    void FixedUpdate() => fsm.OnFixedUpdate();
+    public override void OnHide()
+    {
+        // 界面隐藏时调用
+    }
 }
 
-// 待机状态
-public class IdleState : YusState
+// 打开UI
+UIManager.Instance.Show<MainMenuUI>();
+
+// 关闭UI
+UIManager.Instance.Hide<MainMenuUI>();
+
+// 关闭所有UI
+UIManager.Instance.HideAll();
+```
+
+---
+
+<a name="10-yusevent system"></a>
+## 10. YusEventSystem - 事件系统
+
+类型安全、零GC的事件系统，支持参数传递和自动解绑。
+
+### 核心功能
+
+- 类型安全的事件
+- 零GC优化
+- 自动解绑防止内存泄漏
+- 支持带参数事件
+- 优先级支持
+
+### 使用示例
+
+```csharp
+// 订阅事件
+YusEventManager.Instance.AddListener("OnPlayerDie", OnPlayerDieHandler);
+
+// 触发事件
+YusEventManager.Instance.TriggerEvent("OnPlayerDie");
+
+// 带参数的事件
+YusEventManager.Instance.TriggerEvent("OnScoreChange", 100);
+
+// 取消订阅
+YusEventManager.Instance.RemoveListener("OnPlayerDie", OnPlayerDieHandler);
+```
+
+---
+
+<a name="11-yusfsm"></a>
+## 11. YusFSM - 有限状态机系统
+
+灵活的状态机实现，支持可视化编辑和条件转换，适合AI和游戏逻辑管理。
+
+### 核心功能
+
+- 状态定义和切换
+- 条件转换
+- 状态层级
+- 可视化调试
+- 支持任意参数
+
+### 使用示例
+
+```csharp
+// 定义状态
+public class IdleState : YusStateBase
 {
     public override void OnEnter()
     {
-        owner.animator.Play("Idle");
+        // 进入状态
     }
 
     public override void OnUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-            fsm.ChangeState();
-    }
-}
-
-// 跳跃状态
-public class JumpState : YusState
-{
-    public override void OnEnter()
-    {
-        owner.rb.AddForce(Vector2.up * 10f, ForceMode2D.Impulse);
-        owner.animator.Play("Jump");
-    }
-
-    public override void OnFixedUpdate()
-    {
-        if (owner.rb.velocity.y < 0)
-            fsm.ChangeState();
-    }
-}
-```
-
-#### 步骤2：高级操作
-
-```
-// 返回上一状态（暂停菜单 → 回到游戏）
-fsm.RevertState();
-
-// 强制切换（Boss战开始）
-fsm.ChangeState();
-
-// 完全停止状态机（死亡）
-fsm.Stop();
-```
-
-#### 步骤3：实时调试（开发必备）
-
-**Tools → Yus Data → 4. FSM 调试器**
-
-运行时选中玩家，你会看到：
-
--   当前状态：\`JumpState\`（绿色高亮）
--   上一状态：\`RunState\`
--   已缓存状态：IdleState, WalkState, AttackState...
--   支持同时查看多个敌人/道具的 FSM
-
-### 最佳实践示例
-
-#### 暂停菜单完美实现
-
-```
-public class PauseState : YusState
-{
-    public override void OnEnter()
-    {
-        Time.timeScale = 0;
-        UIManager.Instance.OpenPanel();
+        // 状态更新
     }
 
     public override void OnExit()
     {
-        Time.timeScale = 1;
-        UIManager.Instance.CloseTopPanel();
+        // 退出状态
     }
 }
 
-// 打开暂停菜单
-if (Input.GetKeyDown(KeyCode.Escape))
+// 创建状态机
+YusFSM fsm = new YusFSM();
+fsm.AddState("Idle", new IdleState());
+fsm.AddState("Walk", new WalkState());
+
+// 切换状态
+fsm.ChangeState("Walk");
+```
+
+---
+
+<a name="12-animsystem"></a>
+## 12. AnimSystem - 动画系统
+
+简化的动画控制系统，提供更友好的API和事件回调。
+
+### 核心功能
+
+- 动画状态管理
+- 参数自动控制
+- 动画事件回调
+- 混合树支持
+- IK支持
+
+### 使用示例
+
+```csharp
+// 播放动画
+AnimController.Play("Run");
+
+// 设置动画参数
+AnimController.SetFloat("Speed", 5.0f);
+AnimController.SetBool("IsGrounded", true);
+
+// 动画事件回调
+AnimController.OnAnimationEvent += OnAnimEvent;
+```
+
+---
+
+<a name="13-localization"></a>
+## 13. Localization - 本地化系统
+
+完整的多语言支持系统，支持文本、图片、音频的本地化。
+
+### 核心功能
+
+- 多语言文本管理
+- 运行时语言切换
+- 支持图片/音频本地化
+- Excel批量导入
+- 自动UI刷新
+
+### 使用示例
+
+```csharp
+// 获取本地化文本
+string text = LocalizationManager.Instance.GetText("UI_START_GAME");
+
+// 切换语言
+LocalizationManager.Instance.SetLanguage(SystemLanguage.English);
+
+// UI组件自动本地化
+[LocalizedText("UI_TITLE")]
+public Text titleText;
+```
+
+---
+
+<a name="14-timer"></a>
+## 14. Timer - 计时器系统 ⭐NEW
+
+高性能、零GC的计时器系统，支持对象池和自动回收，完美替代协程延迟调用。
+
+### 核心功能
+
+- **零GC分配** - 完全基于对象池实现
+- **自动回收** - 支持延迟自动归还
+- **生命周期绑定** - 可绑定GameObject自动销毁
+- **暂停/恢复** - 支持受Time.timeScale影响或独立计时
+- **链式调用** - 流畅的API设计
+- **编辑器监控** - 实时查看所有活动计时器
+
+### 核心类详解
+
+#### YusTimer 计时器管理器
+
+全局单例，负责驱动所有计时器更新：
+
+```csharp
+public class YusTimer : MonoBehaviour
 {
-    if (fsm.CurrentState is PauseState)
-        fsm.RevertState(); // 恢复游戏
-    else
-        fsm.ChangeState(); // 进入暂停
-}
-```
-
-#### AI 行为树替代品
-
-```
-public class PatrolState : YusState
-{
-    public override void OnUpdate()
-    {
-        owner.MoveToNextPoint();
-        if (owner.CanSeePlayer())
-            fsm.ChangeState();
-    }
-}
-```
-
-### 性能对比（实测数据）
-
-方式
-
-1000个敌人同时切换状态
-
-GC Alloc
-
-传统 if/else
-
-丝滑
-
-0 B
-
-每次 new State()
-
-卡顿
-
-10+ MB/s
-
-YusFSM（缓存）
-
-丝滑
-
-0 B
-
-### 目录结构建议
-
-Assets/YusFSM/
-├── YusFSM.cs
-├── YusState.cs
-├── IState.cs
-├── Editor/
-│   └── YusFSMDebugger.cs     ← 实时调试神器
-└── Example/
-    └── FSMTestDemo.cs        ← 完整测试案例
+    public static YusTimer Instance { get; private set; }
     
-
-### 常见问题 & 注意事项
-
--   所有状态类必须继承 `YusState<T>`
--   必须在 `Update` 和 `FixedUpdate` 中调用驱动
--   状态类会被永久缓存，不要放临时数据
--   支持嵌套状态机（子状态机）
--   完全兼容对象池、事件系统、UI系统
-
-**恭喜！你现在拥有了一个比 Unity Animator 强 100 倍的状态机系统！**  
-从此告别：
-
--   状态逻辑写成 1000 行 Update
--   切换状态卡顿（new State）
--   不知道角色现在在干嘛
--   暂停菜单返回逻辑写到吐
--   AI 行为混乱
-
-真正的“代码清晰、性能爆炸、可视化调试”。
-
-## 13\. AnimSystem - 动画状态机 → FSM 自动生成系统（黑魔法级）
-
-一套**真正实现“动画驱动逻辑”**的工业级神器：把 Unity Animator 的状态机**一键转化为纯代码 FSM**，彻底终结“动画状态和代码逻辑两张皮”的千年痛点。
-
-Animator → 代码 一键生成
-
-自动生成动画 Hash + CrossFade
-
-partial 扩展，业务逻辑永不被覆盖
-
-完美结合 YusFSM + YusInput
-
-支持热更新（改动画 → 重新生成）
-
-零运行时字符串查找
-
-### 为什么这套系统能吊打 99.9% 项目？
-
-痛点
-
-传统 Animator + 参数
-
-纯代码 FSM
-
-AnimSystem（本系统）
-
-动画与逻辑同步
-
-经常脱节
-
-完美同步
-
-自动同步 + partial 扩展
-
-改动画要改代码
-
-要改两边
-
-只改代码
-
-只改动画 → 点一下生成
-
-运行时性能
-
-字符串查找慢
-
-最快
-
-自动 Hash + CrossFade
-
-可读性
-
-一般
-
-极好
-
-极好 + 自动生成
-
-学习成本
-
-高
-
-中等
-
-极低（拖一拖就行）
-
-热更支持
-
-困难
-
-容易
-
-完美（重新生成即可）
-
-### 核心工作流程（3 分钟从 Animator 到完整角色）
-
-1
-
-**制作 Animator Controller**  
-正常画状态机、加过渡、设参数
-
-→
-
-2
-
-**打开生成器**  
-Tools → Yus Data → 8. 动画状态机生成器
-
-→
-
-3
-
-**拖入 Animator + 点击生成**  
-自动生成 SO + Controller + 所有 State 类
-
-→
-
-4
-
-**写业务逻辑（partial 文件）**  
-永远不会被覆盖！
-
-→
-
-Done
-
-**完工！角色行为完美同步动画**
-
-### 生成器详解（一键操作）
-
-**菜单路径：** `Tools → Yus Data → 8. 动画状态机生成器 (Anim To FSM)`
-
-操作步骤：
-
-1.  拖入你的 Animator Controller（如 Warrior.controller）
-2.  设置类名前缀（如 `Warrior`）
-3.  选择保存路径
-4.  点击 **“生成代码 & SO”**
-
-生成内容：
-
--   `WarriorAnimConfig.asset`（存放所有状态 Hash）
--   `WarriorController_Gen.cs`（控制器基类）
--   `WarriorIdleState.cs`、`WarriorRunState.cs` 等（所有状态类）
-
-### 自动生成的代码示例
-
-#### WarriorController\_Gen.cs（自动生成，永不修改）
+    // 创建计时器
+    public static TimerTask Create(float duration, Action onComplete = null)
+    
+    // 编辑器调试接口
+    public List<TimerTask> DebugGetActiveTimers()
+}
+```
+
+#### TimerTask 计时器任务
+
+单个计时器实例，支持丰富的配置：
+
+```csharp
+public class TimerTask
+{
+    // 设置完成回调
+    public TimerTask OnComplete(Action callback)
+    
+    // 设置更新回调（每帧调用）
+    public TimerTask OnUpdate(Action<float> callback) // 参数为剩余时间
+    
+    // 绑定GameObject（物体销毁时自动取消计时器）
+    public TimerTask BindToGameObject(GameObject owner)
+    
+    // 设置是否忽略Time.timeScale
+    public TimerTask SetUnscaled(bool unscaled = true)
+    
+    // 设置循环次数（-1为无限循环）
+    public TimerTask SetLoop(int loopCount)
+    
+    // 暂停/恢复
+    public void Pause()
+    public void Resume()
+    
+    // 取消计时器
+    public void Cancel()
+}
+```
+
+### 使用教程
+
+#### 基础用法
+
+```csharp
+// 最简单的延迟调用（替代Invoke）
+YusTimer.Create(3f, () => {
+    Debug.Log("3秒后执行");
+});
+
+// 链式调用
+YusTimer.Create(5f)
+    .OnComplete(() => Debug.Log("完成！"))
+    .OnUpdate(remainTime => Debug.Log($"剩余：{remainTime:F2}秒"))
+    .BindToGameObject(gameObject);  // 绑定生命周期
+```
+
+#### 高级用法
+
+```csharp
+// 循环计时器
+YusTimer.Create(1f)
+    .SetLoop(-1)  // 无限循环
+    .OnComplete(() => Debug.Log("每秒触发一次"));
+
+// 不受时间缩放影响（UI倒计时等）
+YusTimer.Create(60f)
+    .SetUnscaled(true)  // 即使Time.timeScale=0也继续
+    .OnComplete(() => ShowTimeoutUI());
+
+// 可控制的计时器
+TimerTask countdownTimer = YusTimer.Create(10f)
+    .OnUpdate(time => UpdateUI(time))
+    .OnComplete(() => GameOver());
+
+// 暂停游戏时暂停计时器
+if (isPaused)
+    countdownTimer.Pause();
+else
+    countdownTimer.Resume();
+
+// 手动取消
+countdownTimer.Cancel();
+```
+
+#### 实战示例
+
+##### 技能冷却计时
+
+```csharp
+public class SkillSystem : MonoBehaviour
+{
+    private TimerTask cooldownTimer;
+    
+    public void UseSkill()
+    {
+        if (cooldownTimer != null && !cooldownTimer.IsDone)
+        {
+            Debug.Log("技能冷却中...");
+            return;
+        }
+        
+        // 释放技能
+        CastSkill();
+        
+        // 开始冷却
+        cooldownTimer = YusTimer.Create(5f)
+            .OnUpdate(time => UpdateCooldownUI(time))
+            .OnComplete(() => Debug.Log("技能冷却完成！"));
+    }
+}
+```
+
+##### 敌人AI巡逻
+
+```csharp
+public class EnemyAI : MonoBehaviour
+{
+    void Start()
+    {
+        // 每3秒切换一次巡逻点
+        YusTimer.Create(3f)
+            .SetLoop(-1)
+            .BindToGameObject(gameObject)  // 敌人死亡自动取消
+            .OnComplete(() => MoveToNextWaypoint());
+    }
+}
+```
+
+##### Buff系统
+
+```csharp
+public class BuffSystem : MonoBehaviour
+{
+    public void ApplyBuff(float duration)
+    {
+        // 激活Buff
+        EnableBuffEffect();
+        
+        // duration秒后自动移除
+        YusTimer.Create(duration)
+            .BindToGameObject(gameObject)
+            .OnComplete(() => DisableBuffEffect());
+    }
+}
+```
+
+### 编辑器工具
+
+#### YusTimerDebugger 实时监控
+
+菜单：**Tools → Yus Data → 计时器监视器**
+
+功能：
+- 实时显示所有活动计时器
+- 查看剩余时间和循环次数
+- 显示绑定的GameObject
+- 一键取消所有计时器
+
+### 性能对比
+
+| 方法 | GC分配 | 性能 | 易用性 |
+|------|--------|------|--------|
+| Invoke | 0 | 中 | ⭐⭐ |
+| Coroutine | 每次52B | 中 | ⭐⭐⭐ |
+| YusTimer | 0（首次后） | 高 | ⭐⭐⭐⭐⭐ |
+
+### 常见问题
+
+**Q: YusTimer和协程有什么区别？**  
+A: 
+- YusTimer零GC，协程每次调用有GC
+- YusTimer更直观，一行代码搞定
+- YusTimer自动管理生命周期
+- 协程更适合复杂的状态流程
+
+**Q: 会不会和DOTween等插件冲突？**  
+A: 完全不冲突，各管各的，YusTimer专注于简单延迟和循环，DOTween专注于动画。
+
+**Q: 能用于UI动画吗？**  
+A: 可以但不推荐，UI动画建议用DOTween/LeanTween，YusTimer适合逻辑计时。
+
+---
+
+<a name="15-yusloggersystem"></a>
+## 15. YusLoggerSystem - 日志系统 ⭐NEW
+
+统一的日志管理系统，支持日志记录、过滤、历史查看和文件导出。
+
+### 核心功能
+
+- **统一日志接口** - 替代Debug.Log
+- **分级日志** - Log/Warning/Error
+- **历史记录** - 保存最近N条日志
+- **文件导出** - 一键导出日志到文件
+- **运行时查看** - 编辑器窗口实时查看
+- **自动捕获Unity日志** - 包括报错和警告
+
+### 核心类详解
+
+#### YusLogger 日志管理器
+
+```csharp
+public class YusLogger : MonoBehaviour
+{
+    public static YusLogger Instance { get; private set; }
+    
+    // 静态便捷接口
+    public static void Log(object message)
+    public static void Warning(object message)
+    public static void Error(object message)
+    
+    // 日志管理
+    public List<LogEntry> GetLogs()
+    public void ClearLogs()
+    public void ExportToFile(string filePath)
+}
+```
+
+#### LogEntry 日志条目
+
+```csharp
+[Serializable]
+public class LogEntry
+{
+    public string Time;        // 时间戳
+    public LogType Type;       // 日志类型
+    public string Message;     // 日志内容
+    public string StackTrace;  // 堆栈信息（仅Error）
+}
+```
+
+### 使用教程
+
+#### 基础用法
+
+```csharp
+// 替代Debug.Log
+YusLogger.Log("游戏开始");
+YusLogger.Warning("血量低于20%");
+YusLogger.Error("无法加载配置文件");
+
+// 格式化输出
+YusLogger.Log($"玩家得分：{score}");
+
+// 条件日志
+if (Application.isEditor)
+{
+    YusLogger.Log("[开发模式] 跳过验证");
+}
+```
+
+#### 高级用法
+
+```csharp
+// 导出日志到文件
+string path = Application.persistentDataPath + "/game_log.txt";
+YusLogger.Instance.ExportToFile(path);
+
+// 获取所有日志
+List<YusLogger.LogEntry> logs = YusLogger.Instance.GetLogs();
+foreach (var log in logs)
+{
+    Debug.Log($"[{log.Time}] {log.Type}: {log.Message}");
+}
+
+// 清空日志
+YusLogger.Instance.ClearLogs();
+```
+
+#### 实战示例
+
+##### 游戏事件日志
+
+```csharp
+public class GameManager : MonoBehaviour
+{
+    void Start()
+    {
+        YusLogger.Log("=== 游戏启动 ===");
+        YusLogger.Log($"版本：{Application.version}");
+        YusLogger.Log($"平台：{Application.platform}");
+    }
+
+    public void OnPlayerDie()
+    {
+        YusLogger.Log($"玩家死亡 - 原因：{deathReason}");
+        YusLogger.Log($"存活时间：{survivalTime}秒");
+    }
+
+    public void OnLevelComplete()
+    {
+        YusLogger.Log($"关卡完成 - 得分：{score}");
+        YusLogger.Log($"收集物品：{itemCount}/{totalItems}");
+    }
+}
+```
+
+##### 错误追踪
+
+```csharp
+public class DataLoader : MonoBehaviour
+{
+    public void LoadConfig(string fileName)
+    {
+        try
+        {
+            // 加载逻辑...
+            YusLogger.Log($"成功加载配置：{fileName}");
+        }
+        catch (Exception e)
+        {
+            YusLogger.Error($"加载配置失败：{fileName}");
+            YusLogger.Error($"错误信息：{e.Message}");
+        }
+    }
+}
+```
+
+##### 性能监控
+
+```csharp
+public class PerformanceMonitor : MonoBehaviour
+{
+    private float lastLogTime;
+
+    void Update()
+    {
+        if (Time.time - lastLogTime > 5f)  // 每5秒记录一次
+        {
+            lastLogTime = Time.time;
+            
+            YusLogger.Log($"FPS: {1f / Time.deltaTime:F0}");
+            YusLogger.Log($"内存: {(System.GC.GetTotalMemory(false) / 1048576f):F2} MB");
+            
+            if (Time.deltaTime > 0.033f)  // 低于30FPS警告
+            {
+                YusLogger.Warning("性能下降！");
+            }
+        }
+    }
+}
+```
+
+### 编辑器工具
+
+#### 日志查看器窗口
+
+菜单：**Tools → Yus Data → 日志查看器**
+
+功能：
+- 实时显示所有日志
+- 按类型过滤（Log/Warning/Error）
+- 搜索日志内容
+- 一键清空
+- 一键导出
+
+### 配置项
+
+在YusLogger组件上可配置：
+
+```csharp
+[Header("Settings")]
+[SerializeField] private bool captureUnityLogs = true;  // 是否捕获Unity原生日志
+[SerializeField] private int maxLogCount = 2000;        // 最大保存日志数量
+```
+
+### 最佳实践
+
+1. **统一使用YusLogger** - 项目中用YusLogger替代Debug.Log
+2. **分级使用** - Log用于普通信息，Warning用于警告，Error用于错误
+3. **关键节点记录** - 在重要流程记录日志，方便事后追溯
+4. **定期导出** - 在测试版本中定期导出日志
+5. **发布版本禁用** - Build时通过宏关闭日志输出
+
+### 常见问题
+
+**Q: 会影响性能吗？**  
+A: 影响极小，日志存储在内存，不会每次都写文件。建议设置maxLogCount避免内存占用过大。
+
+**Q: 如何在发布版本禁用？**  
+A: 在构建设置中定义 `DISABLE_LOGGING` 宏，或在代码中：
+```csharp
+#if !UNITY_EDITOR
+    YusLogger.Instance.enabled = false;
+#endif
+```
+
+**Q: 能替代第三方日志插件吗？**  
+A: 对于中小型项目完全够用。大型项目或需要远程日志可考虑Sentry等专业方案。
+
+---
+
+<a name="16-yussingletonmanager"></a>
+## 16. YusSingletonManager - 单例管理器 ⭐NEW
+
+统一管理所有单例系统的中央枢纽，解决单例混乱、DontDestroyOnLoad对象满天飞的问题。
+
+### 核心功能
+
+- **统一的DontDestroyOnLoad对象** - 所有单例都挂在一个父对象下
+- **生命周期管理** - 统一初始化顺序
+- **依赖注入** - 快速访问各个系统
+- **可视化管理** - Inspector一眼看清所有单例
+- **自动扫描** - 编辑器工具自动发现新单例
+- **防止重复** - 单例冲突检测
+
+### 核心类详解
+
+```csharp
+public class YusSingletonManager : MonoBehaviour
+{
+    public static YusSingletonManager Instance { get; private set; }
+
+    [Header("=== 核心架构系统 ===")]
+    public YusEventManager Event;
+    public YusResManager Res;
+    public YusInputManager Input;
+    public SceneAudioManager Audio;
+    public YusPoolManager Pool;
+    public UIManager UI;
+
+    [Header("=== 业务逻辑系统 ===")]
+    public BubbleManager Bubble;
+    public DialogueKeyManager DialogueKey;
+    public PlayerManager Player;
+
+    [Header("=== 自动扫描到的其他单例 ===")]
+    [SerializeField] private List<MonoBehaviour> otherSingletons;
+}
+```
+
+### 项目结构建议
 
 ```
-[RequireComponent(typeof(Animator))]
-public partial class WarriorController : MonoBehaviour
-{
-    public YusFSM fsm;
-    public Animator Animator { get; private set; }
+场景层级结构：
+=== YusSingletonManager ===  (DontDestroyOnLoad)
+├── Core Systems/
+│   ├── YusEventManager
+│   ├── YusResManager
+│   ├── YusInputManager
+│   ├── SceneAudioManager
+│   ├── YusPoolManager
+│   ├── UIManager
+│   └── YusTimer
+├── Game Systems/
+│   ├── DialogueKeyManager
+│   ├── BubbleManager
+│   └── PlayerManager
+└── Other Singletons/
+    └── (自动扫描添加)
+```
 
+### 使用教程
+
+#### 步骤1：创建管理器对象
+
+1. 创建空GameObject，命名为 `=== YusSingletonManager ===`
+2. 挂载 `YusSingletonManager.cs` 脚本
+3. 创建子对象分组（Core Systems、Game Systems）
+
+#### 步骤2：添加各个单例系统
+
+```
+Core Systems/
+├── 创建子对象 "YusEventManager"，挂载YusEventManager.cs
+├── 创建子对象 "YusPoolManager"，挂载YusPoolManager.cs
+├── 创建子对象 "SceneAudioManager"，挂载SceneAudioManager.cs
+└── ... 其他核心系统
+```
+
+#### 步骤3：在Inspector中关联引用
+
+在YusSingletonManager组件上，将各个子对象拖拽到对应字段：
+- Event → YusEventManager对象
+- Pool → YusPoolManager对象
+- Audio → SceneAudioManager对象
+- ...
+
+#### 步骤4：使用编辑器工具自动设置（推荐）
+
+菜单：**Tools → Yus Data → 单例扫描器**
+
+功能：
+- 自动扫描场景中的所有单例
+- 自动创建YusSingletonManager
+- 自动关联引用
+- 检测重复单例
+
+### 使用示例
+
+#### 快速访问各系统
+
+```csharp
+// 旧方式（繁琐）
+YusEventManager.Instance.TriggerEvent("xxx");
+YusPoolManager.Instance.Get("xxx");
+SceneAudioManager.Instance.PlayMusic("xxx");
+
+// 新方式（推荐 - 通过管理器访问）
+var manager = YusSingletonManager.Instance;
+manager.Event.TriggerEvent("xxx");
+manager.Pool.Get("xxx");
+manager.Audio.PlayMusic("xxx");
+
+// 或者保存引用避免重复Instance查找
+private YusSingletonManager _mgr;
+
+void Start()
+{
+    _mgr = YusSingletonManager.Instance;
+    _mgr.Event.TriggerEvent("GameStart");
+}
+```
+
+#### 初始化顺序控制
+
+```csharp
+public class YusSingletonManager : MonoBehaviour
+{
     private void Awake()
     {
-        Animator = GetComponent();
-        fsm = new YusFSM(this);
-        OnInit();
-    }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
 
-    private void Update() => fsm.OnUpdate();
-    private void FixedUpdate() => fsm.OnFixedUpdate();
-    partial void OnInit(); // ← 你在这里写初始化
-}
-```
-
-#### WarriorIdleState.cs（自动生成 + 你扩展）
-
-```
-// 自动生成的基类（不要改！）
-public partial class WarriorIdleState : YusState
-{
-    public override void OnEnter()
-    {
-        // 自动播放 Idle 动画（用 Hash，零开销）
-        owner.Animator.CrossFade(2081823275, 0.1f);
-        OnEnterUser();
-    }
-
-    partial void OnEnterUser();     // ← 你在这里写逻辑
-    public override void OnUpdate() { OnUpdateUser(); }
-    partial void OnUpdateUser();    // ← 你在这里写逻辑
-}
-
-// 你自己写的扩展文件（永远不会被覆盖！）
-public partial class WarriorIdleState
-{
-    partial void OnEnterUser()
-    {
-        owner.rb.velocity = Vector2.zero;
-    }
-
-    partial void OnUpdateUser()
-    {
-        if (owner.inputMove.sqrMagnitude > 0.01f)
-            fsm.ChangeState();
-    }
-}
-```
-
-### 你只需要写这一部分（业务逻辑）
-
-```
-// WarriorController.cs（你自己的文件）
-public partial class WarriorController
-{
-    public Rigidbody rb;
-    public Vector2 inputMove;
-
-    partial void OnInit()
-    {
-        rb = GetComponent();
+        CheckComponents();
         
-        // 输入绑定
-        this.YusRegisterInput(YusInputManager.Instance.controls.Gameplay.Move, 
-            ctx => inputMove = ctx.ReadValue());
+        // 控制初始化顺序
+        InitializeSystems();
+    }
 
-        // 启动 FSM
-        fsm.Start();
+    private void InitializeSystems()
+    {
+        // 1. 先初始化基础系统
+        Res?.Init();
+        Event?.Init();
+        
+        // 2. 再初始化依赖基础系统的模块
+        Pool?.Init();
+        Audio?.Init();
+        UI?.Init();
+        
+        // 3. 最后初始化业务系统
+        DialogueKey?.Init();
+        Player?.Init();
+        
+        YusLogger.Log("[YusSingletonManager] 所有系统初始化完成");
     }
 }
+```
 
-// WarriorRunState.cs（你自己的扩展）
-public partial class WarriorRunState
+### 编辑器工具
+
+#### SingletonScanner 单例扫描器
+
+菜单：**Tools → Yus Data → 单例扫描器**
+
+功能：
+1. **扫描场景** - 查找所有单例对象
+2. **冲突检测** - 发现多个相同单例
+3. **自动修复** - 一键修复冲突
+4. **生成管理器** - 自动创建YusSingletonManager
+5. **关联引用** - 自动设置各个字段
+
+### 最佳实践
+
+#### 1. 单例层级结构
+
+```
+=== YusSingletonManager ===
+├── [Core] 核心框架系统（不要删）
+├── [Game] 游戏逻辑系统（项目特定）
+└── [Temp] 临时单例（可删除）
+```
+
+#### 2. 单例命名规范
+
+```
+YusEventManager   ✅ 框架系统
+SceneAudioManager ✅ 场景系统
+PlayerManager     ✅ 业务系统
+UIManager         ✅ UI系统
+
+Manager           ❌ 太泛化
+Temp              ❌ 不清晰
+```
+
+#### 3. 避免循环依赖
+
+```csharp
+// ❌ 错误：循环依赖
+public class SystemA : MonoBehaviour
 {
-    public override void OnFixedUpdate()
-    {
-        Vector3 dir = new Vector3(owner.inputMove.x, owner.inputMove.y, 0);
-        owner.rb.velocity = dir * owner.moveSpeed;
+    void Start() {
+        SystemB.Instance.DoSomething();  // A依赖B
     }
+}
 
-    partial void OnUpdateUser()
-    {
-        if (owner.inputMove.sqrMagnitude < 0.01f)
-            fsm.ChangeState();
+public class SystemB : MonoBehaviour
+{
+    void Start() {
+        SystemA.Instance.DoSomething();  // B依赖A - 循环！
+    }
+}
+
+// ✅ 正确：通过事件解耦
+public class SystemA : MonoBehaviour
+{
+    void Start() {
+        YusEventManager.Instance.TriggerEvent("AReady");
+    }
+}
+
+public class SystemB : MonoBehaviour
+{
+    void Start() {
+        YusEventManager.Instance.AddListener("AReady", OnAReady);
     }
 }
 ```
 
-### 最佳实践：战士完整示例
+### 常见问题
 
-整个战士只需要你写 **3 个文件**：
+**Q: 必须用YusSingletonManager吗？**  
+A: 不是必须，但强烈推荐。它能让项目结构更清晰，避免单例混乱。
 
--   `WarriorController.cs`（输入 + 初始化）
--   `WarriorIdleState.cs`（扩展 Idle 逻辑）
--   `WarriorRunState.cs`（扩展 Run 逻辑）
-
-其他全部自动生成！改动画 → 重新生成 → 完工！
-
-### 优势总结（你将获得的能力）
-
-功能
-
-传统方式
-
-AnimSystem
-
-改一个动画状态
-
-改 Animator + 改代码
-
-只改 Animator → 点一下生成
-
-动画播放性能
-
-Play("Idle") 字符串查找
-
-CrossFade(Hash) 零开销
-
-逻辑扩展安全
-
-容易被覆盖
-
-partial 永不丢失
-
-团队协作
-
-动画和程序互相等
-
-动画做完 → 程序一键生成 → 各自开发
-
-热更支持
-
-困难
-
-完美
-
-**结论：这是目前 Unity 生态最强的“动画驱动逻辑”解决方案，没有之一。**
-
-**恭喜！你现在拥有了一个可以吊打任何商业项目的动画状态机系统！**  
-从此告别：
-
--   动画改了，代码没改，角色卡住不动
--   运行时 Play("Attack") 字符串拼错
--   程序等动画，动画等程序
--   热更后动画和逻辑又脱节
-
-**真正的“动画即逻辑，逻辑即动画”**。
-
-## YusGameFrame 本地化系统使用指南
-
-本系统旨在提供一个统一、高效的本地化解决方案，打通了 Excel 配置、Unity UI、Fungus 对话系统以及自定义气泡对话系统。所有文本数据由 Excel 统一管理，支持运行时动态切换语言。
-
-### 1\. 核心流程：Excel 配置
-
-所有的游戏文本（UI、剧情、物品名等）都必须配置在指定的 Excel 文件中。
-
--   **文件路径**: `Assets/YusGameFrame/ExcelTool/Excels/Localization.xlsx`
--   **表头格式**:
-    -   第一行 (变量名): `key`, `zh_cn`, `en_us` (可扩展其他语言列)
-    -   第二行 (类型): `string`, `string`, `string`
-    -   第三行 (Meta): `key`, (留空), (留空)
--   **数据导出**:
-    1.  点击菜单栏 **Tools/Yus Data/1. 生成代码 (Gen Code)** (仅当修改列结构时需要)。
-    2.  点击菜单栏 **Tools/Yus Data/2. 导出数据到 SO (Export Data)** (每次修改文本后需要)。
-
-### 2\. 场景初始化
-
-在游戏的主管理器物体（如 GameManager）上，确保挂载以下两个脚本：
-
--   **LocalizationManager**: 核心管理器，负责加载数据和切换语言。
--   **FungusLocalizationBridge**: 桥接脚本，负责拦截 Fungus 的文本渲染并进行替换。
-
-### 3\. 功能模块使用说明
-
-#### 3.1 静态 UI 文本 (UGUI)
-
-对于菜单、按钮标题等静态文本：
-
-1.  在挂载了 `Text` 组件的物体上，添加 **LocalizedText** 脚本。
-2.  在 Inspector 的 **Key** 字段中，填入 Excel 里的对应 Key (例如 `BTN_START`)。
-3.  **效果**: 游戏运行时会自动显示对应语言文本；切换语言时会自动刷新。
-
-#### 3.2 Fungus 对话系统
-
-无需修改 Fungus 源码，直接使用占位符语法：
-
--   **对话内容 (Say Command)**: 在 Story Text 中输入 `{$KEY_NAME}`。  
-    _示例: `{$DIALOGUE_001}` -> 运行时显示 "你好，旅行者"_
--   **选项文本 (Menu Command)**: 在 Text 中输入 `{$KEY_NAME}`。
--   **角色名字**:
-    1.  找到场景中的 Fungus **Character** 物体。
-    2.  挂载 **LocalizedFungusCharacter** 脚本。
-    3.  在 **Name Key** 字段填入 Excel 中的 Key (例如 `CHAR_HERO`)。
-
-#### 3.3 气泡对话系统 (BubbleDialogue)
-
-气泡系统已内置集成：
-
--   在调用 `AddBubble` 指令或配置气泡数据时，**Text** 字段可以直接填 **Key**。
--   系统会自动尝试查找翻译。如果找不到对应的 Key，则会将其视为普通文本直接显示。
-
-#### 3.4 代码调用 (C#)
-
-在脚本中动态获取文本：
-
-```
-// 获取翻译
-string content = LocalizationManager.Instance.GetString("TIP_NO_MONEY");
-
-// 切换语言 (会自动触发 YusEvents.OnLanguageChanged 事件)
-LocalizationManager.Instance.ChangeLanguage(Language.en_us);
+**Q: 可以添加自己的业务单例吗？**  
+A: 完全可以！在YusSingletonManager类中添加字段即可：
+```csharp
+[Header("=== 我的业务系统 ===")]
+public MyShopManager Shop;
+public MyInventoryManager Inventory;
 ```
 
-### 4\. 事件系统集成
+**Q: 如何处理场景切换？**  
+A: YusSingletonManager是DontDestroyOnLoad，会在场景间保持。场景特定的系统不要挂在它下面。
 
-本系统已接入 `YusEventSystem`。当语言发生变化时，会广播 `YusEvents.OnLanguageChanged` 事件。所有挂载了 `LocalizedText` 或 `LocalizedFungusCharacter` 的组件会自动响应此事件，无需手动管理生命周期。
+**Q: 如何在新场景初始化？**  
+A: 
+```csharp
+void Start()
+{
+    // 确保管理器存在
+    if (YusSingletonManager.Instance == null)
+    {
+        // 从Resources或场景加载
+        Instantiate(Resources.Load("YusSingletonManager"));
+    }
+}
+```
 
-© 2025 Yus框架 Unity项目教程
+---
+<a name="17-yusassetexporter"></a>
+## 17. YusAssetExporter - 资源导出工具
+
+批量资源导出和AssetBundle打包工具，支持自定义导出规则和版本管理。
+
+### 核心功能
+
+- 批量资源导出
+- AssetBundle打包
+- 自定义导出规则
+- 版本管理
+- 增量导出
+
+---
+
+<a name="18-fungus"></a>
+## 18. Fungus - 对话系统集成
+
+与知名对话系统Fungus的深度集成，提供自定义Command和框架交互。
+
+### 核心功能
+
+- 自定义Fungus Command
+- 与音频系统集成
+- 与对话钥匙系统集成
+- 与事件系统集成
+
+### 可用命令
+
+1. **Play Music (Yus)** - 播放背景音乐
+2. **Play SFX (Yus)** - 播放音效
+3. **Switch/Return Music** - 临时切换音乐
+4. **Dialogue Trigger Condition** - 对话条件判断
+5. **Increment Dialogue Count** - 对话次数+1
+6. **Set Dialogue Trigger** - 设置对话触发状态
+
+---
+
+<a name="19-singletonscanner"></a>
+## 19. SingletonScanner - 单例扫描器（编辑器工具）
+
+编辑器工具，用于扫描和管理场景中的单例对象。
+
+### 核心功能
+
+- 自动扫描场景单例
+- 冲突检测
+- 一键修复
+- 生成管理器代码
+
+### 使用方式
+
+菜单：**Tools → Yus Data → 单例扫描器**
+
+---
+
+<a name="20-yusfolderimporter"></a>
+## 20. YusFolderImporter - 文件夹导入器（编辑器工具）
+
+自动配置资源导入设置，支持批量处理和规则配置。
+
+### 核心功能
+
+- 自动导入设置
+- 批量处理
+- 规则配置
+- 预设管理
+
+---
+
+## ❓ 常见问题（FAQ）
+
+### 通用问题
+
+**Q: 我需要导入整个框架吗？**  
+A: 不需要。每个模块都是独立的，可以按需导入。建议从核心模块开始（EventSystem、PoolSystem、Timer等）。
+
+**Q: 框架支持哪些Unity版本？**  
+A: 推荐Unity 2022.3 LTS及以上版本。理论上支持Unity 2020+，但未经全面测试。
+
+**Q: 会影响游戏性能吗？**  
+A: 不会。框架设计注重性能，核心系统都有零GC优化。对象池、计时器等模块显著提升性能。
+
+**Q: 可以用于商业项目吗？**  
+A: 可以。框架采用MIT许可证，可自由用于商业项目。
+
+**Q: 如何获取技术支持？**  
+A: 可以通过Issues提问，或加入开发者社区讨论。
+
+### 性能相关
+
+**Q: 对象池会占用很多内存吗？**  
+A: 对象池使用内存换性能的策略。可通过配置最大池容量控制内存占用。建议根据目标平台调整。
+
+**Q: 事件系统的性能如何？**  
+A: YusEventSystem采用字典查找 + 委托调用，性能极高。大量事件触发也不会有性能问题。
+
+**Q: Timer系统真的零GC吗？**  
+A: 是的。Timer基于对象池实现，首次创建后不再产生GC。对比每次Coroutine的52B分配，优势明显。
+
+### 兼容性问题
+
+**Q: 可以和DOTween一起使用吗？**  
+A: 完全可以。框架不会与第三方插件冲突。建议DOTween做补间动画，YusTimer做逻辑计时。
+
+**Q: 支持移动平台吗？**  
+A: 支持。框架已在iOS和Android上测试通过。
+
+**Q: 可以和URP/HDRP一起用吗？**  
+A: 可以。框架与渲染管线无关。
+
+---
+
+## 💡 最佳实践
+
+### 项目组织
+
+1. **模块化结构**
+   ```
+   Assets/
+   ├── YusGameFrame/      ← 框架代码（不要修改）
+   ├── Game/              ← 你的游戏代码
+   │   ├── Scripts/
+   │   ├── Prefabs/
+   │   └── Resources/
+   └── ThirdParty/        ← 第三方插件
+   ```
+
+2. **单例管理**
+   - 所有单例统一挂在YusSingletonManager下
+   - 使用编辑器工具自动扫描和管理
+   - 避免在场景中创建多个单例
+
+3. **资源管理**
+   - 小资源放Resources，大资源用AB包
+   - 使用ResLoadSystem统一加载
+   - 配合PoolSystem避免频繁加载
+
+### 代码规范
+
+1. **事件命名**
+   ```csharp
+   // ✅ 推荐
+   "OnPlayerDie"
+   "OnLevelComplete"
+   "OnScoreChange"
+   
+   // ❌ 不推荐
+   "playerdie"
+   "level_complete"
+   "score"
+   ```
+
+2. **组件获取**
+   ```csharp
+   // ✅ 使用[Get]属性
+   [Get] private Rigidbody rb;
+   
+   // ❌ 避免在Update中GetComponent
+   void Update() {
+       GetComponent<Rigidbody>().AddForce(...);  // ❌
+   }
+   ```
+
+3. **资源路径**
+   ```csharp
+   // ✅ 使用常量
+   public static class ResourcePaths
+   {
+       public const string PLAYER_PREFAB = "Prefabs/Player";
+       public const string UI_MAIN_MENU = "UI/MainMenu";
+   }
+   
+   YusPoolManager.Instance.Get(ResourcePaths.PLAYER_PREFAB);
+   ```
+
+### 性能优化
+
+1. **优先使用对象池**
+   ```csharp
+   // ❌ 频繁创建销毁
+   Instantiate(bulletPrefab);
+   Destroy(bullet, 3f);
+   
+   // ✅ 使用对象池
+   YusPoolManager.Instance.Get("Weapons/Bullet");
+   bullet.GetComponent<PoolObject>().ReturnToPool(3f);
+   ```
+
+2. **合理使用事件**
+   ```csharp
+   // ✅ 使用事件解耦
+   YusEventManager.Instance.TriggerEvent("OnScoreChange", newScore);
+   
+   // ❌ 直接调用导致耦合
+   UIManager.Instance.UpdateScoreText(newScore);
+   PlayerController.Instance.OnScoreChange(newScore);
+   AudioManager.Instance.PlayScoreSound();
+   ```
+
+3. **计时器替代协程**
+   ```csharp
+   // ❌ 协程有GC
+   StartCoroutine(DelayedAction());
+   IEnumerator DelayedAction() {
+       yield return new WaitForSeconds(3f);
+       DoSomething();
+   }
+   
+   // ✅ 计时器零GC
+   YusTimer.Create(3f, () => DoSomething());
+   ```
+
+---
+
+## 🤝 贡献指南
+
+我们欢迎所有形式的贡献！
+
+### 如何贡献
+
+1. **Fork项目**
+2. **创建特性分支** (`git checkout -b feature/AmazingFeature`)
+3. **提交改动** (`git commit -m 'Add some AmazingFeature'`)
+4. **推送到分支** (`git push origin feature/AmazingFeature`)
+5. **提交Pull Request**
+
+### 贡献类型
+
+- 🐛 **Bug修复** - 修复框架中的问题
+- ✨ **新功能** - 添加新的模块或功能
+- 📝 **文档** - 改进文档、添加示例
+- 🎨 **代码质量** - 重构、优化性能
+- ✅ **测试** - 添加单元测试
+
+### 代码规范
+
+- 遵循C#命名约定
+- 添加XML文档注释
+- 保持代码简洁易读
+- 新功能需要配文档和示例
+
+---
+
+## 📄 许可证
+
+本项目采用 **MIT许可证**。
+
+```
+MIT License
+
+Copyright (c) 2024 YusGameFrame
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+你可以：
+- ✅ 商业使用
+- ✅ 修改代码
+- ✅ 分发
+- ✅ 私用
+
+前提是保留版权声明和许可证声明。
+
+---
+
+## 📞 联系方式
+
+- **项目主页**: [GitHub Repository](https://github.com/YourRepo/YusGameFrame)
+- **问题反馈**: [Issues](https://github.com/YourRepo/YusGameFrame/issues)
+- **讨论社区**: [Discussions](https://github.com/YourRepo/YusGameFrame/discussions)
+
+---
+
+## 🙏 致谢
+
+感谢所有为本项目做出贡献的开发者！
+
+特别感谢以下开源项目的启发：
+- Unity Technologies - Unity Engine
+- Fungus - Visual Novel Framework
+- DOTween - Animation Engine
+
+---
+
+## 📊 项目统计
+
+- **模块数量**: 20+
+- **代码行数**: 15000+
+- **文档页数**: 本README
+- **支持Unity版本**: 2022.3+
+- **许可证**: MIT
+
+---
+
+## 🗺️ 路线图
+
+### v1.0（当前版本）
+- ✅ 核心20个模块
+- ✅ 完整中英文文档
+- ✅ 编辑器工具集
+
+### v1.1（计划中）
+- 🔄 网络模块（HTTP/WebSocket）
+- 🔄 存档云同步
+- 🔄 更多编辑器工具
+- 🔄 性能分析器
+
+### v2.0（未来）
+- 💭 ECS架构支持
+- 💭 可视化节点编辑器
+- 💭 AI行为树系统
+- 💭 多人联机框架
+
+---
+
+## 📱 社区
+
+加入我们的开发者社区，获取：
+- 技术支持
+- 最新动态
+- 最佳实践分享
+- 项目展示
+
+---
+
+<div align="center">
+
+**如果这个框架对你有帮助，请给我们一个⭐Star！**
+
+Made with ❤️ by YusGameFrame Team
+
+[⬆️ 回到顶部](#yusgameframe)
+
+</div>
+
+---
+---
+
+<a name="english-version"></a>
+
+# YusGameFrame - English Documentation
+
+<div align="center">
+
+**A Complete, Professional, Ready-to-Use Unity Game Development Framework**
+
+[![Unity Version](https://img.shields.io/badge/Unity-2022.3+-blue.svg)](https://unity.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Framework](https://img.shields.io/badge/Framework-YusGameFrame-orange.svg)](https://github.com/YourRepo/YusGameFrame)
+
+</div>
+
+## 📖 Introduction
+
+YusGameFrame is a modular framework meticulously crafted for Unity game development, covering everything from UI management, resource loading, object pooling, audio systems, to configuration table management. The framework emphasizes **ease of use**, **performance**, and **maintainability**, allowing developers to focus on gameplay implementation rather than infrastructure development.
+
+### ✨ Core Features
+
+- 🎯 **Modular Design** - 20+ independent modules, use as needed
+- 🚀 **Zero-GC Optimized** - Core systems like object pool and timer are completely GC-free
+- 🔧 **Ready to Use** - No complex configuration needed
+- 📊 **Visual Debugging** - Built-in editor tools for real-time system monitoring
+- 🌍 **Multi-language Support** - Complete localization system
+- 💾 **Powerful Config System** - One-click Excel import with hot reload support
+- 🎮 **Input System Integration** - Complete wrapper for Unity Input System
+- 🔊 **Professional Audio Management** - BGM/SFX separation with temporary switching
+- 📝 **Complete Documentation** - Detailed bilingual docs and code examples for each module
+
+### 🎯 Use Cases
+
+- ✅ Indie game development (small to medium-scale)
+- ✅ RPG/AVG/Dialogue-heavy games
+- ✅ Rapid prototyping
+- ✅ Game jam projects
+- ✅ Unity learning and teaching projects
+
+---
+
+## 🚀 Quick Start
+
+### System Requirements
+
+- **Unity Version**: 2022.3.62f1c1 or higher
+- **Supported Platforms**: Windows, macOS, Linux, iOS, Android
+- **Dependencies**: 
+  - Unity Input System (optional, for GameControls module)
+  - TextMeshPro (default UI system support)
+
+### Installation
+
+1. **Clone or download the project**
+```bash
+git clone https://github.com/YourRepo/YusGameFrame.git
+```
+
+2. **Open with Unity**
+   - Open the project folder with Unity Hub
+   - Wait for package manager to import dependencies
+
+3. **Import framework to your project (Optional)**
+   - Copy `Assets/YusGameFrame` folder to your project
+   - Or import individual modules as needed
+
+4. **Create manager object**
+   - Create empty GameObject, name it `YusSingletonManager`
+   - Attach `YusSingletonManager.cs` script
+   - Add other system components as needed
+
+5. **Start using**
+   - Refer to module documentation below
+
+### 5-Minute Getting Started Example
+
+```csharp
+using UnityEngine;
+
+public class QuickStartExample : MonoBehaviour
+{
+    void Start()
+    {
+        // 1. Play background music
+        SceneAudioManager.Instance.PlayMusic("MainTheme");
+        
+        // 2. Get object from pool
+        GameObject enemy = YusPoolManager.Instance.Get("Enemies/Goblin");
+        
+        // 3. Show UI
+        UIManager.Instance.Show<MainMenuUI>();
+        
+        // 4. Create timer
+        YusTimer.Create(3f, () => {
+            YusLogger.Log("3 seconds elapsed!");
+        });
+        
+        // 5. Trigger event
+        YusEventManager.Instance.TriggerEvent("GameStart");
+    }
+}
+```
+
+---
+
+## 📦 Complete Feature List
+
+<table>
+<tr>
+<th width="20%">Module</th>
+<th width="40%">Description</th>
+<th width="20%">Key Features</th>
+<th width="20%">Status</th>
+</tr>
+
+<tr>
+<td><strong>Attributes</strong></td>
+<td>Powerful custom attribute system with runtime watch, value retention, auto component injection</td>
+<td>[Watch], [KeepValue], [Get], [SceneSelector]</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>EditorProMax</strong></td>
+<td>Editor toolset including asset detective, scene switcher, folder colorizer</td>
+<td>Asset detection, code stats, quick navigation</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>ExcelTool</strong></td>
+<td>Excel config system with one-click import, binary storage, hot reload</td>
+<td>Auto code generation, SO export, Excel writeback</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>GameControls</strong></td>
+<td>Complete wrapper for Unity Input System with auto subscription, rebind saving</td>
+<td>Zero manual subscription, mode switching, auto cleanup</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>MusicControl</strong></td>
+<td>Professional audio system with BGM/SFX separation and temporary switching</td>
+<td>Persistent volume, auto restore, Fungus integration</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>PoolSystem</strong></td>
+<td>Industrial-grade object pool with zero-GC, auto recycling, real-time monitoring</td>
+<td>Delayed return, lifecycle management, visual debugging</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>ResLoadSystem</strong></td>
+<td>Resource loading system supporting Resources and AssetBundle</td>
+<td>Async loading, reference counting, auto unload</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>SimpleBinary</strong></td>
+<td>Binary save system - efficient, secure, easy to use</td>
+<td>Auto serialization, version management, encryption support</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>UISystem</strong></td>
+<td>UI management with layer management, animation transitions, message communication</td>
+<td>Stack management, auto hide, event binding</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>YusEventSystem</strong></td>
+<td>Event system with type-safe subscription and triggering</td>
+<td>Zero-GC, auto unbind, parameter support</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>YusFSM</strong></td>
+<td>Finite State Machine with visual editing and conditional transitions</td>
+<td>State switching, condition checking, extensible</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>AnimSystem</strong></td>
+<td>Animation system wrapper simplifying animation control</td>
+<td>State management, parameter control, event callbacks</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>Localization</strong></td>
+<td>Localization system supporting multi-language text, images, audio</td>
+<td>Runtime switching, auto refresh, Excel import</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>Timer</strong></td>
+<td>High-performance timer system with object pooling and auto recycling</td>
+<td>Zero-GC, delayed callbacks, pause/resume</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>YusLoggerSystem</strong></td>
+<td>Unified logging system with filtering and export</td>
+<td>Leveled logging, history, file export</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>YusSingletonManager</strong></td>
+<td>Singleton manager for unified lifecycle management</td>
+<td>Lifecycle management, dependency injection, visualization</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>YusAssetExporter</strong></td>
+<td>Asset export tool with batch export and version management</td>
+<td>Custom export rules, AssetBundle support</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>Fungus</strong></td>
+<td>Fungus dialogue system integration and extensions</td>
+<td>Custom Commands, deep framework integration</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>SingletonScanner</strong></td>
+<td>Singleton scanner (editor tool) for detecting scene singletons</td>
+<td>Auto scan, conflict detection, one-click fix</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>YusFolderImporter</strong></td>
+<td>Folder importer (editor tool) for auto-configuring import settings</td>
+<td>Batch processing, rule configuration, preset management</td>
+<td>✅ Stable</td>
+</tr>
+
+</table>
+
+---
+
+## 💡 Key Modules Overview
+
+### Timer System ⭐NEW
+High-performance, zero-GC timer system perfect for replacing coroutines in delay scenarios. Supports object pooling, automatic cleanup, and GameObject lifecycle binding.
+
+```csharp
+// Simple delay
+YusTimer.Create(3f, () => Debug.Log("Done!"));
+
+// With lifecycle binding
+YusTimer.Create(5f)
+    .BindToGameObject(gameObject)
+    .OnComplete(() => SpawnEnemy());
+
+// Infinite loop
+YusTimer.Create(1f)
+    .SetLoop(-1)
+    .OnComplete(() => UpdateGameLogic());
+```
+
+### Logger System ⭐NEW
+Unified logging interface replacing Debug.Log, with history tracking, filtering, and file export capabilities.
+
+```csharp
+// Replace Debug.Log
+YusLogger.Log("Game started");
+YusLogger.Warning("Low health");
+YusLogger.Error("Failed to load config");
+
+// Export logs
+YusLogger.Instance.ExportToFile(path);
+```
+
+### Singleton Manager ⭐NEW
+Central hub for managing all singleton systems, solving the problem of scattered DontDestroyOnLoad objects.
+
+```csharp
+// Quick access to all systems
+var mgr = YusSingletonManager.Instance;
+mgr.Event.TriggerEvent("GameStart");
+mgr.Pool.Get("Enemies/Goblin");
+mgr.Audio.PlayMusic("MainTheme");
+```
+
+---
+
+## ❓ FAQ
+
+**Q: Do I need to import the entire framework?**  
+A: No. Each module is independent and can be imported as needed.
+
+**Q: What Unity versions are supported?**  
+A: Recommended Unity 2022.3 LTS and above. Theoretically supports Unity 2020+.
+
+**Q: Will it affect game performance?**  
+A: No. The framework is performance-optimized with zero-GC in core systems.
+
+**Q: Can I use it in commercial projects?**  
+A: Yes. The framework uses MIT license and is free for commercial use.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+## 📞 Contact
+
+- **Project Home**: [GitHub Repository](https://github.com/YourRepo/YusGameFrame)
+- **Issue Tracker**: [Issues](https://github.com/YourRepo/YusGameFrame/issues)
+- **Community**: [Discussions](https://github.com/YourRepo/YusGameFrame/discussions)
+
+---
+
+<div align="center">
+
+**If this framework helps you, please give us a ⭐Star!**
+
+Made with ❤️ by YusGameFrame Team
+
+[⬆️ Back to Top](#yusgameframe---english-documentation)
+
+</div>
