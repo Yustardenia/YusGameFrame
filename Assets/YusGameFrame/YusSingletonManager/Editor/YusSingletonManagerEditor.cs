@@ -106,6 +106,7 @@ public class YusSingletonManagerEditor : Editor
                     // 排除 YusSingletonManager 自己
                     if (type != typeof(YusSingletonManager))
                     {
+                        if (type == typeof(YusCamera2DManager)) continue;
                         types.Add(type);
                     }
                 }

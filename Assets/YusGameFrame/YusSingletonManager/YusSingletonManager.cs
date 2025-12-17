@@ -18,6 +18,7 @@ public class YusSingletonManager : MonoBehaviour
     public YusInputManager Input;
     public YusCoroutineManager Coroutine;
     public SceneAudioManager Audio;
+    public YusCamera2DManager Camera2D;
     public YusPoolManager Pool;
     public UIManager UI;
 
@@ -78,6 +79,8 @@ public class YusSingletonManager : MonoBehaviour
         }
 
         if (!Audio) Audio = GetComponentInChildren<SceneAudioManager>();
+        if (!Camera2D) Camera2D = GetComponentInChildren<YusCamera2DManager>(true);
+        if (!Camera2D) Camera2D = FindObjectOfType<YusCamera2DManager>(true);
         if (!Pool) Pool = GetComponentInChildren<YusPoolManager>();
         if (!UI) UI = GetComponentInChildren<UIManager>();
         if (!Bubble) Bubble = GetComponentInChildren<BubbleManager>();
@@ -93,7 +96,7 @@ public class YusSingletonManager : MonoBehaviour
         if (mb == null) return;
         
         // 检查是否是核心字段之一
-        if (mb == Event || mb == Res || mb == Input || mb == Coroutine || mb == Audio || mb == Pool || mb == UI || mb == Bubble || mb == DialogueKey || mb == Player)
+        if (mb == Event || mb == Res || mb == Input || mb == Coroutine || mb == Audio || mb == Camera2D || mb == Pool || mb == UI || mb == Bubble || mb == DialogueKey || mb == Player)
             return;
 
         if (!otherSingletons.Contains(mb))
