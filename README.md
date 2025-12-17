@@ -22,7 +22,7 @@ YusGameFrame 是一个为Unity游戏开发精心打造的模块化框架，涵�
 
 ### ✨ 核心特点
 
-- 🎯 **模块化设计** - 22+独立模块，按需使用，互不干扰
+- 🎯 **模块化设计** - 24+独立模块，按需使用，互不干扰
 - 🚀 **零GC优化** - 对象池、计时器等核心系统完全零垃圾回收
 - 🔧 **开箱即用** - 无需复杂配置，拖入即用
 - 📊 **可视化调试** - 内置编辑器工具，实时监控系统状态
@@ -31,6 +31,8 @@ YusGameFrame 是一个为Unity游戏开发精心打造的模块化框架，涵�
 - 🎮 **新输入系统集成** - 完整封装Unity Input System
 - 🔊 **专业音频管理** - BGM/SFX分离，支持临时切换和自动恢复
 - ⚡ **协程统一管理** - 无需MonoBehaviour的协程系统，支持标签和Owner绑定
+- 🎥 **Cinemachine 2D封装** - 简化的相机管理系统，跟随、震屏、缩放一键搞定
+- 🌟 **DOTween轻量封装** - 统一的补间动画API，UI和游戏对象都适用
 - 📝 **完整文档** - 每个模块都有详细的中英文档和代码示例
 
 ### 🎯 适用场景
@@ -271,6 +273,20 @@ public class QuickStartExample : MonoBehaviour
 <td>✅ 稳定</td>
 </tr>
 
+<tr>
+<td><strong>CameraSystem</strong></td>
+<td>Cinemachine 2D相机封装，简化相机管理</td>
+<td>跟随目标、边界限制、缩放控制、震屏效果、多虚拟相机切换</td>
+<td>✅ 稳定</td>
+</tr>
+
+<tr>
+<td><strong>YusTweenSystem</strong></td>
+<td>DOTween轻量级封装，提供统一的补间动画API</td>
+<td>移动、缩放、旋转、颜色、UI动画、链式调用、自动清理</td>
+<td>✅ 稳定</td>
+</tr>
+
 </table>
 
 ---
@@ -302,7 +318,9 @@ YusGameFrame/
 │       ├── YusLoggerSystem/    # 日志系统
 │       ├── YusSingletonManager/# 单例管理器
 │       ├── CoroutineSystem/    # 协程管理系统
-│       └── TMProAnimation/     # TextMeshPro动画效果
+│       ├── TMProAnimation/     # TextMeshPro动画效果
+│       ├── CameraSystem/       # Cinemachine 2D封装
+│       └── YusTweenSystem/     # DOTween封装系统
 ├── Packages/                   # Unity包依赖
 ├── ProjectSettings/            # 项目设置
 └── README.md                   # 本文档
@@ -336,6 +354,8 @@ YusGameFrame/
 - [20. YusFolderImporter - 文件夹导入器](#20-yusfolderimporter)
 - [21. CoroutineSystem - 协程管理系统](#21-coroutinesystem)
 - [22. TMProAnimation - 文本动画效果](#22-tmproanimation)
+- [23. CameraSystem - Cinemachine 2D封装](#23-camerasystem)
+- [24. YusTweenSystem - DOTween封装系统](#24-yustweensystem)
 
 ---
 <a name="1-attributes"></a>
@@ -3054,6 +3074,542 @@ A:
 
 ---
 
+<a name="23-camerasystem"></a>
+## 23. CameraSystem - Cinemachine 2D 封装系统
+
+一套**轻量级、易用、专为2D游戏设计**的 Cinemachine 封装系统，让你不用深入学习 Cinemachine 复杂的组件和配置，就能实现相机跟随、边界限制、震屏、缩放等常用功能。
+
+**核心功能展示：**
+- 🎯 跟随目标（自动平滑跟随）
+- 📦 边界限制（Confiner2D，防止相机超出地图）
+- 🔍 缩放控制（放大/缩小镜头）
+- 📳 震屏效果（受击、爆炸等场景）
+- 🎬 多虚拟相机切换（不同场景用不同相机配置）
+- ⚙️ 编辑器一键启用/禁用
+
+### 核心架构
+
+```
+Cinemachine Package
+  ↓ 条件编译 (#if YUS_CINEMACHINE)
+YusCamera2DManager (单例)
+  ↓ 管理多个 Virtual Camera
+游戏逻辑（简单API调用）
+  - SetFollow(target)
+  - Shake(intensity, duration)
+  - SetZoom(size)
+  - SwitchVcam(key)
+```
+
+### 核心类详解
+
+#### YusCamera2DManager 全局单例
+
+整个相机系统的核心，提供简化的 API：
+
+- `SetFollow(Transform target)` - 设置相机跟随目标
+- `PushFollow(Transform target)` / `PopFollow()` - 跟随栈（切场景/过场动画临时切换）
+- `SetConfiner(Collider2D bounds)` - 设置相机边界（防止相机飞出地图）
+- `Shake(intensity, duration)` - 震屏效果
+- `SetZoom(float size, duration)` - 平滑缩放镜头
+- `SwitchVcam(string key)` - 切换虚拟相机（比如进入Boss房间用专门的Boss相机）
+
+#### VcamBinding 虚拟相机绑定
+
+支持在 Inspector 中配置多个虚拟相机，每个相机可以有不同的设置（跟随偏移、缩放、边界等），运行时一键切换。
+
+### 使用教程（3分钟上手）
+
+#### 步骤1：安装 Cinemachine（只需一次）
+
+打开 Unity Package Manager → 搜索 `Cinemachine` → 安装
+
+或者手动添加到 `Packages/manifest.json`：
+```json
+"com.unity.cinemachine": "2.9.7"
+```
+
+#### 步骤2：启用封装系统（只需一次）
+
+菜单 → **Tools → Yus Data → N. Camera → Cinemachine 2D → Enable**
+
+这会添加脚本宏 `YUS_CINEMACHINE`，启用相关代码（条件编译）。
+
+#### 步骤3：创建相机管理器（只需一次）
+
+创建一个空物体 → 挂上 `YusCamera2DManager.cs` 
+
+或者让它挂在 `YusSingletonManager` 下（推荐）。
+
+#### 步骤4：基础使用
+
+```csharp
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    void Start()
+    {
+        // 让相机跟随玩家
+        YusCamera2DManager.Instance.SetFollow(transform);
+        
+        // 设置相机边界（防止飞出地图）
+        Collider2D mapBounds = GameObject.Find("MapBounds").GetComponent<Collider2D>();
+        YusCamera2DManager.Instance.SetConfiner(mapBounds);
+    }
+    
+    void OnHit()
+    {
+        // 受击震屏
+        YusCamera2DManager.Instance.Shake(intensity: 3f, duration: 0.3f);
+    }
+    
+    void OnZoomIn()
+    {
+        // 平滑缩放（镜头拉近）
+        YusCamera2DManager.Instance.SetZoom(targetSize: 3f, duration: 1f);
+    }
+}
+```
+
+### 进阶功能
+
+#### 跟随栈（临时切换跟随目标）
+
+在过场动画或特殊场景中临时改变相机跟随目标，结束后自动恢复：
+
+```csharp
+// 进入Boss房间，临时跟随Boss
+YusCamera2DManager.Instance.PushFollow(bossTransform);
+
+// Boss被击败，恢复跟随玩家
+YusCamera2DManager.Instance.PopFollow();
+```
+
+#### 多虚拟相机切换
+
+在不同场景或游戏阶段使用不同的相机配置：
+
+```csharp
+// 在 Inspector 中配置多个虚拟相机：
+// - "Default": 正常游戏相机
+// - "Boss": Boss战相机（更近的镜头，不同的边界）
+// - "Cutscene": 过场动画相机
+
+// 进入Boss战
+YusCamera2DManager.Instance.SwitchVcam("Boss");
+
+// Boss战结束，切回默认
+YusCamera2DManager.Instance.SwitchVcam("Default");
+```
+
+#### 自定义虚拟相机设置
+
+在 Inspector 中可以为每个虚拟相机配置：
+- **Framing Transposer**：跟随偏移、阻尼、死区
+- **Confiner 2D**：边界碰撞体
+- **Camera Distance**：镜头远近（Orthographic Size）
+
+### 编辑器工具
+
+#### 控制面板
+
+**Tools → Yus Data → N. Camera → Cinemachine 2D → Control Panel**
+
+可视化窗口，显示：
+- Cinemachine 是否已安装
+- 系统是否已启用
+- 当前相机状态
+- 一键启用/禁用
+
+#### 启用/禁用系统
+
+```
+启用：Tools → Yus Data → N. Camera → Cinemachine 2D → Enable
+禁用：Tools → Yus Data → N. Camera → Cinemachine 2D → Disable
+```
+
+禁用后代码会通过条件编译自动失效，不影响打包体积。
+
+### 最佳实践
+
+#### 相机边界设置
+
+使用 `PolygonCollider2D` 或 `CompositeCollider2D` 精确定义地图边界：
+
+```csharp
+// 创建一个空物体 "MapBounds"
+// 添加 PolygonCollider2D，勾选 "Is Trigger"
+// 沿着地图边缘绘制多边形
+// 在代码中设置：
+YusCamera2DManager.Instance.SetConfiner(mapBounds);
+```
+
+#### 震屏强度建议
+
+```csharp
+// 轻微震动（走路、跳跃）
+YusCamera2DManager.Instance.Shake(1f, 0.1f);
+
+// 中等震动（受击、技能）
+YusCamera2DManager.Instance.Shake(3f, 0.3f);
+
+// 强烈震动（爆炸、Boss技能）
+YusCamera2DManager.Instance.Shake(6f, 0.5f);
+```
+
+#### 与 Timeline 集成
+
+Cinemachine 天然支持 Timeline，可以在过场动画中使用：
+
+1. 创建 Timeline
+2. 添加 Cinemachine Track
+3. 拖入不同的虚拟相机
+4. 播放 Timeline 时相机会自动切换
+
+### 常见问题
+
+**Q: 为什么需要条件编译（YUS_CINEMACHINE）？**  
+A: 因为 Cinemachine 是可选包，不是所有项目都需要。条件编译确保没安装时代码不报错。
+
+**Q: 可以和原生 Cinemachine 混用吗？**  
+A: 可以。这个封装只是提供简化的 API，底层依然是标准的 Cinemachine。
+
+**Q: 支持 3D 游戏吗？**  
+A: 当前版本专为 2D 设计（使用 Confiner2D 和 Orthographic 相机）。3D 游戏建议直接使用 Cinemachine。
+
+**Q: 震屏效果不明显怎么办？**  
+A: 增加 `intensity` 参数，或者调整虚拟相机上的 `NoiseProfile`。
+
+**Q: 相机跟随有延迟/卡顿？**  
+A: 检查虚拟相机的 `FramingTransposer` 组件，调整 `Damping` 参数（阻尼），数值越小越灵敏。
+
+---
+
+<a name="24-yustweensystem"></a>
+## 24. YusTweenSystem - DOTween 封装系统
+
+一套**统一、简洁、防漏**的 DOTween 封装系统，让你不用每次都纠结"我是不是忘了 SetUpdate / SetLink / SetId"，所有常用补间动画都有标准化的 API。
+
+**核心功能展示：**
+- 🎨 移动、缩放、旋转、颜色、透明度动画
+- 🎮 UI 专用动画（Fade、Slide、Popup、Shake）
+- 🔗 自动绑定生命周期（物体销毁时自动 Kill）
+- ⏱️ 统一时间控制（unscaledTime 默认开启，不受 Time.timeScale 影响）
+- 🎯 自动 Kill 旧动画（避免冲突）
+- 🌈 缓动曲线支持（内置常用曲线 + 自定义）
+- 📦 链式调用（OnComplete、OnUpdate 等）
+
+### 核心架构
+
+```
+DOTween Package
+  ↓ 条件编译 (#if YUS_DOTWEEN)
+YusTweenManager (单例，可选)
+  ↓ 提供管理器风格 API
+YusTween (静态类)
+  ↓ 提供纯静态 API
+游戏逻辑（简化调用）
+  - YusTween.MoveTo(...)
+  - YusTween.FadeIn(...)
+  - YusTweenManager.Instance.PopupUI(...)
+```
+
+### 核心类详解
+
+#### YusTween 静态工具类
+
+所有补间动画的入口，完全静态调用，无需实例化：
+
+**Transform 动画：**
+- `MoveTo` / `MoveLocalTo` - 移动到目标位置
+- `ScaleTo` / `ScaleFromTo` - 缩放
+- `RotateTo` / `RotateLocalTo` - 旋转
+- `Punch` / `Shake` - 冲击/震动效果
+
+**颜色动画：**
+- `ColorTo` - SpriteRenderer/Image 颜色变化
+- `FadeTo` - 透明度变化
+- `FadeIn` / `FadeOut` - 淡入/淡出
+
+**UI 动画：**
+- `CanvasGroupFadeIn` / `FadeOut` - UI 组淡入淡出
+- `RectTransformAnchorPosTo` - UI 位置动画
+
+#### YusTweenManager 管理器（可选）
+
+提供管理器风格的 API，额外功能：
+- UI 专用高级动画（PopupUI、SlideInUI 等）
+- 记录基础值（自动恢复原始缩放/旋转）
+- 统一默认配置（unscaledTime、killTargetTweens）
+
+#### YusEase 内置缓动曲线
+
+预定义了常用的缓动曲线：
+- `QuadOut` / `QuadInOut` - 二次曲线（最常用）
+- `BackOut` - 回弹效果（UI 弹出）
+- `ElasticOut` - 橡皮筋效果
+- `BounceOut` - 弹跳效果
+
+### 使用教程（3分钟上手）
+
+#### 步骤1：安装 DOTween（只需一次）
+
+Asset Store 下载 DOTween（免费）并导入项目。
+
+或使用 DOTween Pro（付费版，支持更多功能）。
+
+#### 步骤2：启用封装系统（只需一次）
+
+菜单 → **Tools → Yus Data → L. Dotween封装 → 打开启用窗口**
+
+点击 **"启用系统（添加宏）"**，这会添加脚本宏 `YUS_DOTWEEN`。
+
+#### 步骤3：直接使用（无需挂载）
+
+```csharp
+using UnityEngine;
+
+public class TweenExample : MonoBehaviour
+{
+    public Transform target;
+    public CanvasGroup uiPanel;
+    
+    void Start()
+    {
+        // 移动到目标位置（1秒，缓动曲线 OutQuad）
+        YusTween.MoveTo(target, new Vector3(5, 0, 0), duration: 1f);
+        
+        // UI 淡入（0.5秒）
+        YusTween.CanvasGroupFadeIn(uiPanel, duration: 0.5f);
+        
+        // 缩放动画（从 0 到 1，带回弹效果）
+        YusTween.ScaleFromTo(
+            target, 
+            from: Vector3.zero, 
+            to: Vector3.one, 
+            duration: 0.8f, 
+            ease: Ease.OutBack
+        );
+    }
+    
+    void OnButtonClick()
+    {
+        // 按钮点击动画（缩小再恢复）
+        YusTween.ScaleTo(
+            transform, 
+            Vector3.one * 0.9f, 
+            duration: 0.1f
+        ).OnComplete(() => {
+            YusTween.ScaleTo(transform, Vector3.one, duration: 0.1f);
+        });
+    }
+}
+```
+
+### 进阶功能
+
+#### UI 专用动画（使用 Manager）
+
+YusTweenManager 提供了常见的 UI 动画模式：
+
+```csharp
+// 弹窗动画（从小到大，带回弹）
+YusTweenManager.Instance.PopupUI(
+    uiPanel.transform, 
+    duration: 0.5f, 
+    onComplete: () => Debug.Log("弹窗完成")
+);
+
+// 抖动效果（提示错误）
+YusTweenManager.Instance.ShakeUI(
+    errorText.transform, 
+    strength: 20f, 
+    duration: 0.3f
+);
+
+// UI 滑入（从屏幕外滑入）
+RectTransform panel = GetComponent<RectTransform>();
+YusTween.RectTransformAnchorPosTo(
+    panel, 
+    targetAnchoredPos: Vector2.zero, 
+    duration: 0.5f, 
+    ease: Ease.OutQuad
+);
+```
+
+#### 链式调用和回调
+
+```csharp
+YusTween.MoveTo(enemy, playerPos, 2f)
+    .OnUpdate(() => {
+        // 每帧更新
+        CheckDistance();
+    })
+    .OnComplete(() => {
+        // 完成时
+        Attack();
+    })
+    .SetLoops(3, LoopType.Yoyo);  // 循环3次，往返
+```
+
+#### 自动生命周期绑定
+
+默认情况下，动画会自动绑定到 GameObject，物体销毁时动画自动停止：
+
+```csharp
+// 敌人移动动画
+YusTween.MoveTo(enemy.transform, targetPos, 5f);
+
+// 如果敌人在动画完成前被销毁，动画会自动 Kill，不会报错
+Destroy(enemy.gameObject, 2f);
+```
+
+可以通过参数控制：
+```csharp
+YusTween.MoveTo(
+    target, 
+    destination, 
+    duration: 2f,
+    linkBehaviour: LinkBehaviour.KillOnDestroy  // 默认
+    // 或 LinkBehaviour.CompleteOnDestroy  // 销毁时完成动画
+    // 或 LinkBehaviour.PauseOnDisable     // 禁用时暂停
+);
+```
+
+#### 时间控制（不受暂停影响）
+
+```csharp
+// UI 动画默认使用 unscaledTime（不受 Time.timeScale 影响）
+YusTween.FadeIn(pauseMenu, 0.5f, unscaledTime: true);
+
+// 游戏对象动画默认使用缩放时间
+YusTween.MoveTo(enemy, target, 3f, unscaledTime: false);
+```
+
+这样即使游戏暂停（`Time.timeScale = 0`），UI 动画依然正常播放。
+
+#### 自动 Kill 旧动画
+
+默认启用 `killTargetTweens: true`，避免动画冲突：
+
+```csharp
+// 第一次调用
+YusTween.MoveTo(player, pointA, 5f);
+
+// 第二次调用会自动 Kill 第一个动画，避免冲突
+YusTween.MoveTo(player, pointB, 3f);
+```
+
+### 编辑器工具
+
+#### 启用窗口
+
+**Tools → Yus Data → L. Dotween封装 → 打开启用窗口**
+
+显示：
+- DOTween 是否安装
+- 系统是否启用（宏状态）
+- 一键启用/禁用按钮
+
+### 最佳实践
+
+#### UI 动画推荐配置
+
+```csharp
+// 弹窗：快速放大，带回弹
+YusTween.ScaleFromTo(
+    panel, 
+    Vector3.zero, 
+    Vector3.one, 
+    duration: 0.5f, 
+    ease: Ease.OutBack
+);
+
+// 淡入：平滑过渡
+YusTween.CanvasGroupFadeIn(panel, 0.3f, ease: Ease.OutQuad);
+
+// 按钮点击：快速缩放反馈
+YusTween.ScaleTo(button, Vector3.one * 0.95f, 0.1f);
+```
+
+#### 游戏对象动画推荐配置
+
+```csharp
+// 敌人移动：线性或缓入缓出
+YusTween.MoveTo(enemy, target, 2f, ease: Ease.Linear);
+
+// 道具拾取：先升起再飞向玩家
+YusTween.MoveLocalTo(item, Vector3.up * 0.5f, 0.3f)
+    .OnComplete(() => {
+        YusTween.MoveTo(item, player.position, 0.5f);
+    });
+
+// 受击震动：快速抖动
+YusTween.Shake(enemy, strength: 0.3f, duration: 0.2f);
+```
+
+#### 性能优化
+
+```csharp
+// 大量对象动画时，使用对象池
+// 避免频繁创建 DOTween 实例
+
+// ✅ 推荐：用标签批量管理
+YusTween.MoveTo(enemy, target, 2f, id: "enemy_move");
+
+// 批量停止
+DOTween.Kill("enemy_move");
+
+// ✅ 推荐：复用 Tween
+private Tween _moveTween;
+
+void MoveToTarget(Vector3 target)
+{
+    _moveTween?.Kill();
+    _moveTween = YusTween.MoveTo(transform, target, 2f);
+}
+```
+
+### 与原生 DOTween 对比
+
+| 功能 | 原生 DOTween | YusTween 封装 |
+|------|-------------|--------------|
+| **基础动画** | `transform.DOMove(...)` | `YusTween.MoveTo(...)` |
+| **生命周期绑定** | 需要手动 `SetLink` | 自动绑定 |
+| **时间控制** | 需要手动 `SetUpdate(true)` | UI 默认 unscaled |
+| **Kill 旧动画** | 需要手动 `DOKill` | 自动 Kill |
+| **ID 标签** | 需要手动 `SetId` | 参数传入 |
+| **代码可读性** | 链式调用较长 | 参数更清晰 |
+
+### 常见问题
+
+**Q: 为什么需要条件编译（YUS_DOTWEEN）？**  
+A: 因为 DOTween 是第三方插件，不是所有项目都有。条件编译确保没安装时代码不报错。
+
+**Q: 可以和原生 DOTween 混用吗？**  
+A: 可以。这个封装只是提供简化的 API，底层依然是 DOTween。
+
+**Q: YusTween 和 YusTweenManager 有什么区别？**  
+A: 
+- `YusTween`：纯静态工具类，轻量级，无需实例化
+- `YusTweenManager`：单例管理器，提供额外功能（UI 高级动画、记录基础值等）
+
+**Q: 动画不生效/没反应？**  
+A: 检查：
+1. 是否启用了 `YUS_DOTWEEN` 宏
+2. 是否正确导入了 DOTween
+3. 目标对象是否为 null
+4. 是否被其他动画覆盖（尝试关闭 `killTargetTweens`）
+
+**Q: UI 动画在暂停时依然播放？**  
+A: 这是预期行为。UI 动画默认使用 `unscaledTime: true`，不受 `Time.timeScale` 影响。如果需要受影响，传入 `unscaledTime: false`。
+
+**Q: 性能如何？**  
+A: DOTween 本身性能极高（比 Unity Animation 快 5-10 倍）。封装层只是参数传递，几乎无性能损耗。
+
+---
+
 ## ❓ 常见问题（FAQ）
 
 ### 通用问题
@@ -3816,14 +4372,14 @@ SOFTWARE.
 
 ## 📊 项目统计
 
-- **版本**: v1.0.1
-- **模块数量**: 22+
-- **代码行数**: 16000+
+- **版本**: v1.0.2
+- **模块数量**: 24+
+- **代码行数**: 17000+
 - **文档**: 完整中英双语README + 代码注释
 - **支持Unity版本**: 2022.3+（推荐LTS版本）
 - **许可证**: MIT
 - **更新日期**: 2024年12月
-- **框架评分**: 8.2/10（基于代码审查）
+- **框架评分**: 8.3/10（基于代码审查）
 
 ### 质量指标
 
@@ -3849,11 +4405,13 @@ SOFTWARE.
 ## 🗺️ 路线图
 
 ### v1.0（当前版本）
-- ✅ 核心22个模块
+- ✅ 核心24个模块
 - ✅ 完整中英文文档
 - ✅ 编辑器工具集
 - ✅ 协程管理系统
 - ✅ TextMeshPro动画效果
+- ✅ Cinemachine 2D封装系统
+- ✅ DOTween封装系统
 
 ### v1.1（近期改进）
 - 🔄 完善错误处理和异常捕获机制
@@ -4010,7 +4568,7 @@ YusGameFrame is a modular framework meticulously crafted for Unity game developm
 
 ### ✨ Core Features
 
-- 🎯 **Modular Design** - 22+ independent modules, use as needed
+- 🎯 **Modular Design** - 24+ independent modules, use as needed
 - 🚀 **Zero-GC Optimized** - Core systems like object pool and timer are completely GC-free
 - 🔧 **Ready to Use** - No complex configuration needed
 - 📊 **Visual Debugging** - Built-in editor tools for real-time system monitoring
@@ -4019,6 +4577,8 @@ YusGameFrame is a modular framework meticulously crafted for Unity game developm
 - 🎮 **Input System Integration** - Complete wrapper for Unity Input System
 - 🔊 **Professional Audio Management** - BGM/SFX separation with temporary switching
 - ⚡ **Unified Coroutine Management** - Coroutine system without MonoBehaviour, supports tags and owner binding
+- 🎥 **Cinemachine 2D Wrapper** - Simplified camera management with follow, shake, zoom
+- 🌟 **DOTween Lightweight Wrapper** - Unified tween API for UI and game objects
 - 📝 **Complete Documentation** - Detailed bilingual docs and code examples for each module
 
 ### 🎯 Use Cases
@@ -4259,6 +4819,20 @@ public class QuickStartExample : MonoBehaviour
 <td>✅ Stable</td>
 </tr>
 
+<tr>
+<td><strong>CameraSystem</strong></td>
+<td>Cinemachine 2D wrapper for simplified camera management</td>
+<td>Follow target, bounds confiner, zoom control, shake effect, virtual camera switching</td>
+<td>✅ Stable</td>
+</tr>
+
+<tr>
+<td><strong>YusTweenSystem</strong></td>
+<td>Lightweight DOTween wrapper with unified tween API</td>
+<td>Move, scale, rotate, color, UI animations, chaining, auto cleanup</td>
+<td>✅ Stable</td>
+</tr>
+
 </table>
 
 ---
@@ -4335,6 +4909,53 @@ Say: <link="glitch">ERROR: SYSTEM MALFUNCTION</link>
 // In regular TextMeshPro
 text.text = "System <link=\"spin\">processing</link>...";
 text.text = "<link=\"rain\">Raindrops</link> falling down.";
+```
+
+### CameraSystem ⭐NEW
+Lightweight Cinemachine 2D wrapper for 2D games. Simplifies camera management without deep Cinemachine knowledge.
+
+```csharp
+// Follow player
+YusCamera2DManager.Instance.SetFollow(playerTransform);
+
+// Set map bounds
+YusCamera2DManager.Instance.SetConfiner(mapBoundsCollider);
+
+// Shake on hit
+YusCamera2DManager.Instance.Shake(intensity: 3f, duration: 0.3f);
+
+// Smooth zoom
+YusCamera2DManager.Instance.SetZoom(targetSize: 3f, duration: 1f);
+
+// Switch virtual cameras
+YusCamera2DManager.Instance.SwitchVcam("BossCamera");
+```
+
+### YusTweenSystem ⭐NEW
+Lightweight DOTween wrapper providing unified tween API with automatic lifecycle binding and time control.
+
+```csharp
+// Move animation
+YusTween.MoveTo(enemy, targetPos, duration: 2f);
+
+// UI fade in
+YusTween.CanvasGroupFadeIn(uiPanel, duration: 0.5f);
+
+// Scale with bounce
+YusTween.ScaleFromTo(
+    popup, 
+    Vector3.zero, 
+    Vector3.one, 
+    duration: 0.5f, 
+    ease: Ease.OutBack
+);
+
+// UI popup animation (via manager)
+YusTweenManager.Instance.PopupUI(panel.transform, duration: 0.5f);
+
+// Chain callbacks
+YusTween.MoveTo(player, destination, 3f)
+    .OnComplete(() => Attack());
 ```
 
 ---
