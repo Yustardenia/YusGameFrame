@@ -8,13 +8,13 @@ public static class YusCinemachine2DSettings
 {
     public const string DefineSymbol = "YUS_CINEMACHINE";
 
-    [MenuItem("YusGameFrame/Camera/Cinemachine 2D/Control Panel")]
+    [MenuItem("Tools/Yus Data/N. Camera/Cinemachine 2D/Control Panel")]
     public static void OpenPanel()
     {
         YusCinemachine2DSettingsWindow.ShowWindow();
     }
 
-    [MenuItem("YusGameFrame/Camera/Cinemachine 2D/Enable")]
+    [MenuItem("Tools/Yus Data/N. Camera/Cinemachine 2D/Enable")]
     public static void Enable()
     {
         if (!HasCinemachineInstalled())
@@ -33,13 +33,13 @@ public static class YusCinemachine2DSettings
             "确定");
     }
 
-    [MenuItem("YusGameFrame/Camera/Cinemachine 2D/Enable", true)]
+    [MenuItem("Tools/Yus Data/N. Camera/Cinemachine 2D/Enable", true)]
     private static bool ValidateEnable()
     {
         return HasCinemachineInstalled() && !IsDefineEnabled();
     }
 
-    [MenuItem("YusGameFrame/Camera/Cinemachine 2D/Disable")]
+    [MenuItem("Tools/Yus Data/N. Camera/Cinemachine 2D/Disable")]
     public static void Disable()
     {
         SetDefineEnabled(false);
@@ -49,7 +49,7 @@ public static class YusCinemachine2DSettings
             "确定");
     }
 
-    [MenuItem("YusGameFrame/Camera/Cinemachine 2D/Disable", true)]
+    [MenuItem("Tools/Yus Data/N. Camera/Cinemachine 2D/Disable", true)]
     private static bool ValidateDisable()
     {
         return IsDefineEnabled();

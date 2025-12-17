@@ -3,13 +3,13 @@ using UnityEngine;
 
 public static class YusCamera2DSetupMenu
 {
-    [MenuItem("YusGameFrame/Camera/Setup 2D Cinemachine Rig", true)]
+    [MenuItem("Tools/Yus Data/N. Camera/Setup 2D Cinemachine Rig", true)]
     private static bool ValidateSetup2DRig()
     {
         return YusCinemachine2DSettings.HasCinemachineInstalled() && YusCinemachine2DSettings.IsDefineEnabled();
     }
 
-    [MenuItem("YusGameFrame/Camera/Setup 2D Cinemachine Rig")]
+    [MenuItem("Tools/Yus Data/N. Camera/Setup 2D Cinemachine Rig")]
     public static void Setup2DRig()
     {
         Camera cam = Camera.main;
