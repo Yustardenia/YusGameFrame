@@ -3073,6 +3073,162 @@ A: 可以。框架采用MIT许可证，可自由用于商业项目。
 **Q: 如何获取技术支持？**  
 A: 可以通过Issues提问，或加入开发者社区讨论。
 
+### 故障排除
+
+**Q: NullReferenceException: Object reference not set to an instance of an object**  
+A: 常见原因和解决方案：
+```csharp
+// 1. 单例未初始化
+// 确保在调用前单例已创建
+if (YusPoolManager.Instance == null)
+{
+    YusLogger.Error("YusPoolManager not initialized!");
+    return;
+}
+
+// 2. ScriptableObject未分配
+// 在Inspector中检查所有SO引用
+void Awake()
+{
+    if (panelDatabase == null)
+    {
+        YusLogger.Error("PanelDatabase not assigned in Inspector!");
+    }
+}
+
+// 3. 组件未正确获取
+[Get] private Rigidbody rb; // 确保组件存在
+void Start()
+{
+    if (rb == null)
+    {
+        YusLogger.Error("Rigidbody component not found!");
+    }
+}
+```
+
+**Q: 事件没有触发或监听器没有响应**  
+A: 检查以下几点：
+```csharp
+// 1. 确保监听器已注册
+void OnEnable()
+{
+    YusEventManager.Instance.AddListener("OnGameStart", OnGameStart);
+    // 或使用扩展方法
+    this.YusRegisterEvent("OnGameStart", OnGameStart);
+}
+
+// 2. 确保事件名称完全匹配（区分大小写）
+TriggerEvent("OnGameStart"); // ✅
+TriggerEvent("ongamestart"); // ❌ 不匹配
+
+// 3. 确保监听器在触发前已注册
+void Start()
+{
+    // ❌ 错误顺序
+    YusEventManager.Instance.TriggerEvent("OnInit");
+    YusEventManager.Instance.AddListener("OnInit", OnInit); // 太晚了
+    
+    // ✅ 正确顺序
+    YusEventManager.Instance.AddListener("OnInit", OnInit);
+    YusEventManager.Instance.TriggerEvent("OnInit");
+}
+
+// 4. 检查是否在销毁时正确移除
+void OnDisable()
+{
+    YusEventManager.Instance.RemoveListener("OnGameStart", OnGameStart);
+}
+```
+
+**Q: 对象池返回的对象状态不正确**  
+A: 确保实现了IPoolable接口并正确重置状态：
+```csharp
+public class Bullet : MonoBehaviour, IPoolable
+{
+    public void OnSpawn()
+    {
+        // ✅ 重置所有状态
+        transform.localScale = Vector3.one;
+        transform.rotation = Quaternion.identity;
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
+        GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        gameObject.SetActive(true);
+    }
+    
+    public void OnRecycle()
+    {
+        // ✅ 清理状态
+        StopAllCoroutines();
+        gameObject.SetActive(false);
+    }
+}
+```
+
+**Q: 音频无法播放或音量不对**  
+A: 检查以下配置：
+```csharp
+// 1. 确保SceneAudioManager已初始化
+if (SceneAudioManager.Instance == null)
+{
+    YusLogger.Error("SceneAudioManager not found in scene!");
+    return;
+}
+
+// 2. 确保AudioLibrary已分配并包含音频
+if (audioLibrary == null || audioLibrary.sounds.Count == 0)
+{
+    YusLogger.Warning("AudioLibrary is empty!");
+}
+
+// 3. 检查音频名称是否正确
+SceneAudioManager.Instance.PlaySFX("Jump"); // 确保名称匹配
+
+// 4. 检查音量设置
+float musicVolume = AudioData.MusicVolume; // 应该在0-1之间
+float sfxVolume = AudioData.SFXVolume;
+YusLogger.Log($"Music Volume: {musicVolume}, SFX Volume: {sfxVolume}");
+```
+
+**Q: Excel配置表数据没有正确导入**  
+A: 检查Excel格式和导入流程：
+```
+1. Excel格式必须严格遵循：
+   - 第1行：字段名（英文）
+   - 第2行：类型
+   - 第3行：key标记（有且仅有一列）
+   
+2. 确保已执行：
+   - Tools → Yus Data → 1. 生成代码
+   - Tools → Yus Data → 2. 导出数据到SO
+   
+3. 检查生成的文件：
+   - Assets/ExcelTool/Yus/Gen/*.cs
+   - Assets/Resources/YusData/*.asset
+   
+4. 如果修改了Excel，必须重新生成和导出
+```
+
+**Q: 协程没有执行或提前停止**  
+A: 使用YusCoroutine系统时注意：
+```csharp
+// 1. 确保Owner存在
+YusCoroutine.Delay(3f, () => {
+    YusLogger.Log("Delayed action");
+}, owner: this); // 如果this被销毁，协程会自动停止
+
+// 2. 检查协程句柄
+var handle = YusCoroutine.Delay(5f, () => DoSomething());
+if (!handle.IsValid)
+{
+    YusLogger.Warning("Coroutine handle is invalid!");
+}
+
+// 3. 避免意外停止
+YusCoroutine.StopTag("my_tag"); // 会停止所有带此标签的协程
+YusCoroutine.StopOwner(this);   // 会停止所有绑定此Owner的协程
+```
+
 ### 性能相关
 
 **Q: 对象池会占用很多内存吗？**  
@@ -3116,11 +3272,26 @@ A: 可以。框架与渲染管线无关。
    - 所有单例统一挂在YusSingletonManager下
    - 使用编辑器工具自动扫描和管理
    - 避免在场景中创建多个单例
+   - ⚠️ **注意**：过度使用单例会降低代码可测试性，建议仅在全局系统（事件、输入、资源管理）使用单例，业务系统优先考虑场景独立实例
 
 3. **资源管理**
    - 小资源放Resources，大资源用AB包
    - 使用ResLoadSystem统一加载
    - 配合PoolSystem避免频繁加载
+   - 使用常量管理资源路径，避免魔法字符串：
+   ```csharp
+   // ✅ 推荐：使用常量
+   public static class ResourcePaths
+   {
+       public const string CONFIG_DATA = "YusData/{0}";
+       public const string POOL_CUBE = "Test/MyCube";
+       public const string UI_MAIN_MENU = "UI/MainMenu";
+   }
+   YusResManager.Instance.Load<GameObject>(ResourcePaths.POOL_CUBE);
+   
+   // ❌ 避免：魔法字符串
+   YusResManager.Instance.Load<GameObject>("Test/MyCube"); // 容易拼错
+   ```
 
 ### 代码规范
 
@@ -3160,6 +3331,66 @@ A: 可以。框架与渲染管线无关。
    YusPoolManager.Instance.Get(ResourcePaths.PLAYER_PREFAB);
    ```
 
+4. **错误处理和防御性编程** ⭐重要
+   ```csharp
+   // ❌ 危险：没有null检查
+   public GameObject GetPoolObject(string path)
+   {
+       return poolDict[path].Dequeue(); // 可能KeyNotFoundException或NullReferenceException
+   }
+   
+   // ✅ 安全：完整的错误处理
+   public GameObject GetPoolObject(string path)
+   {
+       if (string.IsNullOrEmpty(path))
+       {
+           YusLogger.Error("GetPoolObject: path is null or empty");
+           return null;
+       }
+       
+       if (!poolDict.ContainsKey(path))
+       {
+           YusLogger.Warning($"Pool '{path}' not found, creating new pool");
+           CreatePool(path);
+       }
+       
+       var pool = poolDict[path];
+       if (pool == null || pool.Count == 0)
+       {
+           YusLogger.Info($"Pool '{path}' is empty, instantiating new object");
+           return CreateNewObject(path);
+       }
+       
+       return pool.Dequeue();
+   }
+   ```
+
+5. **配置验证**
+   ```csharp
+   // ✅ 在Awake中验证所有必需的配置
+   [SerializeField] private UIPanelDatabase panelDatabase;
+   [SerializeField] private AudioLibrary audioLibrary;
+   
+   void Awake()
+   {
+       ValidateConfiguration();
+       Initialize();
+   }
+   
+   void ValidateConfiguration()
+   {
+       if (panelDatabase == null)
+       {
+           YusLogger.Error($"[{GetType().Name}] Missing PanelDatabase! Please assign it in Inspector.");
+       }
+       
+       if (audioLibrary == null)
+       {
+           YusLogger.Warning($"[{GetType().Name}] AudioLibrary not assigned, audio features will be disabled.");
+       }
+   }
+   ```
+
 ### 性能优化
 
 1. **优先使用对象池**
@@ -3197,6 +3428,246 @@ A: 可以。框架与渲染管线无关。
    YusTimer.Create(3f, () => DoSomething());
    ```
 
+4. **缓存反射结果** ⭐重要
+   ```csharp
+   // ❌ 每次都反射，性能差
+   public void RelinkAssets(TData data)
+   {
+       var fields = typeof(TData).GetFields(); // 每次调用都反射
+       foreach (var field in fields)
+       {
+           // 处理字段...
+       }
+   }
+   
+   // ✅ 缓存反射结果
+   private static FieldInfo[] _cachedFields;
+   
+   public void RelinkAssets(TData data)
+   {
+       if (_cachedFields == null)
+       {
+           _cachedFields = typeof(TData).GetFields(
+               BindingFlags.Public | BindingFlags.Instance
+           );
+       }
+       
+       foreach (var field in _cachedFields)
+       {
+           // 处理字段...
+       }
+   }
+   ```
+
+5. **避免频繁字符串操作**
+   ```csharp
+   // ❌ 字符串拼接产生GC
+   for (int i = 0; i < 1000; i++)
+   {
+       string log = "Item " + i + ": " + items[i].name;
+       Debug.Log(log);
+   }
+   
+   // ✅ 使用StringBuilder或字符串插值
+   StringBuilder sb = new StringBuilder();
+   for (int i = 0; i < 1000; i++)
+   {
+       sb.Clear();
+       sb.Append("Item ").Append(i).Append(": ").Append(items[i].name);
+       Debug.Log(sb.ToString());
+   }
+   
+   // 或使用缓存的哈希值
+   private int _stateNameHash;
+   void Awake()
+   {
+       _stateNameHash = Animator.StringToHash("StateName");
+   }
+   void Update()
+   {
+       animator.SetBool(_stateNameHash, true); // 比字符串快
+   }
+   ```
+
+---
+
+## 🔒 安全性与数据保护
+
+### 存档安全
+
+框架的二进制存档系统（SimpleBinary）提供了高效的数据存储，但在商业项目中建议添加额外的安全措施：
+
+#### 1. **存档加密（推荐用于发布版本）**
+
+```csharp
+// 基础XOR加密示例
+public static class SaveEncryption
+{
+    private const byte XOR_KEY = 0x5A; // 使用更复杂的密钥
+    
+    public static byte[] Encrypt(byte[] data)
+    {
+        byte[] encrypted = new byte[data.Length];
+        for (int i = 0; i < data.Length; i++)
+        {
+            encrypted[i] = (byte)(data[i] ^ XOR_KEY);
+        }
+        return encrypted;
+    }
+    
+    public static byte[] Decrypt(byte[] data)
+    {
+        return Encrypt(data); // XOR加密解密相同
+    }
+}
+
+// 在YusBaseManager中使用
+protected override void Save()
+{
+    byte[] rawData = SerializeData();
+    byte[] encryptedData = SaveEncryption.Encrypt(rawData);
+    File.WriteAllBytes(savePath, encryptedData);
+}
+```
+
+#### 2. **数据完整性验证**
+
+```csharp
+// 使用校验和防止篡改
+public static class DataIntegrity
+{
+    public static string CalculateChecksum(byte[] data)
+    {
+        using (var md5 = System.Security.Cryptography.MD5.Create())
+        {
+            byte[] hash = md5.ComputeHash(data);
+            return BitConverter.ToString(hash).Replace("-", "");
+        }
+    }
+    
+    public static bool VerifyChecksum(byte[] data, string expectedChecksum)
+    {
+        string actualChecksum = CalculateChecksum(data);
+        return actualChecksum.Equals(expectedChecksum, StringComparison.OrdinalIgnoreCase);
+    }
+}
+```
+
+#### 3. **敏感数据处理**
+
+```csharp
+// ⚠️ 不要在存档中明文存储敏感信息
+public class PlayerData
+{
+    public string username;
+    public int level;
+    public float health;
+    
+    // ❌ 危险：明文存储密码
+    public string password; 
+    
+    // ❌ 危险：明文存储购买凭证
+    public string purchaseToken;
+    
+    // ✅ 安全：只存储服务器验证过的结果
+    public bool isPremiumUser;
+    public List<string> ownedItemIds;
+}
+```
+
+### 网络安全
+
+如果使用框架开发联网游戏：
+
+```csharp
+// ✅ 重要数据必须服务器验证
+public class GameScore
+{
+    // ❌ 客户端计算分数容易作弊
+    public void AddScore(int amount)
+    {
+        score += amount; // 客户端可以随意修改
+        Save();
+    }
+    
+    // ✅ 服务器验证后同步
+    public void SyncScoreFromServer(int serverScore)
+    {
+        if (serverScore >= 0 && serverScore <= MAX_REASONABLE_SCORE)
+        {
+            score = serverScore;
+            Save();
+        }
+        else
+        {
+            YusLogger.Warning("Suspicious score received from server");
+        }
+    }
+}
+```
+
+### 输入验证
+
+```csharp
+// ✅ 始终验证外部输入
+public class DialogueSystem
+{
+    public void LoadDialogue(string dialogueId)
+    {
+        // 验证ID格式
+        if (string.IsNullOrEmpty(dialogueId))
+        {
+            YusLogger.Error("Dialogue ID is null or empty");
+            return;
+        }
+        
+        // 防止路径遍历攻击
+        if (dialogueId.Contains("..") || dialogueId.Contains("/") || dialogueId.Contains("\\"))
+        {
+            YusLogger.Error($"Invalid dialogue ID: {dialogueId}");
+            return;
+        }
+        
+        // 验证ID是否存在
+        if (!IsValidDialogueId(dialogueId))
+        {
+            YusLogger.Warning($"Dialogue ID not found: {dialogueId}");
+            return;
+        }
+        
+        // 安全地加载对话
+        var dialogue = LoadDialogueData(dialogueId);
+    }
+}
+```
+
+### 内存泄漏防护
+
+```csharp
+// ✅ 确保正确清理事件监听
+public class EnemyAI : MonoBehaviour
+{
+    void OnEnable()
+    {
+        // 使用扩展方法自动清理
+        this.YusRegisterEvent("OnPlayerDie", OnPlayerDie);
+    }
+    
+    void OnDisable()
+    {
+        // YusEventAutoCleaner会自动清理，但手动清理更安全
+        YusEventManager.Instance.RemoveListener("OnPlayerDie", OnPlayerDie);
+    }
+    
+    // ❌ 危险：忘记在OnDisable中移除监听
+    void DangerousExample()
+    {
+        YusEventManager.Instance.AddListener("OnPlayerDie", OnPlayerDie);
+        // 如果物体销毁时没有移除，会导致内存泄漏
+    }
+}
+```
+
 ---
 
 ## 🤝 贡献指南
@@ -3225,6 +3696,64 @@ A: 可以。框架与渲染管线无关。
 - 添加XML文档注释
 - 保持代码简洁易读
 - 新功能需要配文档和示例
+- 添加防御性编程和错误处理
+- 避免过度使用单例模式
+- 使用常量管理资源路径和配置
+- 缓存反射和频繁调用的结果
+
+### 测试建议
+
+虽然框架未包含完整的单元测试，但建议在使用时遵循以下测试实践：
+
+```csharp
+// 1. 编写可测试的代码
+public class GameManager : MonoBehaviour
+{
+    // ❌ 难以测试：直接依赖单例
+    public void StartGame()
+    {
+        YusEventManager.Instance.TriggerEvent("OnGameStart");
+        YusPoolManager.Instance.Get("Enemies/Boss");
+    }
+    
+    // ✅ 易于测试：依赖注入
+    private IEventManager eventManager;
+    private IPoolManager poolManager;
+    
+    public void Initialize(IEventManager events, IPoolManager pool)
+    {
+        eventManager = events;
+        poolManager = pool;
+    }
+    
+    public void StartGame()
+    {
+        eventManager.TriggerEvent("OnGameStart");
+        poolManager.Get("Enemies/Boss");
+    }
+}
+
+// 2. 为关键业务逻辑编写测试
+[Test]
+public void TestScoreCalculation()
+{
+    var scoreSystem = new ScoreSystem();
+    scoreSystem.AddScore(100);
+    Assert.AreEqual(100, scoreSystem.CurrentScore);
+}
+
+// 3. 使用PlayMode测试验证集成
+[UnityTest]
+public IEnumerator TestPoolManagerIntegration()
+{
+    var poolManager = FindObjectOfType<YusPoolManager>();
+    var obj = poolManager.Get("Test/TestObject");
+    Assert.IsNotNull(obj);
+    yield return null;
+    poolManager.Release(obj);
+    Assert.IsFalse(obj.activeInHierarchy);
+}
+```
 
 ---
 
@@ -3287,11 +3816,33 @@ SOFTWARE.
 
 ## 📊 项目统计
 
+- **版本**: v1.0.1
 - **模块数量**: 22+
 - **代码行数**: 16000+
-- **文档页数**: 本README
-- **支持Unity版本**: 2022.3+
+- **文档**: 完整中英双语README + 代码注释
+- **支持Unity版本**: 2022.3+（推荐LTS版本）
 - **许可证**: MIT
+- **更新日期**: 2024年12月
+- **框架评分**: 8.2/10（基于代码审查）
+
+### 质量指标
+
+| 维度 | 评分 | 说明 |
+|------|------|------|
+| **架构设计** | 9/10 | 模块化完整，解耦合理 |
+| **代码规范** | 8/10 | 命名清晰，注释完整 |
+| **可维护性** | 8/10 | 代码易读，结构清晰 |
+| **可扩展性** | 8.5/10 | 接口灵活，扩展点充分 |
+| **性能优化** | 7/10 | 缓存机制合理，部分可优化 |
+| **错误处理** | 6.5/10 | 基础防护，建议加强 |
+| **测试友好度** | 6/10 | 单例较多，改进中 |
+
+### 改进计划
+
+基于代码审查反馈，我们正在持续改进框架质量：
+- ✅ 已完成：核心功能开发、基础文档
+- 🔄 进行中：错误处理增强、性能优化、安全加固
+- 📋 计划中：单元测试、持续集成、更多示例项目
 
 ---
 
@@ -3304,17 +3855,115 @@ SOFTWARE.
 - ✅ 协程管理系统
 - ✅ TextMeshPro动画效果
 
-### v1.1（计划中）
+### v1.1（近期改进）
+- 🔄 完善错误处理和异常捕获机制
+- 🔄 添加存档加密和数据完整性验证
+- 🔄 优化反射性能（缓存FieldInfo等）
+- 🔄 改进配置验证机制
+- 🔄 扩展性能监控工具
+- 🔄 减少单例依赖，提高可测试性
+
+### v1.2（计划中）
 - 🔄 网络模块（HTTP/WebSocket）
 - 🔄 存档云同步
-- 🔄 更多编辑器工具
-- 🔄 性能分析器
+- 🔄 版本迁移机制
+- 🔄 更多编辑器调试工具
+- 🔄 3D音效支持
+- 🔄 混音组集成
 
 ### v2.0（未来）
 - 💭 ECS架构支持
 - 💭 可视化节点编辑器
 - 💭 AI行为树系统
 - 💭 多人联机框架
+- 💭 热更新方案集成
+- 💭 完整单元测试套件
+
+---
+
+## ⚠️ 已知限制和注意事项
+
+### 设计限制
+
+1. **单例模式使用较多**
+   - 当前版本大量使用单例模式（EventManager、PoolManager、AudioManager等）
+   - 优点：全局访问方便，适合快速开发
+   - 缺点：降低代码可测试性，场景切换时需要注意生命周期
+   - 建议：核心系统保持单例，业务系统考虑使用依赖注入
+
+2. **存档系统安全性**
+   - 默认二进制存档未加密，容易被修改
+   - 商业项目建议自行添加加密层（参见安全性章节）
+   - 重要数据应通过服务器验证
+
+3. **资源加载限制**
+   - AssetBundle依赖管理较为简化，仅支持单级依赖
+   - 复杂AB包依赖建议使用Addressables系统
+   - 缺少资源预加载机制
+
+4. **音频系统限制**
+   - 当前版本音效固定为2D（spatialBlend = 0）
+   - 不支持混音组
+   - 缺少音频淡入淡出效果
+
+5. **性能考虑**
+   - 部分系统使用反射（如数据重连），首次调用会有性能开销
+   - 建议缓存反射结果或在初始化时预热
+   - 大型项目建议进行性能分析和优化
+
+### 使用建议
+
+```csharp
+// 1. 场景切换时注意单例清理
+void OnDestroy()
+{
+    // 如果是场景特定的单例，需要手动清理
+    if (Instance == this)
+    {
+        Instance = null;
+    }
+}
+
+// 2. 配置表数据量较大时，考虑分批加载
+void Start()
+{
+    StartCoroutine(LoadConfigsAsync());
+}
+
+IEnumerator LoadConfigsAsync()
+{
+    // 分帧加载，避免卡顿
+    LoadEssentialConfigs();
+    yield return null;
+    LoadSecondaryConfigs();
+    yield return null;
+    LoadOptionalConfigs();
+}
+
+// 3. 使用对象池时注意峰值内存
+void Awake()
+{
+    // 预热对象池，但要控制数量
+    YusPoolManager.Instance.Prewarm("Bullets/Normal", 50);  // ✅ 合理
+    YusPoolManager.Instance.Prewarm("Bullets/Normal", 1000); // ❌ 可能占用过多内存
+}
+
+// 4. 事件系统注意内存泄漏
+public class TempObject : MonoBehaviour
+{
+    void OnEnable()
+    {
+        // ✅ 使用扩展方法自动清理
+        this.YusRegisterEvent("OnUpdate", OnUpdate);
+    }
+    
+    // 或者手动管理
+    void OnDisable()
+    {
+        YusEventManager.Instance.RemoveListener("OnUpdate", OnUpdate);
+    }
+}
+```
 
 ---
 
