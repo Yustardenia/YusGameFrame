@@ -24,7 +24,7 @@ public class TestPoolItem : MonoBehaviour, IPoolable
         // 重置物理速度 (防止回收时带有残留速度)
         if (rb)
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             
             // 给一个向上的力，模拟弹射

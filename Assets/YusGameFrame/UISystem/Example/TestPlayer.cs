@@ -24,7 +24,7 @@ public class TestPlayer : MonoBehaviour
         {
             UIManager.Instance.OpenPanel<PlayerInfoPanel>("PlayerInfo");
         }
-        rb.velocity = new Vector2(10 *Input.GetAxis("Horizontal"), 10 *Input.GetAxis("Vertical"));
+        rb.linearVelocity = new Vector2(10 *Input.GetAxis("Horizontal"), 10 *Input.GetAxis("Vertical"));
     }
 
     private void Init()

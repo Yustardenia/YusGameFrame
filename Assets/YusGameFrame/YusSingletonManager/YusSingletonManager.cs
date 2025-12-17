@@ -17,6 +17,9 @@ public class YusSingletonManager : MonoBehaviour
     public YusResManager Res;
     public YusInputManager Input;
     public YusCoroutineManager Coroutine;
+#if YUS_DOTWEEN
+    public YusTweenManager Tween;
+#endif
     public SceneAudioManager Audio;
     public YusCamera2DManager Camera2D;
     public YusPoolManager Pool;
@@ -27,6 +30,11 @@ public class YusSingletonManager : MonoBehaviour
 
     [Header("=== Coroutine ===")]
     [SerializeField] private bool autoCreateCoroutineManager = true;
+
+#if YUS_DOTWEEN
+    [Header("=== Tween ===")]
+    [SerializeField] private bool autoCreateTweenManager = true;
+#endif
 
     [Header("=== 业务逻辑系统 ===")]
     public BubbleManager Bubble;
@@ -78,6 +86,17 @@ public class YusSingletonManager : MonoBehaviour
             Coroutine = go.AddComponent<YusCoroutineManager>();
         }
 
+#if YUS_DOTWEEN
+        if (!Tween) Tween = GetComponentInChildren<YusTweenManager>(true);
+        if (!Tween) Tween = FindObjectOfType<YusTweenManager>();
+        if (!Tween && autoCreateTweenManager)
+        {
+            var go = new GameObject(nameof(YusTweenManager));
+            go.transform.SetParent(transform);
+            Tween = go.AddComponent<YusTweenManager>();
+        }
+#endif
+
         if (!Audio) Audio = GetComponentInChildren<SceneAudioManager>();
         if (!Camera2D) Camera2D = GetComponentInChildren<YusCamera2DManager>(true);
         if (!Camera2D) Camera2D = FindObjectOfType<YusCamera2DManager>(true);
@@ -96,7 +115,11 @@ public class YusSingletonManager : MonoBehaviour
         if (mb == null) return;
         
         // 检查是否是核心字段之一
-        if (mb == Event || mb == Res || mb == Input || mb == Coroutine || mb == Audio || mb == Camera2D || mb == Pool || mb == UI || mb == Bubble || mb == DialogueKey || mb == Player)
+        if (mb == Event || mb == Res || mb == Input || mb == Coroutine
+#if YUS_DOTWEEN
+            || mb == Tween
+#endif
+            || mb == Audio || mb == Camera2D || mb == Pool || mb == UI || mb == Bubble || mb == DialogueKey || mb == Player)
             return;
 
         if (!otherSingletons.Contains(mb))
