@@ -3947,66 +3947,6 @@ A: 可以。框架与渲染管线无关。
    }
    ```
 
-4. **错误处理和防御性编程** ⭐重要
-   ```csharp
-   // ❌ 危险：没有null检查
-   public GameObject GetPoolObject(string path)
-   {
-       return poolDict[path].Dequeue(); // 可能KeyNotFoundException或NullReferenceException
-   }
-   
-   // ✅ 安全：完整的错误处理
-   public GameObject GetPoolObject(string path)
-   {
-       if (string.IsNullOrEmpty(path))
-       {
-           YusLogger.Error("GetPoolObject: path is null or empty");
-           return null;
-       }
-       
-       if (!poolDict.ContainsKey(path))
-       {
-           YusLogger.Warning($"Pool '{path}' not found, creating new pool");
-           CreatePool(path);
-       }
-       
-       var pool = poolDict[path];
-       if (pool == null || pool.Count == 0)
-       {
-           YusLogger.Info($"Pool '{path}' is empty, instantiating new object");
-           return CreateNewObject(path);
-       }
-       
-       return pool.Dequeue();
-   }
-   ```
-
-5. **配置验证**
-   ```csharp
-   // ✅ 在Awake中验证所有必需的配置
-   [SerializeField] private UIPanelDatabase panelDatabase;
-   [SerializeField] private AudioLibrary audioLibrary;
-   
-   void Awake()
-   {
-       ValidateConfiguration();
-       Initialize();
-   }
-   
-   void ValidateConfiguration()
-   {
-       if (panelDatabase == null)
-       {
-           YusLogger.Error($"[{GetType().Name}] Missing PanelDatabase! Please assign it in Inspector.");
-       }
-       
-       if (audioLibrary == null)
-       {
-           YusLogger.Warning($"[{GetType().Name}] AudioLibrary not assigned, audio features will be disabled.");
-       }
-   }
-   ```
-
 ### 性能优化
 
 1. **优先使用对象池**
@@ -4042,67 +3982,6 @@ A: 可以。框架与渲染管线无关。
    
    // ✅ 计时器零GC
    YusTimer.Create(3f, () => DoSomething());
-   ```
-
-4. **缓存反射结果** ⭐重要
-   ```csharp
-   // ❌ 每次都反射，性能差
-   public void RelinkAssets(TData data)
-   {
-       var fields = typeof(TData).GetFields(); // 每次调用都反射
-       foreach (var field in fields)
-       {
-           // 处理字段...
-       }
-   }
-   
-   // ✅ 缓存反射结果
-   private static FieldInfo[] _cachedFields;
-   
-   public void RelinkAssets(TData data)
-   {
-       if (_cachedFields == null)
-       {
-           _cachedFields = typeof(TData).GetFields(
-               BindingFlags.Public | BindingFlags.Instance
-           );
-       }
-       
-       foreach (var field in _cachedFields)
-       {
-           // 处理字段...
-       }
-   }
-   ```
-
-5. **避免频繁字符串操作**
-   ```csharp
-   // ❌ 字符串拼接产生GC
-   for (int i = 0; i < 1000; i++)
-   {
-       string log = "Item " + i + ": " + items[i].name;
-       Debug.Log(log);
-   }
-   
-   // ✅ 使用StringBuilder或字符串插值
-   StringBuilder sb = new StringBuilder();
-   for (int i = 0; i < 1000; i++)
-   {
-       sb.Clear();
-       sb.Append("Item ").Append(i).Append(": ").Append(items[i].name);
-       Debug.Log(sb.ToString());
-   }
-   
-   // 或使用缓存的哈希值
-   private int _stateNameHash;
-   void Awake()
-   {
-       _stateNameHash = Animator.StringToHash("StateName");
-   }
-   void Update()
-   {
-       animator.SetBool(_stateNameHash, true); // 比字符串快
-   }
    ```
 
 4. **缓存反射结果** ⭐重要
