@@ -1,6 +1,10 @@
 using UnityEditor;
 using UnityEngine;
 
+#if YUS_CINEMACHINE
+using Unity.Cinemachine;
+#endif
+
 public static class YusCamera2DSetupMenu
 {
     [MenuItem("Tools/Yus Data/N. Camera/Setup 2D Cinemachine Rig", true)]
@@ -25,8 +29,8 @@ public static class YusCamera2DSetupMenu
 
         cam.orthographic = true;
 #if YUS_CINEMACHINE
-        var brain = cam.GetComponent<Cinemachine.CinemachineBrain>();
-        if (brain == null) brain = Undo.AddComponent<Cinemachine.CinemachineBrain>(cam.gameObject);
+        var brain = cam.GetComponent<CinemachineBrain>();
+        if (brain == null) brain = Undo.AddComponent<CinemachineBrain>(cam.gameObject);
 
         var root = new GameObject("YusCamera2D");
         Undo.RegisterCreatedObjectUndo(root, "Create YusCamera2D");
@@ -37,30 +41,27 @@ public static class YusCamera2DSetupMenu
         Undo.RegisterCreatedObjectUndo(vcamGo, "Create VCam2D");
         vcamGo.transform.SetParent(root.transform, false);
 
-        var vcam = Undo.AddComponent<Cinemachine.CinemachineVirtualCamera>(vcamGo);
+        var vcam = Undo.AddComponent<CinemachineCamera>(vcamGo);
         vcam.Priority = 20;
 
-        var lens = vcam.m_Lens;
-        lens.Orthographic = true;
+        var lens = vcam.Lens;
+        lens.ModeOverride = LensSettings.OverrideModes.Orthographic;
         lens.OrthographicSize = 5f;
-        vcam.m_Lens = lens;
+        vcam.Lens = lens;
 
-        var framing = vcam.AddCinemachineComponent<Cinemachine.CinemachineFramingTransposer>();
-        framing.m_ScreenX = 0.5f;
-        framing.m_ScreenY = 0.5f;
-        framing.m_DeadZoneWidth = 0.1f;
-        framing.m_DeadZoneHeight = 0.1f;
-        framing.m_SoftZoneWidth = 0.8f;
-        framing.m_SoftZoneHeight = 0.8f;
-        framing.m_XDamping = 0.5f;
-        framing.m_YDamping = 0.5f;
+        var composer = Undo.AddComponent<CinemachinePositionComposer>(vcamGo);
+        composer.CameraDistance = 10f;
+        composer.Damping = new Vector3(0.5f, 0.5f, 0f);
 
-        var noise = vcam.AddCinemachineComponent<Cinemachine.CinemachineBasicMultiChannelPerlin>();
-        noise.m_AmplitudeGain = 0f;
-        noise.m_FrequencyGain = 1f;
+        Undo.AddComponent<CinemachineBasicMultiChannelPerlin>(vcamGo);
 
-        var confiner = Undo.AddComponent<Cinemachine.CinemachineConfiner2D>(vcamGo);
-        confiner.enabled = false;
+        // Confiner2D is only available when CINEMACHINE_PHYSICS_2D is enabled; add via reflection to be safe.
+        var confinerType = FindTypeInLoadedAssemblies("Unity.Cinemachine.CinemachineConfiner2D");
+        if (confinerType != null)
+        {
+            var confiner = Undo.AddComponent(vcamGo, confinerType) as Behaviour;
+            if (confiner != null) confiner.enabled = false;
+        }
 
         var singletonManager = Object.FindObjectOfType<YusSingletonManager>();
         if (singletonManager != null && singletonManager.Camera2D == null)
@@ -77,4 +78,17 @@ public static class YusCamera2DSetupMenu
             "确定");
 #endif
     }
+
+#if YUS_CINEMACHINE
+    private static System.Type FindTypeInLoadedAssemblies(string fullName)
+    {
+        foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (asm == null) continue;
+            var t = asm.GetType(fullName, false);
+            if (t != null) return t;
+        }
+        return null;
+    }
+#endif
 }

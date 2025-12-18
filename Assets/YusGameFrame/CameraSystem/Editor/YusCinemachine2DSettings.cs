@@ -62,6 +62,9 @@ public static class YusCinemachine2DSettings
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (asm == null) continue;
+                // CM 3.x
+                if (asm.GetType("Unity.Cinemachine.CinemachineBrain", false) != null) return true;
+                // CM 2.x legacy (or old namespace)
                 if (asm.GetType("Cinemachine.CinemachineBrain", false) != null) return true;
             }
         }

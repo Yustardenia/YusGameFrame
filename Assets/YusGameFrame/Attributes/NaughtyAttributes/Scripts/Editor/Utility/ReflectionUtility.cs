@@ -8,11 +8,22 @@ namespace NaughtyAttributes.Editor
 {
     public static class ReflectionUtility
     {
+        private static bool _nullTargetLogged;
+
+        private static void LogNullTargetOnce()
+        {
+            if (_nullTargetLogged)
+                return;
+
+            _nullTargetLogged = true;
+            Debug.LogWarning("NaughtyAttributes: target object is null (often caused by a missing script on a component). Skipping attribute processing.");
+        }
+
         public static IEnumerable<FieldInfo> GetAllFields(object target, Func<FieldInfo, bool> predicate)
         {
             if (target == null)
             {
-                Debug.LogError("The target object is null. Check for missing scripts.");
+                LogNullTargetOnce();
                 yield break;
             }
 
@@ -35,7 +46,7 @@ namespace NaughtyAttributes.Editor
         {
             if (target == null)
             {
-                Debug.LogError("The target object is null. Check for missing scripts.");
+                LogNullTargetOnce();
                 yield break;
             }
 
@@ -58,7 +69,7 @@ namespace NaughtyAttributes.Editor
         {
             if (target == null)
             {
-                Debug.LogError("The target object is null. Check for missing scripts.");
+                LogNullTargetOnce();
                 yield break;
             }
 
