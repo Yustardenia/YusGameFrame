@@ -16,6 +16,7 @@ public class TimerExample : MonoBehaviour
         Log("按 '3' 测试容器命名计时器 (防重复)");
         Log("按 '4' 测试暂停/恢复");
         Log("按 '5' 测试绑定对象销毁 (3秒后销毁测试物体)");
+        Log("按 '6' 测试倒计时 (5秒)");
         Log("按 'C' 清理容器内所有计时器");
     }
 
@@ -89,6 +90,21 @@ public class TimerExample : MonoBehaviour
                 Log("销毁 TempObject");
                 Destroy(tempObj);
             });
+        }
+
+        // 6. 倒计时（从 duration 倒数到 0）
+        if (Input.GetKeyDown(KeyCode.Alpha6))
+        {
+            Log("启动 5秒 倒计时...");
+            var timer = YusTimer.CreateCountdown(5.0f, () => { Log("倒计时结束！"); })
+                .OnUpdate(t =>
+                {
+                    if (statusText == null) return;
+                    statusText.text = $"倒计时剩余: {t:F2}s\n" + statusText.text;
+                    if (statusText.text.Length > 500) statusText.text = statusText.text.Substring(0, 500);
+                });
+
+            Log($"CurrentTime: {timer.CurrentTime:F2}s");
         }
 
         // C. 清理容器

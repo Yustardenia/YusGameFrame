@@ -344,17 +344,46 @@ public class SceneAudioManager : MonoBehaviour
 
     public void PlaySFX(string soundName)
     {
+        PlaySFX(soundName, 1, 0f);
+    }
+
+    public void PlaySFX(string soundName, int times)
+    {
+        PlaySFX(soundName, times, 0f);
+    }
+
+    public void PlaySFX(string soundName, int times, float intervalSeconds)
+    {
         SoundItem item = FindSoundItem(soundName);
         if (item != null)
         {
             // 【修复】不要再乘 AudioData.SFXVolume 了
             // 因为 sfxSource.volume 已经被 UpdateSFXVolume 设置过了
             // 这里只需要传素材自身的修正系数 (volumeScale)
-            sfxSource.PlayOneShot(item.clip, item.volumeScale);
+            if (times <= 1)
+            {
+                sfxSource.PlayOneShot(item.clip, item.volumeScale);
+            }
+            else
+            {
+                StartCoroutine(PlaySfxMultipleRoutine(item.clip, item.volumeScale, times, intervalSeconds));
+            }
         }
         else
         {
             Debug.LogWarning($"[SceneAudioManager] 未找到音效: {soundName}");
+        }
+    }
+
+    private IEnumerator PlaySfxMultipleRoutine(AudioClip clip, float volumeScale, int times, float intervalSeconds)
+    {
+        if (clip == null || times <= 0) yield break;
+
+        float waitSeconds = Mathf.Max(clip.length + Mathf.Max(0f, intervalSeconds), 0.01f);
+        for (int i = 0; i < times; i++)
+        {
+            if (sfxSource != null) sfxSource.PlayOneShot(clip, volumeScale);
+            if (i + 1 < times) yield return new WaitForSeconds(waitSeconds);
         }
     }
 

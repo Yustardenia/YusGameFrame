@@ -73,6 +73,16 @@ public class YusTimer : MonoBehaviour
     /// </summary>
     public static TimerTask Create(float duration, Action onComplete = null)
     {
+        return CreateInternal(duration, TimerMode.CountUp, onComplete);
+    }
+
+    public static TimerTask CreateCountdown(float duration, Action onComplete = null)
+    {
+        return CreateInternal(duration, TimerMode.CountDown, onComplete);
+    }
+
+    private static TimerTask CreateInternal(float duration, TimerMode mode, Action onComplete)
+    {
         if (Instance == null)
         {
             GameObject go = new GameObject("YusTimer");
@@ -80,7 +90,7 @@ public class YusTimer : MonoBehaviour
         }
 
         TimerTask timer = Instance.GetFromPool();
-        timer.Initialize(duration, onComplete);
+        timer.Initialize(duration, mode, onComplete);
         Instance.timersToAdd.Add(timer);
         return timer;
     }
@@ -101,6 +111,12 @@ public class YusTimer : MonoBehaviour
     }
 }
 
+public enum TimerMode
+{
+    CountUp = 0,
+    CountDown = 1,
+}
+
 /// <summary>
 /// 单个计时器任务
 /// 支持链式调用配置
@@ -114,8 +130,12 @@ public class TimerTask
     // 基础属性
     public float Duration { get; private set; }
     public float TimeElapsed { get; private set; }
+    public TimerMode Mode { get; private set; }
     public bool IsDone { get; private set; }
     public bool IsPaused { get; private set; }
+
+    public float RemainingTime => Mathf.Max(0f, Duration - TimeElapsed);
+    public float CurrentTime => Mode == TimerMode.CountDown ? RemainingTime : TimeElapsed;
     
     // 配置
     private bool useRealTime;
@@ -135,10 +155,11 @@ public class TimerTask
 
     public TimerTask() { }
 
-    public void Initialize(float duration, Action onComplete)
+    public void Initialize(float duration, TimerMode mode, Action onComplete)
     {
         this.UID = ++_globalIdCounter;
         this.Duration = duration;
+        this.Mode = mode;
         this.onComplete = onComplete;
         this.TimeElapsed = 0;
         this.IsDone = false;
@@ -164,10 +185,10 @@ public class TimerTask
         float dt = useRealTime ? unscaledDeltaTime : deltaTime;
         TimeElapsed += dt;
 
-        // 执行 Update 回调 (传入剩余时间)
+        // 执行 Update 回调 (传入当前时间)
         if (onUpdate != null)
         {
-            onUpdate.Invoke(Mathf.Max(0, Duration - TimeElapsed));
+            onUpdate.Invoke(CurrentTime);
         }
 
         if (TimeElapsed >= Duration)
@@ -241,10 +262,16 @@ public class TimerTask
     /// <summary>
     /// 设置 Update 回调
     /// </summary>
-    /// <param name="onUpdate">参数为剩余时间</param>
+    /// <param name="onUpdate">参数为当前时间（计时=已过时间，倒计时=剩余时间）</param>
     public TimerTask OnUpdate(Action<float> onUpdate)
     {
         this.onUpdate = onUpdate;
+        return this;
+    }
+
+    public TimerTask SetCountDown(bool isCountDown = true)
+    {
+        this.Mode = isCountDown ? TimerMode.CountDown : TimerMode.CountUp;
         return this;
     }
 
@@ -274,6 +301,52 @@ public class TimerContainer
     public TimerTask AddTimer(float duration, Action onComplete = null)
     {
         return AddTimer(null, duration, onComplete);
+    }
+
+    public TimerTask AddCountdown(float duration, Action onComplete = null)
+    {
+        return AddCountdown(null, duration, onComplete);
+    }
+
+    public TimerTask AddCountdown(string name, float duration, Action onComplete = null)
+    {
+        // 1. 清理无效或已完成的计时器
+        for (int i = timers.Count - 1; i >= 0; i--)
+        {
+            var (t, uid) = timers[i];
+            // 如果UID不匹配（说明被回收复用了）或者已完成，则移除
+            if (t.UID != uid || t.IsDone)
+            {
+                timers.RemoveAt(i);
+            }
+        }
+
+        // 2. 处理同名冲突
+        if (!string.IsNullOrEmpty(name))
+        {
+            if (namedTimers.TryGetValue(name, out var pair))
+            {
+                // 如果旧计时器仍然有效且未完成，取消它
+                if (pair.task.UID == pair.uid && !pair.task.IsDone)
+                {
+                    pair.task.Cancel();
+                }
+                namedTimers.Remove(name);
+            }
+        }
+
+        // 3. 创建新倒计时器
+        TimerTask timer = YusTimer.CreateCountdown(duration, onComplete);
+        var timerRecord = (timer, timer.UID);
+
+        timers.Add(timerRecord);
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            namedTimers[name] = timerRecord;
+        }
+
+        return timer;
     }
 
     /// <summary>

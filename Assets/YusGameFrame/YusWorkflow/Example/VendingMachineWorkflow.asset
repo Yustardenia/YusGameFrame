@@ -1,0 +1,98 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47f9853e0ff4b7e43b40f99e1a74cd3b, type: 3}
+  m_Name: VendingMachineWorkflow
+  m_EditorClassIdentifier: Assembly-CSharp::YusWorkflowAsset
+  entryNodeGuid: 92d723872151439888167127035c98e8
+  nodes:
+  - Guid: 92d723872151439888167127035c98e8
+    Position: {x: 100, y: 220}
+    Node:
+      rid: 9078763646712807495
+  - Guid: 69ebe9bfd8f947ef8be4ddecacfc116b
+    Position: {x: 404.13, y: 180.66666}
+    Node:
+      rid: 9078763646712807496
+  - Guid: b415c5d0af9a490094a1f8ac6c0755ab
+    Position: {x: 760, y: 140}
+    Node:
+      rid: 9078763646712807497
+  - Guid: 6c3a0116c69749c4a84ed52bdff4d3eb
+    Position: {x: 494.02667, y: 373.3333}
+    Node:
+      rid: 9078763646712807498
+  edges:
+  - Guid: b529a41ff9b340d6b8bc64f75dce0d6d
+    FromNodeGuid: 92d723872151439888167127035c98e8
+    FromPortName: Next
+    ToNodeGuid: 69ebe9bfd8f947ef8be4ddecacfc116b
+    Condition:
+      rid: 9078763646712807499
+  - Guid: 0e480f2b295743fd952c672fbbaf1d01
+    FromNodeGuid: 69ebe9bfd8f947ef8be4ddecacfc116b
+    FromPortName: Paid
+    ToNodeGuid: b415c5d0af9a490094a1f8ac6c0755ab
+    Condition:
+      rid: 9078763646712807500
+  - Guid: 8cdf05d14d0e483983b576c5719b5241
+    FromNodeGuid: 69ebe9bfd8f947ef8be4ddecacfc116b
+    FromPortName: Cancel
+    ToNodeGuid: 6c3a0116c69749c4a84ed52bdff4d3eb
+    Condition:
+      rid: 9078763646712807501
+  - Guid: 5ae77ae1e8fa410abe61fd32db6ff2fd
+    FromNodeGuid: b415c5d0af9a490094a1f8ac6c0755ab
+    FromPortName: Next
+    ToNodeGuid: 6c3a0116c69749c4a84ed52bdff4d3eb
+    Condition:
+      rid: 9078763646712807502
+  - Guid: d6255b22042f4b1d86b9724958be80ed
+    FromNodeGuid: 6c3a0116c69749c4a84ed52bdff4d3eb
+    FromPortName: Next
+    ToNodeGuid: 92d723872151439888167127035c98e8
+    Condition:
+      rid: 9078763646712807503
+  references:
+    version: 2
+    RefIds:
+    - rid: 9078763646712807495
+      type: {class: VMNode_Init, ns: , asm: Assembly-CSharp}
+      data:
+        titleOverride: 
+    - rid: 9078763646712807496
+      type: {class: VMNode_Coin, ns: , asm: Assembly-CSharp}
+      data:
+        titleOverride: 
+    - rid: 9078763646712807497
+      type: {class: VMNode_Dispense, ns: , asm: Assembly-CSharp}
+      data:
+        titleOverride: 
+        Seconds: 1.2
+    - rid: 9078763646712807498
+      type: {class: VMNode_End, ns: , asm: Assembly-CSharp}
+      data:
+        titleOverride: 
+    - rid: 9078763646712807499
+      type: {class: VMCond_HasSelection, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9078763646712807500
+      type: {class: VMCond_PaidEnough, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9078763646712807501
+      type: {class: VMCond_Cancel, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9078763646712807502
+      type: {class: VMCond_DispenseDone, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9078763646712807503
+      type: {class: VMCond_Restart, ns: , asm: Assembly-CSharp}
+      data: 

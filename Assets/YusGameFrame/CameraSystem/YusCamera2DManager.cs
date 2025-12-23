@@ -502,63 +502,63 @@ public class YusCamera2DManager : MonoBehaviour
 
     public bool Activate(string key)
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
         return false;
     }
 
     public void RefreshVcameras()
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void SetFollow(Transform target)
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void SetLookAt(Transform target)
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void PushFollow(Transform target)
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void PopFollow()
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void SetBounds(Collider2D bounds)
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void ClearBounds()
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void SetOrthoSize(float size)
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void ZoomTo(float size, float duration, bool? unscaledTime = null)
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void Shake(float amplitude, float frequency, float duration, bool? unscaledTime = null)
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 
     public void StopShake()
     {
-        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/Yus Data/N. Camera/Cinemachine 2D/Enable");
+        Debug.LogWarning("[YusCamera2D] 当前未启用 Cinemachine 支持。请在菜单启用：Tools/YusGameFrame/Systems/Camera/Cinemachine 2D/Enable");
     }
 }
 #endif

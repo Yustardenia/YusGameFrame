@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YusWorkflow 使用教程手册</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#0f1730;
+      --panel2:#101a38;
+      --text:#e8eeff;
+      --muted:#a9b4dd;
+      --line:rgba(255,255,255,.10);
+      --shadow:rgba(0,0,0,.35);
+      --accent:#41f0b1;
+      --accent2:#f5c84c;
+      --bad:#ff5f7a;
+      --good:#41f0b1;
+      --code:#0a1228;
+      --codeLine:rgba(255,255,255,.08);
+      --link:#8fb7ff;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    [data-theme="light"]{
+      --bg:#f6f8ff;
+      --panel:#ffffff;
+      --panel2:#ffffff;
+      --text:#182241;
+      --muted:#57638a;
+      --line:rgba(0,0,0,.10);
+      --shadow:rgba(0,0,0,.10);
+      --accent:#0aa56a;
+      --accent2:#c67d00;
+      --bad:#c4233a;
+      --good:#0aa56a;
+      --code:#0b1020;
+      --codeLine:rgba(255,255,255,.12);
+      --link:#235bdb;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background: radial-gradient(1200px 800px at 20% 0%, rgba(65,240,177,.16), transparent 55%),
+                  radial-gradient(900px 600px at 110% 10%, rgba(143,183,255,.14), transparent 55%),
+                  var(--bg);
+    }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .app{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:16px;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    @media (max-width: 980px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:static}
+    }
+    .sidebar{
+      position: sticky;
+      top: 16px;
+      align-self: start;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 12px 30px var(--shadow);
+      overflow:hidden;
+    }
+    .sidebar .head{
+      padding: 16px 16px 12px 16px;
+      background: linear-gradient(180deg, rgba(65,240,177,.14), rgba(0,0,0,0));
+      border-bottom: 1px solid var(--line);
+    }
+    .title{
+      margin:0;
+      font-size: 18px;
+      line-height: 1.25;
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      margin: 8px 0 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .tools{
+      display:flex;
+      gap:10px;
+      margin-top: 12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .btn{
+      cursor:pointer;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1;
+      user-select:none;
+    }
+    .btn:hover{background: rgba(255,255,255,.10)}
+    .btn.primary{
+      border-color: rgba(65,240,177,.30);
+      background: rgba(65,240,177,.14);
+    }
+    .btn.primary:hover{background: rgba(65,240,177,.18)}
+    .toc{
+      padding: 10px 8px 14px 8px;
+    }
+    .toc a{
+      display:block;
+      padding: 9px 10px;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      border: 1px solid transparent;
+    }
+    .toc a small{color: var(--muted)}
+    .toc a:hover{
+      background: rgba(255,255,255,.06);
+      border-color: var(--line);
+      text-decoration:none;
+    }
+    .content{
+      min-width: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 12px 30px var(--shadow);
+      overflow:hidden;
+    }
+    .content .hero{
+      padding: 18px 18px 12px 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(143,183,255,.14), rgba(0,0,0,0));
+    }
+    .hero h1{
+      margin:0;
+      font-size: 26px;
+      letter-spacing: .2px;
+    }
+    .hero p{
+      margin: 10px 0 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .hero .badges{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 12px;
+    }
+    .pill{
+      font-size: 12px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      padding: 7px 10px;
+      border-radius: 999px;
+    }
+    .pill strong{color: var(--text)}
+    .section{
+      padding: 18px;
+      border-top: 1px solid var(--line);
+    }
+    .section h2{
+      margin:0 0 12px 0;
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+    .section h3{
+      margin: 18px 0 10px 0;
+      font-size: 15px;
+      letter-spacing:.2px;
+      color: var(--text);
+    }
+    .section p, .section li{
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 980px){ .grid2{grid-template-columns:1fr} }
+    .card{
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .card h4{
+      margin:0 0 8px 0;
+      font-size: 14px;
+    }
+    .card p{margin:0}
+    .callout{
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      padding: 12px 14px;
+      margin: 12px 0;
+    }
+    .callout.good{border-color: rgba(65,240,177,.28); background: rgba(65,240,177,.10)}
+    .callout.bad{border-color: rgba(255,95,122,.25); background: rgba(255,95,122,.08)}
+    .callout .k{font-weight: 700; color: var(--text)}
+    .code{
+      background: var(--code);
+      border: 1px solid var(--codeLine);
+      border-radius: 14px;
+      padding: 12px 12px;
+      overflow:auto;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #f0f4ff;
+    }
+    .kbd{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 3px 7px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      display:inline-block;
+      transform: translateY(-1px);
+      margin: 0 2px;
+    }
+    .split{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items: center;
+    }
+    .footer{
+      padding: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .tag{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+    }
+    .hr{
+      height:1px;
+      background: var(--line);
+      margin: 14px 0;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="head">
+      <h2 class="title">YusWorkflow 教程手册</h2>
+      <p class="subtitle">面向 Unity 项目：从 0 到上线，包含编辑器、运行时、事件通信与 PlayMode 可视化调试。</p>
+      <div class="tools">
+        <button class="btn primary" id="btnTop">回到顶部</button>
+        <button class="btn" id="btnTheme">切换主题</button>
+      </div>
+    </div>
+    <nav class="toc" id="toc">
+      <a href="#unity101">00. Unity 小白必读 <small>先认界面</small></a>
+      <a href="#start">01. 快速上手 <small>10 分钟</small></a>
+      <a href="#concepts">02. 核心概念 <small>Node / Edge / Condition</small></a>
+      <a href="#editor">03. 编辑器使用 <small>GraphView</small></a>
+      <a href="#runtime">04. 运行时接入 <small>Runner / Machine</small></a>
+      <a href="#events">05. 外部通信 <small>YusEventSystem</small></a>
+      <a href="#builtin">06. 内置节点与条件 <small>Built-ins</small></a>
+      <a href="#practice1">07. 实战一：贩卖机流程 <small>从 0 到跑起来</small></a>
+      <a href="#practice2">08. 实战二：事件驱动中断 <small>外部通信</small></a>
+      <a href="#advance">09. 进阶：自定义节点与条件 <small>生成器 + 菜单</small></a>
+      <a href="#debug">10. 调试与可视化 <small>Animator 风格</small></a>
+      <a href="#best">11. 最佳实践 <small>避免踩坑</small></a>
+      <a href="#faq">12. 常见问题 <small>排错清单</small></a>
+      <a href="#api">13. 速查表 <small>常用 API</small></a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="hero" id="top">
+      <h1>YusWorkflow 使用教程手册</h1>
+      <p>YusWorkflow 是一个轻量的“工作流/状态机”系统：<strong>ScriptableObject</strong> 保存图数据（节点/连线/条件），运行时由 <span class="tag">YusWorkflowRunner</span> 驱动，编辑器用 GraphView 进行可视化编辑；并且可以与 <strong>YusEventSystem</strong> 集成，实现外部事件通信。</p>
+      <div class="badges">
+        <span class="pill"><strong>目标</strong>：像 Animator 一样看得见</span>
+        <span class="pill"><strong>特点</strong>：节点多态（SerializeReference）</span>
+        <span class="pill"><strong>集成</strong>：事件总线（广播/订阅）</span>
+      </div>
+    </div>
+
+    <section class="section" id="unity101">
+      <h2>00. Unity 小白必读（先把界面认清楚）</h2>
+      <p>如果你是 Unity 萌新，先把这几个窗口和按钮认清楚，后面每一步就不会“找不到在哪里点”。</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Project（项目资源）</h4>
+          <p>你创建的工作流 Asset 会出现在这里。路径通常以 <span class="tag">Assets/...</span> 开头。</p>
+        </div>
+        <div class="card">
+          <h4>Hierarchy（场景对象）</h4>
+          <p>你需要在场景里创建一个 GameObject，并给它挂 <span class="tag">YusWorkflowRunner</span> 才能运行工作流。</p>
+        </div>
+        <div class="card">
+          <h4>Inspector（检查器）</h4>
+          <p>选中某个对象/资源后，在这里改它的属性：比如把 workflow 拖进去、改参数、看提示。</p>
+        </div>
+        <div class="card">
+          <h4>Console（控制台）</h4>
+          <p>示例（贩卖机）和 Log 节点会输出日志，调试时主要看这里。菜单：<span class="tag">Window / General / Console</span>。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="k">Play/Stop 按钮在哪里？</div>
+        <p>Unity 顶部中间有一个三角形 <strong>Play</strong> 按钮。点击进入 PlayMode，再点一次停止。</p>
+      </div>
+
+      <div class="callout good">
+        <div class="k">你只要记住一句话</div>
+        <p><strong>资源在 Project 里，运行要靠场景对象（Hierarchy）+ 组件（Inspector）。</strong></p>
+      </div>
+    </section>
+
+    <section class="section" id="start">
+      <h2>01. 快速上手（推荐按这个顺序）</h2>
+      <div class="grid2">
+        <div class="card">
+          <h4>Step 1：创建工作流资源（Asset）</h4>
+          <p>菜单：<span class="tag">Tools / Yus Data / P.工作流编辑器</span> → 点击 <span class="tag">新建资源</span>。</p>
+        </div>
+        <div class="card">
+          <h4>Step 2：添加节点与连线</h4>
+          <p>点击 <span class="tag">添加节点(搜索)</span> 或右键空白处创建节点；拖拽端口连线即可生成边。</p>
+        </div>
+        <div class="card">
+          <h4>Step 3：设置入口节点（Entry）</h4>
+          <p>选中节点 → 右侧 Inspector → <span class="tag">设为入口</span>。</p>
+        </div>
+        <div class="card">
+          <h4>Step 4：挂载 Runner 运行</h4>
+          <p>在场景对象上添加 <span class="tag">YusWorkflowRunner</span>，设置 <span class="tag">workflow</span> 为刚创建的资产。</p>
+        </div>
+      </div>
+
+      <div class="callout good">
+        <div class="k">快捷键</div>
+        <ul>
+          <li>在 GraphView 上按 <span class="kbd">Space</span>：打开搜索添加节点</li>
+          <li>右侧检查器：选中节点/连线即可编辑参数</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <div class="k">从“能跑”到“好用”的路线图</div>
+        <ul>
+          <li><strong>入门</strong>：用内置节点 + 条件拼出一个流程（第 07 章实战一）</li>
+          <li><strong>实用</strong>：把外部系统事件接进来，让流程可被打断/驱动（第 08 章实战二）</li>
+          <li><strong>进阶</strong>：生成并编写自己的节点/条件，形成项目级节点库（第 09 章）</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="concepts">
+      <h2>02. 核心概念（理解这 5 个就能驾驭系统）</h2>
+      <div class="grid2">
+        <div class="card">
+          <h4>Workflow Asset（图数据）</h4>
+          <p>ScriptableObject，保存 <span class="tag">Nodes</span> / <span class="tag">Edges</span> / <span class="tag">EntryNodeGuid</span>。</p>
+        </div>
+        <div class="card">
+          <h4>Node（节点逻辑）</h4>
+          <p>继承 <span class="tag">YusWorkflowNode</span>，在 <span class="tag">OnEnter/OnUpdate/OnExit</span> 中写逻辑。</p>
+        </div>
+        <div class="card">
+          <h4>Port（端口 = 分支）</h4>
+          <p>Node 通过 <span class="tag">GetOutputPortNames()</span> 声明输出端口；边按端口顺序评估（像 ComfyUI 那样明确分支）。</p>
+        </div>
+        <div class="card">
+          <h4>Edge（连线）</h4>
+          <p>连接 FromNode/ToNode + FromPortName + 可选 Condition。满足 Condition 才可跳转。</p>
+        </div>
+        <div class="card">
+          <h4>Condition（条件）</h4>
+          <p>继承 <span class="tag">YusWorkflowCondition</span>，实现 <span class="tag">Evaluate(context)</span> 返回 true/false。</p>
+        </div>
+        <div class="card">
+          <h4>Context（上下文/黑板）</h4>
+          <p><span class="tag">YusWorkflowContext</span>：提供 Owner、DeltaTime、黑板 Get/Set，以及事件总线封装。</p>
+        </div>
+      </div>
+
+      <div class="callout bad">
+        <div class="k">重要：节点实例是“资源里的一份数据”</div>
+        <p>Node/Condition 通过 <span class="tag">SerializeReference</span> 存在 Asset 里，可能被多个 Runner 同时引用。<strong>不要把运行态状态存在节点字段里</strong>（会串状态）。运行态应放在 <span class="tag">context</span> 黑板中。</p>
+      </div>
+
+      <h3>黑板（Blackboard）怎么用最安全？</h3>
+      <p>黑板是 <span class="tag">Dictionary&lt;string, object&gt;</span>，最怕“重名”和“类型不一致”。推荐两条原则：</p>
+      <ul>
+        <li><strong>Key 带前缀</strong>：如 <span class="tag">"vm:paid"</span>、<span class="tag">"quest:state"</span>，避免不同模块冲突。</li>
+        <li><strong>节点局部 Key 加 nodeGuid</strong>：例如 WaitNode 用 <span class="tag">wait:{CurrentNodeGuid}:remaining</span>，同类型节点多次复用也不会串。</li>
+      </ul>
+
+      <div class="callout">
+        <div class="k">给新手的“脑内模型”</div>
+        <ul>
+          <li><strong>工作流 Asset</strong>：一张“流程图”，存着节点和连线（它不是运行中的东西）</li>
+          <li><strong>Runner</strong>：挂在场景对象上的“播放器”，负责每帧驱动这张图</li>
+          <li><strong>节点</strong>：流程图里的一个步骤（进入/更新/退出）</li>
+          <li><strong>连线 + 条件</strong>：什么时候从 A 走到 B（满足条件就跳）</li>
+          <li><strong>黑板</strong>：运行时临时数据（比如计时、选择、计数）</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="editor">
+      <h2>03. 编辑器使用（GraphView 工作流）</h2>
+      <h3>打开编辑器</h3>
+      <p>菜单：<span class="tag">Tools / Yus Data / P.工作流编辑器</span>。</p>
+
+      <h3>工具栏按钮说明</h3>
+      <ul>
+        <li><span class="tag">工作流资源</span>：选择要编辑的工作流 Asset</li>
+        <li><span class="tag">新建资源</span>：创建新的工作流 Asset</li>
+        <li><span class="tag">Validate</span>：校验 Asset（空节点/断边/重复 Guid/入口不存在等）</li>
+        <li><span class="tag">添加节点(搜索)</span>：打开 SearchWindow，按菜单路径快速创建</li>
+        <li><span class="tag">添加空节点</span>：在视图中心创建空节点</li>
+        <li><span class="tag">生成节点脚本</span>：生成 Node 的 *.g.cs + *.Custom.cs 模板（推荐扩展方式）</li>
+        <li><span class="tag">保存</span>：保存节点位置到资产</li>
+      </ul>
+
+      <h3>Inspector：节点/连线编辑</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>节点 Inspector</h4>
+          <p>可修改标题、切换节点类型、设为入口、编辑节点参数。</p>
+        </div>
+        <div class="card">
+          <h4>连线 Inspector</h4>
+          <p>可选择条件类型（含“永真”），编辑条件参数（SerializeReference）。</p>
+        </div>
+      </div>
+
+      <h3>循序渐进练习（建议照做一遍）</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>练习 A：做一个“延时后打印”</h4>
+          <p>创建 2 个节点：<span class="tag">Wait</span>（Seconds=1）→ <span class="tag">Log</span>（Message="Done"）。</p>
+          <p>添加一条边：Wait 的 Next → Log，并把 Condition 设成 <span class="tag">CurrentWaitDone</span>。</p>
+        </div>
+        <div class="card">
+          <h4>练习 B：做一个“二选一分支”</h4>
+          <p>写/使用一个有两个输出端口的 Node（如 Paid/Cancel），并用端口名分别连到两个不同的节点。</p>
+          <p>端口顺序就是分支评估顺序：你可以用它做“优先级”。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="runtime">
+      <h2>04. 运行时接入（Runner / Machine）</h2>
+      <h3>最小接入方式</h3>
+      <p>下面是“Unity 萌新也能照做”的版本（按顺序操作）：</p>
+      <ol>
+        <li>在 <strong>Hierarchy</strong> 空白处右键 → <span class="tag">Create Empty</span>（创建空物体）</li>
+        <li>给它改个名字，比如 <span class="tag">WorkflowRunner</span></li>
+        <li>选中它（确保 Inspector 正在显示这个对象）</li>
+        <li>在 <strong>Inspector</strong> 点 <span class="tag">Add Component</span></li>
+        <li>搜索并添加：<span class="tag">YusWorkflowRunner</span></li>
+        <li>在组件里找到 <span class="tag">workflow</span>，把工作流 Asset 从 Project 里拖进来</li>
+        <li><span class="tag">owner</span> 不填也行（默认用 Runner 自己）</li>
+      </ol>
+
+      <div class="callout good">
+        <div class="k">检查点：你现在应该看到什么？</div>
+        <ul>
+          <li>Inspector 里出现了 <span class="tag">YusWorkflowRunner</span> 组件</li>
+          <li>workflow 字段显示了你选的 Asset 名称</li>
+        </ul>
+      </div>
+
+      <h3>你应该怎么组织 Runner？</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>一个对象一个 Runner（推荐）</h4>
+          <p>每个系统/角色/交互体维护自己的工作流，Owner 指向该对象或它的组件。</p>
+        </div>
+        <div class="card">
+          <h4>一个对象多个 Runner（可用）</h4>
+          <p>不同子系统分不同工作流资产：剧情/战斗/引导分别一套。编辑器 PlayMode Debug 支持选择 Runner。</p>
+        </div>
+      </div>
+
+      <div class="callout good">
+        <div class="k">Asset 校验</div>
+        <p>运行时 Start() 会自动 Validate：如果资产不合法会输出错误并停止启动，避免“跑一半才发现断边”。</p>
+      </div>
+
+      <h3>跳转策略（避免死循环）</h3>
+      <p>Machine 支持两种自动跳转策略：</p>
+      <ul>
+        <li><span class="tag">Single</span>：每帧最多走一次自动边</li>
+        <li><span class="tag">ResolveUntilStable</span>：每帧连续跳转直到稳定（有上限保护）</li>
+      </ul>
+      <p>此外有 <span class="tag">MaxTransitionsPerTick</span> 防无限跳转（超限会警告并停止）。</p>
+    </section>
+
+    <section class="section" id="events">
+      <h2>05. 外部通信（整合 YusEventSystem）</h2>
+      <p>YusWorkflow 已封装事件总线：<span class="tag">context.Events</span>，底层使用 <span class="tag">YusEventManager</span>。</p>
+
+      <div class="callout bad">
+        <div class="k">前置条件</div>
+        <p>场景中需要存在 <span class="tag">YusEventManager</span>，否则订阅/广播会给出警告并跳过。</p>
+      </div>
+
+      <h3>两种用法</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>（推荐）在图里做事件通信</h4>
+          <p>用内置节点/条件实现广播/等待事件（见第 06 章）。</p>
+        </div>
+        <div class="card">
+          <h4>在 Runner 上把“外部事件 → 强制跳到某节点”</h4>
+          <p>配置 <span class="tag">externalEventEnters</span>：事件名 + 目标 NodeGuid。适合“外部系统打断当前流程”。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="builtin">
+      <h2>06. 内置节点与条件（开箱即用）</h2>
+      <div class="grid2">
+        <div class="card">
+          <h4>节点</h4>
+          <ul>
+            <li><span class="tag">YusWorkflowEmptyNode</span>：空节点/记事本</li>
+            <li><span class="tag">YusWorkflowLogNode</span>：进入时打印日志</li>
+            <li><span class="tag">YusWorkflowWaitNode</span>：等待秒数（配合条件）</li>
+            <li><span class="tag">YusWorkflowBroadcastEventNode</span>：进入时广播事件</li>
+            <li><span class="tag">YusWorkflowWaitEventNode</span>：进入时订阅事件，收到后计数</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>条件</h4>
+          <ul>
+            <li><span class="tag">YusWorkflowCond_Always</span>：永真</li>
+            <li><span class="tag">YusWorkflowCond_CurrentWaitDone</span>：WaitNode 当前节点等待结束</li>
+            <li><span class="tag">YusWorkflowCond_EventReceived</span>：某事件收到了（计数&gt;0）</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout good">
+        <div class="k">推荐搭配</div>
+        <p><span class="tag">WaitNode</span> + <span class="tag">CurrentWaitDone</span>；<span class="tag">WaitEventNode</span> + <span class="tag">EventReceived</span>。</p>
+      </div>
+    </section>
+
+    <section class="section" id="practice1">
+      <h2>07. 实战一：贩卖机流程（完整示例，强烈建议跑一遍）</h2>
+      <p>项目里已经提供了一个“自动贩卖机”示例节点与条件（键盘驱动），以及一键生成工作流资产的菜单项。你可以用它来验证：分支端口、条件、等待、循环等是否按预期工作。</p>
+
+      <h3>准备：确认示例脚本存在</h3>
+      <p>示例脚本：<span class="tag">Assets/YusGameFrame/YusWorkflow/Example/WorkflowVendingMachineNodes.cs</span></p>
+      <p>示例生成菜单：<span class="tag">Tools / Yus Data / 工作流示例/生成自动贩卖机工作流</span></p>
+
+      <h3>Step 1：一键生成工作流资产</h3>
+      <ol>
+        <li>在 Unity 顶部菜单点击：<span class="tag">Tools / Yus Data / 工作流示例/生成自动贩卖机工作流</span></li>
+        <li>生成的资产路径固定为：<span class="tag">Assets/YusGameFrame/YusWorkflow/Example/VendingMachineWorkflow.asset</span></li>
+        <li>Unity 会自动 Ping 这个资产</li>
+      </ol>
+      <div class="callout good">
+        <div class="k">检查点：你现在应该看到什么？</div>
+        <ul>
+          <li>Project 窗口里出现 <span class="tag">VendingMachineWorkflow.asset</span></li>
+          <li>（通常）Project 会高亮/定位到这个资产</li>
+        </ul>
+      </div>
+      <div class="callout">
+        <div class="k">如果你没看到资产</div>
+        <ul>
+          <li>打开 Project 窗口，进入 <span class="tag">Assets/YusGameFrame/YusWorkflow/Example</span></li>
+          <li>确认里面有 <span class="tag">VendingMachineWorkflow</span></li>
+          <li>如果没有：打开 Console，看是否有脚本编译报错（红色）</li>
+        </ul>
+      </div>
+
+      <h3>Step 2：打开工作流编辑器查看图</h3>
+      <ol>
+        <li>打开：<span class="tag">Tools / Yus Data / P.工作流编辑器</span></li>
+        <li>在左上选择工作流资源：<span class="tag">VendingMachineWorkflow</span></li>
+        <li>你会看到 4 个节点：Init → Coin → (Dispense/End) → End → 回到 Init</li>
+      </ol>
+      <div class="callout">
+        <div class="k">新手提示：怎么看“选中了哪个节点/连线”？</div>
+        <p>在图里点击节点或连线后，右侧 Inspector 会显示对应的编辑界面：<strong>右侧显示什么，就说明你选中什么</strong>。</p>
+      </div>
+
+      <h3>Step 3：把它跑起来</h3>
+      <ol>
+        <li>在 Hierarchy 空白处右键 → <span class="tag">Create Empty</span>，命名为 <span class="tag">VMRunner</span></li>
+        <li>选中 VMRunner → Inspector → <span class="tag">Add Component</span> → 搜索添加 <span class="tag">YusWorkflowRunner</span></li>
+        <li>把 <span class="tag">VendingMachineWorkflow.asset</span> 从 Project 拖到 Runner 的 <span class="tag">workflow</span> 字段</li>
+        <li>打开 Console：<span class="tag">Window / General / Console</span></li>
+        <li>点击 Play 进入 PlayMode</li>
+      </ol>
+      <div class="callout good">
+        <div class="k">检查点：Play 后你应该看到什么？</div>
+        <ul>
+          <li>Console 出现类似 <span class="tag">[VMWF] Init...</span> 的日志</li>
+          <li>工作流编辑器里，某个节点会显示 <span class="tag">RUN</span> 并被高亮</li>
+        </ul>
+      </div>
+
+      <h3>Step 4：按键体验（这是“实战验证点”）</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4>选择商品（Init 节点）</h4>
+          <ul>
+            <li><span class="kbd">1</span> 选择可乐（价格 2）</li>
+            <li><span class="kbd">2</span> 选择矿泉水（价格 1）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>投币/取消（Coin 节点）</h4>
+          <ul>
+            <li><span class="kbd">C</span> 投币 +1</li>
+            <li><span class="kbd">X</span> 取消（走 Cancel 端口到 End）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>出货（Dispense 节点）</h4>
+          <p>等待一段时间自动完成（用 DeltaTime 递减），然后走 Next 到 End。</p>
+        </div>
+        <div class="card">
+          <h4>结束并重启（End 节点）</h4>
+          <p><span class="kbd">R</span> 重启（走 Next 回 Init）。</p>
+        </div>
+      </div>
+
+      <h3>Step 5：用 Animator 风格可视化调试它</h3>
+      <ol>
+        <li>PlayMode 下打开工作流编辑器，选中该工作流 Asset</li>
+        <li>观察：当前节点 RUN、高亮边、From/To 闪烁、轨迹尾巴</li>
+        <li>如果跳得太快：右侧 PlayMode Debug → <span class="tag">Pause/Resume</span> + <span class="tag">Manual Tick</span> + <span class="tag">Step</span></li>
+      </ol>
+      <div class="callout">
+        <div class="k">新手常见坑：为什么按键没反应？</div>
+        <ul>
+          <li>你是否在 PlayMode？（顶部 Play 按钮高亮才算）</li>
+          <li>Game 视图是否在前台（有时你在 Scene/Inspector 里按键不会进 Game）</li>
+          <li>Console 有没有红色报错？先把报错清掉再调</li>
+        </ul>
+      </div>
+
+      <div class="callout good">
+        <div class="k">你从这个示例学到的“关键点”</div>
+        <ul>
+          <li><strong>多端口分支</strong>：Coin 节点声明 Paid/Cancel 两个输出端口</li>
+          <li><strong>条件驱动跳转</strong>：PaidEnough/Cancel/Restart 都是 Condition</li>
+          <li><strong>运行态数据</strong>：vm:price / vm:paid 等都存进 context 黑板</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="practice2">
+      <h2>08. 实战二：事件驱动中断（外部系统“一句话”打断工作流）</h2>
+      <p>目标：当外部系统广播某个事件时，工作流强制跳到“中断处理节点”。这类需求非常常见：UI 关闭、剧情跳过、角色死亡、网络断线等。</p>
+
+      <h3>方案 A：Runner 级“事件 → 目标节点”强制跳转（最直接）</h3>
+      <div class="callout good">
+        <div class="k">给 Unity 新手的解释：什么是“事件”？</div>
+        <p>你可以把事件理解成“广播一条消息”。比如你点击了 UI 的一个按钮，就广播一个 <span class="tag">OnContinue</span>；工作流收到后就跳转或继续。</p>
+      </div>
+      <ol>
+        <li>确保场景里有 <span class="tag">YusEventManager</span></li>
+        <li>在 Runner 上配置 <span class="tag">externalEventEnters</span></li>
+        <li>设置：EventName（字符串）与 TargetNodeGuid（图中节点 Guid）</li>
+        <li>任意地方调用：<span class="tag">YusEventManager.Instance.Broadcast("YourEvent")</span></li>
+      </ol>
+      <div class="callout">
+        <div class="k">新手怎么拿到 TargetNodeGuid？（照做）</div>
+        <ol>
+          <li>打开工作流编辑器，点击你想跳转到的节点</li>
+          <li>右侧 Inspector 会显示 <span class="tag">Guid: xxxxx</span></li>
+          <li>把这个 Guid 复制到 Runner 的 TargetNodeGuid</li>
+        </ol>
+      </div>
+      <div class="callout">
+        <div class="k">什么时候用这个？</div>
+        <p>当你希望“无条件打断当前流程”，并且打断逻辑在某个专门节点里集中处理时，用它最省心。</p>
+      </div>
+
+      <h3>方案 B：图内等待事件（更“流程化”）</h3>
+      <p>当你希望流程走到某一步后“等待外部信号”，推荐用：</p>
+      <ul>
+        <li><span class="tag">YusWorkflowWaitEventNode</span>：订阅事件并计数</li>
+        <li><span class="tag">YusWorkflowCond_EventReceived</span>：计数&gt;0 时放行</li>
+      </ul>
+      <div class="callout good">
+        <div class="k">小练习</div>
+        <p>做一个“等待 UI 点击继续”的节点：WaitEventNode(EventName="OnContinue") → 下一节点，条件用 EventReceived("OnContinue")。</p>
+      </div>
+    </section>
+
+    <section class="section" id="advance">
+      <h2>09. 进阶：自定义节点与条件（形成你自己的节点库）</h2>
+      <h3>推荐方式：使用生成器创建 Node</h3>
+      <ol>
+        <li>打开：<span class="tag">Tools / Yus Data / 工作流生成器/创建节点脚本</span></li>
+        <li>填写：保存目录、命名空间、类名、菜单路径、输出端口 CSV（如：Next,Paid,Cancel）</li>
+        <li>会生成两份文件：<span class="tag">*.g.cs</span>（自动生成不要手改）和 <span class="tag">*.Custom.cs</span>（写逻辑）</li>
+        <li>在图中通过搜索即可创建（菜单路径来自 Attribute）</li>
+      </ol>
+
+      <h3>手写节点时要记住的“黄金法则”</h3>
+      <ul>
+        <li>节点字段只放<strong>配置</strong>（可序列化、可调参），不要放运行态。</li>
+        <li>运行态放 context 黑板，Key 规范化（带前缀、必要时带 nodeGuid）。</li>
+        <li>分支用端口名表达：比在一个 Condition 里写一堆 if 更直观。</li>
+      </ul>
+
+      <h3>自定义 Condition 的建议</h3>
+      <p>Condition 最好做成“纯判断”：只读取 context，不写 context。这样更容易理解与调试。</p>
+    </section>
+
+    <section class="section" id="debug">
+      <h2>10. 调试与可视化（Animator 风格）</h2>
+      <h3>你能看到什么</h3>
+      <ul>
+        <li><strong>当前节点高亮</strong>：节点标题显示 RUN + 边框高亮</li>
+        <li><strong>过渡线即时高亮</strong>：每次跳转边会闪绿加粗</li>
+        <li><strong>跳转节点闪烁</strong>：From/To 节点短暂闪烁</li>
+        <li><strong>轨迹尾巴</strong>：最近进入的节点淡出显示（追踪路径）</li>
+      </ul>
+
+      <h3>PlayMode Debug 面板</h3>
+      <p>右侧 Inspector 顶部常驻：</p>
+      <ul>
+        <li>Runner 下拉：同一工作流 Asset 可能在多个对象上跑</li>
+        <li><span class="tag">Pause/Resume</span>：暂停/继续该 Runner（不影响全局 TimeScale）</li>
+        <li><span class="tag">Manual Tick</span>：勾上后停止自动 Tick</li>
+        <li><span class="tag">Step</span>：单步推进一次 Tick</li>
+        <li><span class="tag">Δt x</span>：对该 Runner 的 deltaTime 缩放（0~4）</li>
+      </ul>
+
+      <div class="callout good">
+        <div class="k">调试推荐姿势</div>
+        <p>遇到“跳得太快看不清”时：Pause → Manual Tick → Step 单步走，同时观察边闪烁与 History。</p>
+      </div>
+    </section>
+
+    <section class="section" id="best">
+      <h2>11. 最佳实践（写出稳定可维护的图）</h2>
+      <h3>1) 节点别存运行态</h3>
+      <p>节点字段是“资产数据”，多 Runner 会共享。运行态放在 context 黑板，建议 key 带上 nodeGuid 做隔离。</p>
+
+      <h3>2) 端口就是“显式分支”</h3>
+      <p>想做清晰分支：在 Node 里声明多个输出端口（比如 Paid/Cancel），边条件按端口顺序评估，逻辑更直观。</p>
+
+      <h3>3) 外部系统打断：优先用 Runner 的 externalEventEnters</h3>
+      <p>比如 UI/剧情系统发一个事件就强制跳到“中断处理”节点，能让图结构更干净。</p>
+
+      <h3>4) 每次改完先 Validate</h3>
+      <p>避免 Entry 丢了、断边、空 Node 等“运行时才炸”的问题。</p>
+
+      <h3>5) 新手最容易犯的 5 个坑（照着检查）</h3>
+      <ul>
+        <li><strong>没设入口</strong>：Start 后不知道从哪开始（或默认选了第一个节点导致行为不符合预期）</li>
+        <li><strong>边条件没配/配错</strong>：以为会走，但 Evaluate 返回 false</li>
+        <li><strong>把运行态写进 Node 字段</strong>：多个对象跑同一个 Asset 时互相影响</li>
+        <li><strong>事件名拼错</strong>：字符串大小写不一致，永远收不到</li>
+        <li><strong>看错窗口</strong>：按键需要 Game 视图焦点；报错看 Console</li>
+      </ul>
+    </section>
+
+    <section class="section" id="faq">
+      <h2>12. 常见问题（排错清单）</h2>
+      <h3>Q1：进入 PlayMode 没有 RUN/高亮？</h3>
+      <ul>
+        <li>是否选中了正确的 Workflow Asset？</li>
+        <li>场景里是否存在 <span class="tag">YusWorkflowRunner</span> 并且它的 workflow 指向该 Asset？</li>
+        <li>是否点击了编辑器窗口右侧 Runner 下拉选择到正确的实例？</li>
+      </ul>
+
+      <h3>Q2：事件条件一直不触发？</h3>
+      <ul>
+        <li>场景里是否有 <span class="tag">YusEventManager</span>？</li>
+        <li>事件名是否拼写一致（建议统一用常量表）？</li>
+        <li>WaitEventNode 是否在进入时 ResetCount（默认会）？</li>
+      </ul>
+
+      <h3>Q3：为什么节点参数在不同对象上互相影响？</h3>
+      <p>因为节点实例存在 Asset 里被共享。把运行态数据放到 context 黑板即可解决（不要写在节点字段里）。</p>
+    </section>
+
+    <section class="section" id="api">
+      <h2>13. 速查表（常用 API）</h2>
+      <div class="grid2">
+        <div class="card">
+          <h4>节点编写（YusWorkflowNode）</h4>
+          <div class="code">public override IEnumerable&lt;string&gt; GetOutputPortNames()
+{
+    yield return "Next";
+    // yield return "Paid";
+    // yield return "Cancel";
+}
+
+public override void OnEnter(YusWorkflowContext context) { }
+public override void OnUpdate(YusWorkflowContext context) { }
+public override void OnExit(YusWorkflowContext context) { }</div>
+        </div>
+        <div class="card">
+          <h4>黑板（Context）</h4>
+          <div class="code">context.Set("key", 123);
+var v = context.Get("key", 0);
+
+// 需要主动切换节点时（请求型）
+context.RequestEnterNode("someNodeGuid");</div>
+        </div>
+      </div>
+      <div class="hr"></div>
+      <div class="grid2">
+        <div class="card">
+          <h4>事件总线（YusEventSystem）</h4>
+          <div class="code">// 广播（无参）
+context.Events.Publish("MyEvent");
+
+// 等待事件推荐用内置 WaitEventNode + EventReceived 条件
+// 若要手动订阅：Subscribe 返回 IDisposable，记得释放
+var token = context.Events.Subscribe("MyEvent", () =&gt; { /*...*/ });</div>
+        </div>
+        <div class="card">
+          <h4>调试（Runner）</h4>
+          <div class="code">// 仅影响当前 Runner
+runner.DebugPaused = true;
+runner.DebugManualTick = true;
+runner.DebugDeltaTimeScale = 0.25f;
+runner.DebugStep();</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div class="split">
+        <div>文件位置建议：<span class="tag">Assets/YusGameFrame/YusWorkflow/Docs/YusWorkflowManual.html</span></div>
+        <div>作者：YusGameFrame / YusWorkflow</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  (function(){
+    const root = document.documentElement;
+    const btnTheme = document.getElementById('btnTheme');
+    const btnTop = document.getElementById('btnTop');
+    const saved = localStorage.getItem('yuswf_theme');
+    if(saved){ root.dataset.theme = saved; }
+
+    btnTheme.addEventListener('click', () => {
+      const next = root.dataset.theme === 'light' ? '' : 'light';
+      if(next) root.dataset.theme = next; else delete root.dataset.theme;
+      localStorage.setItem('yuswf_theme', root.dataset.theme || '');
+    });
+    btnTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+    // lightweight active link highlight
+    const links = Array.from(document.querySelectorAll('#toc a'));
+    const ids = links.map(a => (a.getAttribute('href') || '').slice(1)).filter(Boolean);
+    const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
+    const onScroll = () => {
+      const y = window.scrollY + 120;
+      let idx = 0;
+      for(let i=0;i<sections.length;i++){
+        const s = sections[i];
+        if(s.offsetTop <= y) idx = i;
+      }
+      links.forEach((a,i)=>{
+        if(i===idx){
+          a.style.background = 'rgba(255,255,255,.08)';
+          a.style.borderColor = 'rgba(255,255,255,.14)';
+        }else{
+          a.style.background = 'transparent';
+          a.style.borderColor = 'transparent';
+        }
+      });
+    };
+    window.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+  })();
+</script>
+</body>
+</html>

@@ -6,10 +6,6 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 
 // 如果定义了这个宏，才引入 Addressables 命名空间，防止报错
 #if YUS_ADDRESSABLES
@@ -58,7 +54,7 @@ public class YusResManager : MonoBehaviour
 
             case LoadMode.EditorDatabase:
 #if UNITY_EDITOR
-                result = AssetDatabase.LoadAssetAtPath<T>(path);
+                result = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(path);
 #endif
                 break;
 
@@ -115,7 +111,7 @@ public class YusResManager : MonoBehaviour
             case LoadMode.EditorDatabase:
 #if UNITY_EDITOR
                 yield return null; // 模拟异步
-                result = AssetDatabase.LoadAssetAtPath<T>(path);
+                result = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(path);
 #endif
                 break;
 
