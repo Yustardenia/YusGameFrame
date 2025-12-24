@@ -27,6 +27,74 @@
 | 🔒 **进阶内容** | [安全性](#安全性与数据保护) · [项目路线图](#路线图) · [已知限制](#已知限制和注意事项) |
 | 🤝 **参与贡献** | [贡献指南](#贡献指南) · [联系方式](#联系方式) |
 
+## 📸 功能展示
+
+<table>
+<tr>
+<td width="50%">
+
+### 🎨 编辑器工具
+- 资源侦探 - 一键查找引用
+- 对象池监视器 - 实时性能监控
+- 文件夹着色 - 可视化项目结构
+- 场景快速切换 - 提升开发效率
+
+</td>
+<td width="50%">
+
+### 🎮 运行时功能
+- Watch属性 - 屏幕实时监控变量
+- 零GC对象池 - 极致性能优化
+- 智能事件系统 - 自动解绑防泄漏
+- Excel配置表 - 一键导入导出
+
+</td>
+</tr>
+</table>
+
+### 💡 代码示例对比
+
+<table>
+<tr>
+<td width="50%">
+
+**传统写法**（繁琐、易错）
+```csharp
+// 需要手动管理生命周期
+void OnEnable() {
+    EventManager.AddListener("OnDie", OnDie);
+}
+void OnDisable() {
+    EventManager.RemoveListener("OnDie", OnDie);
+}
+
+// 使用Coroutine产生GC
+StartCoroutine(DelayAction());
+IEnumerator DelayAction() {
+    yield return new WaitForSeconds(3f);
+    Attack();
+}
+```
+
+</td>
+<td width="50%">
+
+**YusGameFrame写法**（简洁、安全）
+```csharp
+// 自动管理，无需OnDisable
+void Start() {
+    this.YusRegisterEvent("OnDie", OnDie);
+}
+
+// 零GC，自动清理
+YusTimer.Create(3f, () => Attack())
+    .BindToGameObject(this);
+```
+
+</td>
+</tr>
+</table>
+
 ---
 
 <a name="chinese-version"></a>
@@ -4419,16 +4487,57 @@ SOFTWARE.
 - **问题反馈**: [Issues](https://github.com/Yustardenia/YusGameFrame/issues)
 - **讨论社区**: [Discussions](https://github.com/Yustardenia/YusGameFrame/discussions)
 
+### 💬 获取帮助
+
+遇到问题？以下是获取帮助的最佳途径：
+
+1. **📖 查阅文档** - 本README包含了详细的使用说明和FAQ
+2. **🔍 搜索Issues** - 查看是否有人遇到过类似问题
+3. **💬 讨论区提问** - 在Discussions中发起讨论
+4. **🐛 报告Bug** - 在Issues中提交详细的Bug报告
+5. **📧 联系作者** - 通过GitHub个人主页联系
+
+### 📝 提问指南
+
+为了更快地获得帮助，提问时请包含：
+- Unity版本和操作系统
+- 问题的详细描述和复现步骤
+- 相关的错误日志和代码片段
+- 已经尝试过的解决方法
+
 ---
 
 ## 🙏 致谢
 
 感谢所有为本项目做出贡献的开发者！
 
+### 核心贡献者
+
+<a href="https://github.com/Yustardenia/YusGameFrame/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Yustardenia/YusGameFrame" />
+</a>
+
+### 特别鸣谢
+
 特别感谢以下开源项目的启发：
 - Unity Technologies - Unity Engine
 - Fungus - Visual Novel Framework
 - DOTween - Animation Engine
+- Cinemachine - Camera System
+
+### 社区支持
+
+感谢社区提供的宝贵反馈和建议，让这个框架不断完善。
+
+> 如果这个框架对你有帮助，欢迎：
+> - ⭐ Star这个项目
+> - 🔀 Fork并贡献代码
+> - 💬 加入讨论区交流
+> - 🐛 报告问题和建议
+
+### ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Yustardenia/YusGameFrame&type=Date)](https://star-history.com/#Yustardenia/YusGameFrame&Date)
 
 ---
 
@@ -4638,9 +4747,15 @@ public class TempObject : MonoBehaviour
 
 **如果这个框架对你有帮助，请给我们一个⭐Star！**
 
-Made with ❤️ by YusGameFrame Team
+[![GitHub stars](https://img.shields.io/github/stars/Yustardenia/YusGameFrame?style=social)](https://github.com/Yustardenia/YusGameFrame/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Yustardenia/YusGameFrame?style=social)](https://github.com/Yustardenia/YusGameFrame/network/members)
+[![GitHub watchers](https://img.shields.io/github/watchers/Yustardenia/YusGameFrame?style=social)](https://github.com/Yustardenia/YusGameFrame/watchers)
 
-[⬆️ 回到顶部](#yusgameframe)
+---
+
+Made with ❤️ by [YusGameFrame Team](https://github.com/Yustardenia)
+
+**[⬆️ 回到顶部](#yusgameframe)** | **[English Version](#english-version)**
 
 </div>
 
@@ -5098,8 +5213,14 @@ This project is licensed under the **MIT License**.
 
 **If this framework helps you, please give us a ⭐Star!**
 
-Made with ❤️ by YusGameFrame Team
+[![GitHub stars](https://img.shields.io/github/stars/Yustardenia/YusGameFrame?style=social)](https://github.com/Yustardenia/YusGameFrame/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Yustardenia/YusGameFrame?style=social)](https://github.com/Yustardenia/YusGameFrame/network/members)
+[![GitHub watchers](https://img.shields.io/github/watchers/Yustardenia/YusGameFrame?style=social)](https://github.com/Yustardenia/YusGameFrame/watchers)
 
-[⬆️ Back to Top](#yusgameframe---english-documentation)
+---
+
+Made with ❤️ by [YusGameFrame Team](https://github.com/Yustardenia)
+
+**[⬆️ Back to Top](#yusgameframe---english-documentation)** | **[中文版本](#chinese-version)**
 
 </div>
