@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YusGameFrame · CommandSystem 命令系统使用指南</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.08);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.68);
+      --brand: #7dd3fc;
+      --brand2:#a78bfa;
+      --ok:#34d399;
+      --warn:#fbbf24;
+      --border: rgba(255,255,255,0.12);
+      --codebg: rgba(0,0,0,0.35);
+      --shadow: 0 18px 50px rgba(0,0,0,0.45);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    @media (prefers-color-scheme: light) {
+      :root{
+        --bg: #f6f7fb;
+        --panel: rgba(0,0,0,0.04);
+        --panel2: rgba(0,0,0,0.06);
+        --text: rgba(0,0,0,0.86);
+        --muted: rgba(0,0,0,0.62);
+        --border: rgba(0,0,0,0.10);
+        --codebg: rgba(0,0,0,0.06);
+        --shadow: 0 18px 50px rgba(0,0,0,0.10);
+      }
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 500px at 20% -10%, rgba(125,211,252,0.25), transparent 60%),
+        radial-gradient(1200px 500px at 80% 0%, rgba(167,139,250,0.20), transparent 60%),
+        radial-gradient(1000px 600px at 50% 120%, rgba(52,211,153,0.12), transparent 55%),
+        var(--bg);
+      line-height: 1.55;
+    }
+    a{ color: var(--brand); text-decoration: none; }
+    a:hover{ text-decoration: underline; }
+    .wrap{ max-width: 1100px; margin: 0 auto; padding: 38px 18px 80px; }
+    header{
+      background: linear-gradient(135deg, rgba(125,211,252,0.14), rgba(167,139,250,0.10));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px 20px;
+      box-shadow: var(--shadow);
+    }
+    .title{ display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; }
+    h1{ margin:0; font-size: 22px; letter-spacing: 0.2px; }
+    .badge{
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(125,211,252,0.14);
+      border: 1px solid rgba(125,211,252,0.32);
+      color: var(--brand);
+    }
+    .sub{ margin: 10px 0 0; color: var(--muted); }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 920px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 14px;
+    }
+    h2{
+      margin: 18px 0 10px;
+      font-size: 16px;
+      letter-spacing: 0.2px;
+    }
+    h3{
+      margin: 14px 0 8px;
+      font-size: 14px;
+      color: var(--brand2);
+    }
+    p{ margin: 8px 0; }
+    ul{ margin: 8px 0; padding-left: 18px; }
+    li{ margin: 6px 0; }
+    code, pre{
+      font-family: var(--mono);
+    }
+    pre{
+      margin: 10px 0;
+      padding: 12px 12px;
+      background: var(--codebg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow:auto;
+    }
+    .hint{
+      border-left: 3px solid var(--brand);
+      padding: 10px 12px;
+      background: var(--panel2);
+      border-radius: 12px;
+      margin: 10px 0;
+      color: var(--muted);
+    }
+    .ok{ border-left-color: var(--ok); }
+    .warn{ border-left-color: var(--warn); }
+    .k{
+      display:inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 6px;
+    }
+    .toc a{ display:block; padding: 6px 8px; border-radius: 10px; }
+    .toc a:hover{ background: rgba(255,255,255,0.06); }
+    .row{ display:flex; flex-wrap:wrap; gap:10px; }
+    .mini{ font-size: 12px; color: var(--muted); }
+    footer{
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>CommandSystem 命令系统使用指南</h1>
+        <span class="badge">YusGameFrame</span>
+      </div>
+      <p class="sub">
+        把“做一件事”封装成命令（Command），统一执行、撤销/重做、组合成宏命令，并支持异步与可视化管理。
+      </p>
+      <div class="grid">
+        <div class="card">
+          <div class="row">
+            <span class="k">入口</span><code>YusGameFrame.YusCommand</code>
+            <span class="k">系统实现</span><code>ICommandSystem</code> / <code>YusCommandSystem</code>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <span class="k">同步命令</span><code>ICommand</code>
+            <span class="k">可撤销命令</span><code>IUndoableCommand</code>
+            <span class="k">异步命令</span><code>IAsyncCommand</code>
+            <span class="k">命名</span><code>INamedCommand</code>
+          </div>
+          <p class="mini" style="margin-top:10px">
+            路径：<code>Assets/YusGameFrame/CommandSystem</code>
+          </p>
+        </div>
+        <div class="card toc">
+          <strong>目录</strong>
+          <a href="#quickstart">1. 5分钟上手</a>
+          <a href="#undo-redo">2. Undo/Redo</a>
+          <a href="#group">3. 分组（把多步当一步撤销）</a>
+          <a href="#registry">4. 注册表（key→命令）</a>
+          <a href="#async">5. 异步命令与取消</a>
+          <a href="#composite">6. 组合命令与事务回滚</a>
+          <a href="#debugger">7. 可视化调试窗口</a>
+          <a href="#tips">8. 新手常见问题</a>
+        </div>
+      </div>
+    </header>
+
+    <h2 id="quickstart">1. 5分钟上手</h2>
+    <p>
+      最常用的方式：直接执行一个委托命令。
+    </p>
+    <pre><code>using YusGameFrame;
+
+// 同步：做一件事
+YusCommand.Execute(new DelegateCommand("加金币", () =&gt; gold += 10));
+
+// 可撤销：带 Undo
+YusCommand.Execute(new DelegateUndoableCommand(
+    "加血",
+    execute: () =&gt; hp += 5,
+    undo: () =&gt; hp -= 5));</code></pre>
+
+    <div class="hint ok">
+      <strong>建议：</strong>给命令加上 <code>Name</code>（实现 <code>INamedCommand</code>），调试窗口和日志会更直观。
+    </div>
+
+    <h2 id="undo-redo">2. Undo/Redo</h2>
+    <p>
+      只要命令实现了 <code>IUndoableCommand</code>，系统就会记录历史并支持撤销/重做。
+    </p>
+    <pre><code>// Undo/Redo
+YusCommand.TryUndo();
+YusCommand.TryRedo();
+
+// 也可以看栈数量
+int undoCount = YusCommand.UndoCount;
+int redoCount = YusCommand.RedoCount;</code></pre>
+
+    <h2 id="group">3. 分组（把多步当一步撤销）</h2>
+    <p>
+      “分组”解决的需求：一次操作里会执行多条命令，但玩家希望撤销时当成一步。
+    </p>
+    <pre><code>using (YusCommand.BeginGroup("购买并装备"))
+{
+    YusCommand.Execute(new DelegateUndoableCommand("扣钱", () =&gt; money -= 100, () =&gt; money += 100));
+    YusCommand.Execute(new DelegateUndoableCommand("加道具", () =&gt; bag.Add(item), () =&gt; bag.Remove(item)));
+    YusCommand.Execute(new DelegateUndoableCommand("装备", () =&gt; Equip(item), () =&gt; Unequip(item)));
+}
+
+// 现在撤销一次，会撤销整个“购买并装备”</code></pre>
+    <div class="hint">
+      分组只影响“历史记录”（Undo/Redo 的粒度），不会改变命令的执行顺序。
+    </div>
+
+    <h2 id="registry">4. 注册表（key→命令）</h2>
+    <p>
+      你可以把命令注册到系统里，让外部只通过 key 调用（适合 UI 按钮、配置表、教程脚本等）。
+    </p>
+    <h3>4.1 无参数注册</h3>
+    <pre><code>YusCommand.Register("ui.open_bag", () =&gt;
+    new DelegateCommand("打开背包", () =&gt; ui.Open("Bag")));
+
+YusCommand.TryExecute("ui.open_bag");</code></pre>
+
+    <h3>4.2 带参数注册</h3>
+    <pre><code>// 带参数：key + 参数类型
+YusCommand.Register&lt;int&gt;("player.add_gold", amount =&gt;
+    new DelegateCommand($"加金币({amount})", () =&gt; gold += amount));
+
+YusCommand.TryExecute("player.add_gold", 50);</code></pre>
+
+    <div class="hint warn">
+      <strong>注意：</strong>带参数的命令，必须用对应的 <code>TryExecute(key, arg)</code> 调用；否则会返回 <code>false</code>。
+    </div>
+
+    <h2 id="async">5. 异步命令与取消</h2>
+    <p>
+      异步命令用 <code>IAsyncCommand</code>（<code>Task</code> + <code>CancellationToken</code>）。
+      常见场景：等待动画、等待加载、等待网络。
+    </p>
+    <pre><code>using System.Threading;
+using System.Threading.Tasks;
+using YusGameFrame;
+
+CancellationTokenSource cts = new CancellationTokenSource();
+
+await YusCommand.ExecuteAsync(new DelegateAsyncCommand(
+    "加载场景",
+    async ct =&gt;
+    {
+        // 这里写你的异步逻辑（示意）
+        await Task.Delay(800, ct);
+    }
+), cts.Token);</code></pre>
+
+    <h3>5.1 异步注册（key→异步命令）</h3>
+    <pre><code>YusCommand.RegisterAsync("net.login", () =&gt;
+    new DelegateAsyncCommand("登录", async ct =&gt;
+    {
+        await Task.Delay(300, ct);
+    }));
+
+await YusCommand.TryExecuteAsync("net.login");</code></pre>
+
+    <div class="hint warn">
+      <strong>取消行为：</strong>如果命令抛出 <code>OperationCanceledException</code>，系统会记录为 <code>Cancelled</code>，并继续把异常抛给调用方。
+    </div>
+
+    <h2 id="composite">6. 组合命令与事务回滚</h2>
+    <p>
+      <code>CompositeCommand</code> 用来把多个可撤销命令合成一个命令。它有“事务式”特性：执行过程中如果抛异常，会按已执行顺序逆序调用 Undo 做回滚。
+    </p>
+    <pre><code>var cmd = new CompositeCommand("交易", new IUndoableCommand[]
+{
+    new DelegateUndoableCommand("扣钱", () =&gt; money -= 100, () =&gt; money += 100),
+    new DelegateUndoableCommand("加物品", () =&gt; bag.Add(item), () =&gt; bag.Remove(item)),
+});
+
+YusCommand.Execute(cmd);</code></pre>
+    <div class="hint">
+      组合命令适合“要么全成功，要么全回滚”的场景；分组适合“历史记录合并”的场景。
+    </div>
+
+    <h2 id="debugger">7. 可视化调试窗口</h2>
+    <p>
+      Unity 菜单：<code>Tools/YusGameFrame/Debug/Command System</code>
+    </p>
+    <ul>
+      <li><strong>Registry</strong>：查看已注册的命令 key（含 Sync/Async 与参数类型），并可一键 Execute</li>
+      <li><strong>Stacks</strong>：查看 Undo/Redo 栈顶部内容（最多显示 20 条）</li>
+      <li><strong>Log</strong>：查看执行/撤销/重做/注册/错误/取消等日志</li>
+    </ul>
+
+    <h2 id="tips">8. 新手常见问题</h2>
+    <h3>8.1 命令到底放哪里？</h3>
+    <p>
+      把“业务动作”写成命令类（或用 <code>DelegateCommand</code> 快速封装），把“谁来触发”留给外部系统（UI、输入、剧情、配置、网络）。
+    </p>
+
+    <h3>8.2 为什么要用注册表？</h3>
+    <ul>
+      <li>UI/教程/配置只需要知道 key，不需要引用具体系统</li>
+      <li>方便热更新/替换实现：只改注册逻辑</li>
+      <li>调试窗口可以直接执行 key，复现问题更快</li>
+    </ul>
+
+    <h3>8.3 异步命令怎么写得更“可取消”？</h3>
+    <ul>
+      <li>把 <code>CancellationToken</code> 传给你所有的等待点（<code>Task.Delay</code>、请求、加载）</li>
+      <li>不要吞掉 <code>OperationCanceledException</code>（让它抛出即可）</li>
+    </ul>
+
+    <footer>
+      <div>文件：<code>Assets/YusGameFrame/CommandSystem/CommandSystem.html</code></div>
+      <div>相关入口：<code>YusGameFrame.YusCommand</code>，调试窗口：<code>Tools/YusGameFrame/Debug/Command System</code></div>
+    </footer>
+  </div>
+</body>
+</html>
+

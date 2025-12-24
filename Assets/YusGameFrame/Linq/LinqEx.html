@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YusGameFrame · LinqEx 扩展方法速查</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.08);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.68);
+      --brand: #7dd3fc;
+      --brand2:#a78bfa;
+      --ok:#34d399;
+      --warn:#fbbf24;
+      --border: rgba(255,255,255,0.12);
+      --codebg: rgba(0,0,0,0.35);
+      --shadow: 0 18px 50px rgba(0,0,0,0.45);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    @media (prefers-color-scheme: light) {
+      :root{
+        --bg: #f6f7fb;
+        --panel: rgba(0,0,0,0.04);
+        --panel2: rgba(0,0,0,0.06);
+        --text: rgba(0,0,0,0.86);
+        --muted: rgba(0,0,0,0.62);
+        --border: rgba(0,0,0,0.10);
+        --codebg: rgba(0,0,0,0.06);
+        --shadow: 0 18px 50px rgba(0,0,0,0.10);
+      }
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 15% 10%, rgba(125,211,252,0.18), transparent 55%),
+                  radial-gradient(1000px 800px at 90% 0%, rgba(167,139,250,0.16), transparent 60%),
+                  linear-gradient(180deg, rgba(255,255,255,0.02), transparent 35%),
+                  var(--bg);
+    }
+    a{ color: var(--brand); text-decoration:none; }
+    a:hover{ text-decoration: underline; }
+    .wrap{ max-width: 1100px; margin: 0 auto; padding: 40px 18px 80px; }
+    .hero{
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(125,211,252,0.10), rgba(167,139,250,0.08));
+      border-radius: 18px;
+      padding: 26px 22px;
+      box-shadow: var(--shadow);
+    }
+    .badge{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .title{
+      margin: 14px 0 6px;
+      font-size: 30px;
+      letter-spacing: 0.2px;
+    }
+    .subtitle{ color: var(--muted); line-height: 1.7; max-width: 72ch; }
+    .grid{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+    }
+    @media (max-width: 920px){ .grid{ grid-template-columns:1fr; } }
+    .card{
+      border:1px solid var(--border);
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .card h3{ margin:0 0 10px; font-size: 14px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+    pre{
+      margin: 0;
+      padding: 12px 12px;
+      background: var(--codebg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow:auto;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.55;
+      white-space: pre;
+    }
+    code{ font-family: var(--mono); }
+    .toc{
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toc a{
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+    }
+    .toc small{ color: var(--muted); }
+    .section{
+      margin-top: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow:hidden;
+      background: var(--panel);
+    }
+    .section header{
+      padding: 14px 16px;
+      background: linear-gradient(90deg, rgba(125,211,252,0.10), rgba(167,139,250,0.06));
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .section h2{ margin:0; font-size: 18px; }
+    .section header span{ color: var(--muted); font-size: 12px; }
+    .rows{ padding: 10px 10px 14px; }
+    .row{
+      display:grid;
+      grid-template-columns: 300px 1fr;
+      gap: 12px;
+      padding: 10px;
+      border-radius: 14px;
+    }
+    @media (max-width: 920px){ .row{ grid-template-columns: 1fr; } }
+    .row + .row{ margin-top: 8px; }
+    .sig{
+      border: 1px solid var(--border);
+      background: var(--codebg);
+      border-radius: 14px;
+      padding: 10px 10px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.45;
+      overflow:auto;
+    }
+    .desc{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    @media (prefers-color-scheme: light) {
+      .desc{ background: rgba(255,255,255,0.70); }
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .pill{
+      display:inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--text);
+    }
+    .footer{
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .k{ color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="badge">
+        <span class="pill">YusGameFrame</span>
+        <span class="pill">LinqEx</span>
+        <span>对 LINQ 的“游戏向”封装与扩展</span>
+      </div>
+      <h1 class="title">LinqEx 扩展方法 · 全量速查</h1>
+      <p class="subtitle">
+        入口统一为 <code>YusGameFrame.LinqEx</code>（扩展方法类，分文件 <code>partial</code> 组织）。
+        适合常见游戏开发场景：安全取值、条件筛选、去重、批处理、随机/权重抽取、以及 Unity 场景里“找最近目标”等。
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <h3>快速上手</h3>
+          <pre><code>// using YusGameFrame;
+
+var list = new List&lt;int&gt;{ 1, 2, 2, 3 };
+var uniq = list.DistinctBy(x =&gt; x).ToList();
+
+if (list.TryFirst(out var first))
+    Debug.Log(first);
+
+// 条件拼接 Where：when=false 时不做过滤
+var filtered = list.Where(x =&gt; x &gt; 1, when: true);
+
+// 批处理：常用于 UI 虚拟列表、分帧加载、分批请求
+foreach (var batch in list.Batch(64))
+{
+    // ...
+}</code></pre>
+          <div class="tag">
+            <span>文件：</span>
+            <span class="pill">Assets/YusGameFrame/Linq/LinqEx.cs</span>
+            <span class="pill">Assets/YusGameFrame/Linq/LinqEx.Unity.cs</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>目录</h3>
+          <div class="toc">
+            <a href="#null"><span>空/安全相关</span><small>None / EmptyIfNull / Try*</small></a>
+            <a href="#filter"><span>筛选与投影</span><small>Where / WhereNotNull / SelectNotNull</small></a>
+            <a href="#select"><span>选择与排序辅助</span><small>ArgMin / ArgMax / DistinctBy</small></a>
+            <a href="#collections"><span>集合构建</span><small>ToDictionary* / ToHashSetEx</small></a>
+            <a href="#strings"><span>字符串</span><small>JoinToString</small></a>
+            <a href="#sequence"><span>序列截断</span><small>TakeUntil / TakeWhileInclusive</small></a>
+            <a href="#random"><span>随机/权重（System.Random）</span><small>Shuffle / PickByWeight</small></a>
+            <a href="#unity"><span>Unity 专用</span><small>ClosestTo / UnityEngine.Random</small></a>
+            <a href="#batch"><span>批处理</span><small>Batch</small></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="section" id="null">
+      <header>
+        <h2>空/安全相关</h2>
+        <span>避免空引用、避免异常、减少临时 GC</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">bool None&lt;T&gt;(this IEnumerable&lt;T&gt; source)</div>
+          <div class="desc">source 为 null 或者没有元素时返回 true。等价于 “没有任何元素”。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool None&lt;T&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,bool&gt; predicate)</div>
+          <div class="desc">带条件判断：source 为 null 直接视作 None；否则返回 !Any(predicate)。</div>
+        </div>
+        <div class="row">
+          <div class="sig">IEnumerable&lt;T&gt; EmptyIfNull&lt;T&gt;(this IEnumerable&lt;T&gt; source)</div>
+          <div class="desc">把 null 序列变成空序列，便于链式调用。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool IsNullOrEmpty&lt;T&gt;(this IEnumerable&lt;T&gt; source)</div>
+          <div class="desc">source 为 null 或无元素时返回 true（与 None 等价，保留更直观命名）。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool CountAtLeast&lt;T&gt;(this IEnumerable&lt;T&gt; source, int count)</div>
+          <div class="desc">判断元素数量是否 ≥ count（不会为了 Count() 把序列完全枚举）。常用于“至少需要 N 个素材/配置”。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool TryFirst&lt;T&gt;(this IEnumerable&lt;T&gt; source, out T value)</div>
+          <div class="desc">安全取第一个元素：source 为 null 或空时返回 false，不抛异常。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool TryFirst&lt;T&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,bool&gt; predicate, out T value)</div>
+          <div class="desc">安全取满足条件的第一个元素：找不到返回 false。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool TrySingle&lt;T&gt;(this IEnumerable&lt;T&gt; source, out T value)</div>
+          <div class="desc">当且仅当序列“恰好一个元素”才返回 true；0 个或 ≥2 个都返回 false。</div>
+        </div>
+        <div class="row">
+          <div class="sig">void ForEach&lt;T&gt;(this IEnumerable&lt;T&gt; source, Action&lt;T&gt; action)</div>
+          <div class="desc">对每个元素执行 action。注意：这是“遍历副作用”，不是 LINQ 的纯函数风格（但写游戏很常用）。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="filter">
+      <header>
+        <h2>筛选与投影</h2>
+        <span>写 UI/玩法逻辑时的常用组合积木</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">IEnumerable&lt;T&gt; Where&lt;T&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,bool&gt; predicate, bool when)</div>
+          <div class="desc">条件版 Where：<span class="k">when=false</span> 时不做过滤，直接返回 source（便于写“可选条件”查询）。</div>
+        </div>
+        <div class="row">
+          <div class="sig">IEnumerable&lt;T&gt; WhereNotNull&lt;T&gt;(this IEnumerable&lt;T&gt; source) where T : class</div>
+          <div class="desc">过滤掉 null 引用对象。</div>
+        </div>
+        <div class="row">
+          <div class="sig">IEnumerable&lt;T&gt; WhereNotNull&lt;T&gt;(this IEnumerable&lt;Nullable&lt;T&gt;&gt; source) where T : struct</div>
+          <div class="desc">过滤掉 Nullable&lt;T&gt; 的空值，并返回 T 序列。</div>
+        </div>
+        <div class="row">
+          <div class="sig">IEnumerable&lt;TResult&gt; SelectNotNull&lt;TSource,TResult&gt;(this IEnumerable&lt;TSource&gt; source, Func&lt;TSource,TResult&gt; selector) where TResult : class</div>
+          <div class="desc">先投影再过滤：selector 返回 null 的项会被跳过。常用于“从组件/配置里提取某个可选字段”。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="select">
+      <header>
+        <h2>选择与排序辅助</h2>
+        <span>找“最小/最大”、按 key 去重</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">IEnumerable&lt;TSource&gt; DistinctBy&lt;TSource,TKey&gt;(this IEnumerable&lt;TSource&gt; source, Func&lt;TSource,TKey&gt; keySelector, IEqualityComparer&lt;TKey&gt; comparer = null)</div>
+          <div class="desc">按 key 去重（保留第一次出现的元素）。适合去重技能、道具、关卡入口等。</div>
+        </div>
+        <div class="row">
+          <div class="sig">T ArgMin&lt;T,TValue&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,TValue&gt; selector, IComparer&lt;TValue&gt; comparer = null)</div>
+          <div class="desc">返回 selector 值最小的那个元素（序列不能为空）。常用于“找最近/最便宜/最短 CD”。</div>
+        </div>
+        <div class="row">
+          <div class="sig">T ArgMax&lt;T,TValue&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,TValue&gt; selector, IComparer&lt;TValue&gt; comparer = null)</div>
+          <div class="desc">返回 selector 值最大的那个元素（序列不能为空）。常用于“找伤害最高/优先级最高”。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="collections">
+      <header>
+        <h2>集合构建</h2>
+        <span>配置表/索引缓存常用</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">Dictionary&lt;TKey,TValue&gt; ToDictionaryFirstWins&lt;TSource,TKey,TValue&gt;(this IEnumerable&lt;TSource&gt; source, Func&lt;TSource,TKey&gt; keySelector, Func&lt;TSource,TValue&gt; valueSelector, IEqualityComparer&lt;TKey&gt; comparer = null)</div>
+          <div class="desc">重复 key 时“保留第一个”。适合加载配置时不希望后面的覆盖前面。</div>
+        </div>
+        <div class="row">
+          <div class="sig">Dictionary&lt;TKey,TValue&gt; ToDictionaryLastWins&lt;TSource,TKey,TValue&gt;(this IEnumerable&lt;TSource&gt; source, Func&lt;TSource,TKey&gt; keySelector, Func&lt;TSource,TValue&gt; valueSelector, IEqualityComparer&lt;TKey&gt; comparer = null)</div>
+          <div class="desc">重复 key 时“后者覆盖前者”。适合热更/patch 覆盖默认配置。</div>
+        </div>
+        <div class="row">
+          <div class="sig">HashSet&lt;T&gt; ToHashSetEx&lt;T&gt;(this IEnumerable&lt;T&gt; source, IEqualityComparer&lt;T&gt; comparer = null)</div>
+          <div class="desc">把序列转成 HashSet（支持自定义 comparer），用于快速 Contains/去重。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="strings">
+      <header>
+        <h2>字符串</h2>
+        <span>调试日志、UI 文本拼接</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">string JoinToString&lt;T&gt;(this IEnumerable&lt;T&gt; source, string separator)</div>
+          <div class="desc">相当于 string.Join(separator, source.Select(ToString))，并对 null 友好。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="sequence">
+      <header>
+        <h2>序列截断</h2>
+        <span>读取到某个标记/条件为止</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">IEnumerable&lt;T&gt; TakeUntil&lt;T&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,bool&gt; predicate, bool includeMatch = true)</div>
+          <div class="desc">一直取到 predicate 命中为止；可选择是否包含命中元素。</div>
+        </div>
+        <div class="row">
+          <div class="sig">IEnumerable&lt;T&gt; TakeWhileInclusive&lt;T&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,bool&gt; predicate)</div>
+          <div class="desc">“包含式” TakeWhile：会先返回当前元素，再判断 predicate；第一次 predicate=false 时停止。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="random">
+      <header>
+        <h2>随机/权重（System.Random）</h2>
+        <span>可控随机：传入 seed 可复现（回放、战斗验证、关卡生成）</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">void ShuffleInPlace&lt;T&gt;(this IList&lt;T&gt; list, Random rng)</div>
+          <div class="desc">Fisher–Yates 洗牌（原地打乱）。</div>
+        </div>
+        <div class="row">
+          <div class="sig">List&lt;T&gt; Shuffle&lt;T&gt;(this IEnumerable&lt;T&gt; source, Random rng)</div>
+          <div class="desc">返回一个已打乱的新 List（内部会 ToList）。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool TryPickRandom&lt;T&gt;(this IList&lt;T&gt; list, Random rng, out T value)</div>
+          <div class="desc">安全随机选取：list 为空/参数无效时返回 false。</div>
+        </div>
+        <div class="row">
+          <div class="sig">T PickRandom&lt;T&gt;(this IList&lt;T&gt; list, Random rng)</div>
+          <div class="desc">随机选取：list 为空会抛异常（用于逻辑上“必须有元素”的场景）。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool TryPickByWeight&lt;T&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,float&gt; weightSelector, Random rng, out T value)</div>
+          <div class="desc">权重抽取：权重为负/NaN、总权重≤0、序列为空等情况返回 false。</div>
+        </div>
+        <div class="row">
+          <div class="sig">T PickByWeight&lt;T&gt;(this IEnumerable&lt;T&gt; source, Func&lt;T,float&gt; weightSelector, Random rng)</div>
+          <div class="desc">权重抽取（失败直接抛异常），适合“掉落表必须可抽”的场景。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="unity">
+      <header>
+        <h2>Unity 专用</h2>
+        <span>UnityEngine.Random + 场景中常见“找最近目标”</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">bool TryPickRandom&lt;T&gt;(this IList&lt;T&gt; list, out T value)</div>
+          <div class="desc">使用 UnityEngine.Random.Range 随机选取（不需要传 Random）。</div>
+        </div>
+        <div class="row">
+          <div class="sig">T PickRandom&lt;T&gt;(this IList&lt;T&gt; list)</div>
+          <div class="desc">UnityEngine.Random 版本 PickRandom（list 为空会抛异常）。</div>
+        </div>
+        <div class="row">
+          <div class="sig">void ShuffleInPlace&lt;T&gt;(this IList&lt;T&gt; list)</div>
+          <div class="desc">UnityEngine.Random 版本洗牌（原地打乱）。</div>
+        </div>
+        <div class="row">
+          <div class="sig">T ClosestTo&lt;T&gt;(this IEnumerable&lt;T&gt; source, Vector3 position, Func&lt;T,Vector3&gt; positionSelector)</div>
+          <div class="desc">找最近元素（按 sqrMagnitude，避免开根号）。序列不能为空。</div>
+        </div>
+        <div class="row">
+          <div class="sig">bool TryClosestTo&lt;T&gt;(this IEnumerable&lt;T&gt; source, Vector3 position, Func&lt;T,Vector3&gt; positionSelector, out T value)</div>
+          <div class="desc">安全版 ClosestTo：序列为空/参数无效返回 false。</div>
+        </div>
+        <div class="row">
+          <div class="sig">Transform ClosestTo(this IEnumerable&lt;Transform&gt; source, Vector3 position)</div>
+          <div class="desc">Transform 便捷重载：直接按 transform.position 找最近。</div>
+        </div>
+        <div class="row">
+          <div class="sig">Component ClosestTo(this IEnumerable&lt;Component&gt; source, Vector3 position)</div>
+          <div class="desc">Component 便捷重载：按 c.transform.position 找最近。</div>
+        </div>
+        <div class="row">
+          <div class="sig">GameObject ClosestTo(this IEnumerable&lt;GameObject&gt; source, Vector3 position)</div>
+          <div class="desc">GameObject 便捷重载：按 go.transform.position 找最近。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="batch">
+      <header>
+        <h2>批处理</h2>
+        <span>把长序列拆成固定大小的小块</span>
+      </header>
+      <div class="rows">
+        <div class="row">
+          <div class="sig">IEnumerable&lt;List&lt;T&gt;&gt; Batch&lt;T&gt;(this IEnumerable&lt;T&gt; source, int batchSize)</div>
+          <div class="desc">
+            按 batchSize 拆分为多段 List&lt;T&gt;。
+            常用于：UI 虚拟化列表、分帧 Instantiate、分批加载 Addressables、分批发送网络请求等。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div>提示：</div>
+      <div>- 需要“可复现”的随机：用 <span class="pill">System.Random</span> 版本（传 seed）。</div>
+      <div>- 需要“跟 Unity 一致”的随机：用 <span class="pill">UnityEngine.Random</span> 版本（不传 rng）。</div>
+      <div>- 入口统一：所有扩展都挂在 <span class="pill">LinqEx</span> 上。</div>
+    </div>
+  </div>
+</body>
+</html>
+
