@@ -19,7 +19,7 @@ MonoBehaviour:
     Node:
       rid: 9078763646712807495
   - Guid: 69ebe9bfd8f947ef8be4ddecacfc116b
-    Position: {x: 404.13, y: 180.66666}
+    Position: {x: 404, y: 180.66667}
     Node:
       rid: 9078763646712807496
   - Guid: b415c5d0af9a490094a1f8ac6c0755ab
@@ -27,7 +27,7 @@ MonoBehaviour:
     Node:
       rid: 9078763646712807497
   - Guid: 6c3a0116c69749c4a84ed52bdff4d3eb
-    Position: {x: 494.02667, y: 373.3333}
+    Position: {x: 494, y: 373.33334}
     Node:
       rid: 9078763646712807498
   edges:
@@ -61,6 +61,49 @@ MonoBehaviour:
     ToNodeGuid: 92d723872151439888167127035c98e8
     Condition:
       rid: 9078763646712807503
+  initialBlackboard:
+  - Key: vm:item
+    Kind: 0
+    IntValue: 0
+    FloatValue: 0
+    BoolValue: 0
+    StringValue: 
+  - Key: vm:price
+    Kind: 0
+    IntValue: 0
+    FloatValue: 0
+    BoolValue: 0
+    StringValue: 
+  - Key: vm:paid
+    Kind: 0
+    IntValue: 0
+    FloatValue: 0
+    BoolValue: 0
+    StringValue: 
+  - Key: vm:cancel
+    Kind: 2
+    IntValue: 0
+    FloatValue: 0
+    BoolValue: 0
+    StringValue: 
+  - Key: vm:dispenseDone
+    Kind: 2
+    IntValue: 0
+    FloatValue: 0
+    BoolValue: 0
+    StringValue: 
+  - Key: vm:dispenseRemaining
+    Kind: 1
+    IntValue: 0
+    FloatValue: 0
+    BoolValue: 0
+    StringValue: 
+  - Key: vm:restart
+    Kind: 2
+    IntValue: 0
+    FloatValue: 0
+    BoolValue: 0
+    StringValue: 
   references:
     version: 2
     RefIds:

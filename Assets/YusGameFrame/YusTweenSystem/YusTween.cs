@@ -13,7 +13,7 @@ public static class YusTween
     /// 给 Tween “穿上统一制服”：是否走真实时间、是否绑定对象销毁、是否打上 id 标签。
     /// 这样业务层就不用每次都想“我是不是忘了 SetUpdate / SetLink / SetId？”。
     /// </summary>
-    private static Tween Configure(
+    private static Tween ConfigureInternal(
         Tween tween,
         GameObject linkGameObject,
         bool unscaledTime,
@@ -26,6 +26,21 @@ public static class YusTween
         if (id != null) tween.SetId(id);
         if (linkGameObject != null) tween.SetLink(linkGameObject, linkBehaviour);
         return tween;
+    }
+
+    /// <summary>
+    /// Apply common YusTween defaults onto an existing DOTween Tween/Sequence.
+    /// Use this when you need to build tweens directly via DOTween APIs (e.g. special cases),
+    /// but still want consistent SetUpdate/SetLink/SetId behavior.
+    /// </summary>
+    public static Tween ApplyDefaults(
+        Tween tween,
+        GameObject linkGameObject,
+        bool unscaledTime,
+        object id = null,
+        LinkBehaviour linkBehaviour = LinkBehaviour.KillOnDestroy)
+    {
+        return ConfigureInternal(tween, linkGameObject, unscaledTime, id, linkBehaviour);
     }
 
     public static Tween ScaleFromTo(
@@ -45,7 +60,7 @@ public static class YusTween
 
         target.localScale = from;
         Tween tween = target.DOScale(to, duration).SetEase(ease);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -66,7 +81,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOScale(to, duration).SetEase(ease);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -87,7 +102,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOMove(to, duration, snapping).SetEase(ease);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -108,7 +123,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOLocalMove(to, duration, snapping).SetEase(ease);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -129,7 +144,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DORotate(toEulerAngles, duration, rotateMode).SetEase(ease);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -150,7 +165,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOLocalRotate(toLocalEulerAngles, duration, rotateMode).SetEase(ease);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -172,7 +187,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOPunchPosition(punch, duration, vibrato, elasticity, snapping);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -193,7 +208,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOPunchScale(punch, duration, vibrato, elasticity);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -214,7 +229,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOPunchRotation(punch, duration, vibrato, elasticity);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -237,7 +252,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOShakePosition(duration, strength, vibrato, randomness, snapping, fadeOut);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -259,7 +274,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOShakeRotation(duration, strength, vibrato, randomness, fadeOut);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -281,7 +296,7 @@ public static class YusTween
         if (killTargetTweens) target.DOKill();
 
         Tween tween = target.DOShakeScale(duration, strength, vibrato, randomness, fadeOut);
-        return Configure(tween, target.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, target.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     /// <summary>
@@ -302,7 +317,7 @@ public static class YusTween
         if (killTargetTweens) canvasGroup.DOKill();
 
         Tween tween = canvasGroup.DOFade(to, duration).SetEase(ease);
-        return Configure(tween, canvasGroup.gameObject, unscaledTime, id, linkBehaviour);
+        return ConfigureInternal(tween, canvasGroup.gameObject, unscaledTime, id, linkBehaviour);
     }
 
     public static Sequence NewSequence(
@@ -312,7 +327,7 @@ public static class YusTween
         LinkBehaviour linkBehaviour = LinkBehaviour.KillOnDestroy)
     {
         Sequence seq = DOTween.Sequence();
-        return (Sequence)Configure(seq, linkGameObject, unscaledTime, id, linkBehaviour);
+        return (Sequence)ConfigureInternal(seq, linkGameObject, unscaledTime, id, linkBehaviour);
     }
 
     public static int KillId(object id, bool complete = false)

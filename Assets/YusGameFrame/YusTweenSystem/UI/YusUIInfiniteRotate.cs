@@ -32,26 +32,18 @@ public class YusUIInfiniteRotate : MonoBehaviour
     {
         Stop();
 
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null)
-        {
-            _tween = mgr.InfiniteRotate(transform, axis, degreesPerSecond, localRotate, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            return;
-        }
-
         if (killTargetTweens) transform.DOKill();
 
         float duration = Mathf.Approximately(degreesPerSecond, 0f) ? 0.001f : Mathf.Abs(360f / degreesPerSecond);
         Vector3 oneTurn = axis.normalized * 360f;
 
-        _tween = (localRotate
+        Tween tween = (localRotate
                 ? transform.DOLocalRotate(oneTurn, duration, RotateMode.FastBeyond360)
                 : transform.DORotate(oneTurn, duration, RotateMode.FastBeyond360))
             .SetEase(YusEase.Average)
-            .SetLoops(-1, LoopType.Incremental)
-            .SetUpdate(unscaledTime)
-            .SetLink(gameObject, LinkBehaviour.KillOnDestroy)
-            .SetId(this);
+            .SetLoops(-1, LoopType.Incremental);
+
+        _tween = YusTween.ApplyDefaults(tween, gameObject, unscaledTime, id: this, linkBehaviour: LinkBehaviour.KillOnDestroy);
     }
 
     public void Stop()

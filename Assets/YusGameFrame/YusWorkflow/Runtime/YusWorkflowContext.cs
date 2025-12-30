@@ -13,6 +13,7 @@ public sealed class YusWorkflowContext
     public float FixedDeltaTime { get; internal set; }
 
     private readonly Dictionary<string, object> blackboard = new Dictionary<string, object>();
+    private readonly Dictionary<string, object> initialBlackboard = new Dictionary<string, object>(StringComparer.Ordinal);
 
     public YusWorkflowEventBus Events { get; }
 
@@ -35,6 +36,61 @@ public sealed class YusWorkflowContext
     public void Set(string key, object value)
     {
         blackboard[key] = value;
+    }
+
+    internal void SetInitialBlackboardSnapshot(IEnumerable<YusWorkflowBlackboardEntry> entries)
+    {
+        initialBlackboard.Clear();
+        if (entries == null) return;
+
+        foreach (var entry in entries)
+        {
+            if (entry == null) continue;
+            if (string.IsNullOrWhiteSpace(entry.Key)) continue;
+
+            object value;
+            switch (entry.Kind)
+            {
+                case YusWorkflowBlackboardEntry.ValueKind.Int:
+                    value = entry.IntValue;
+                    break;
+                case YusWorkflowBlackboardEntry.ValueKind.Float:
+                    value = entry.FloatValue;
+                    break;
+                case YusWorkflowBlackboardEntry.ValueKind.Bool:
+                    value = entry.BoolValue;
+                    break;
+                case YusWorkflowBlackboardEntry.ValueKind.String:
+                    value = entry.StringValue;
+                    break;
+                default:
+                    continue;
+            }
+
+            initialBlackboard[entry.Key] = value;
+        }
+    }
+
+    internal void ApplyEntries(IEnumerable<YusWorkflowBlackboardEntry> entries)
+    {
+        if (entries == null) return;
+        foreach (var entry in entries)
+        {
+            entry?.TryApplyTo(this);
+        }
+    }
+
+    public void ResetBlackboardToInitial()
+    {
+        // Reset should also clean up event subscriptions stored outside the blackboard.
+        Events.DisposeAll();
+        requestedNodeGuid = null;
+
+        blackboard.Clear();
+        foreach (var kv in initialBlackboard)
+        {
+            blackboard[kv.Key] = kv.Value;
+        }
     }
 
     public void RequestEnterNode(string nodeGuid)

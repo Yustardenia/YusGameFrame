@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YusTweenSystem</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.08);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.66);
+      --border: rgba(255,255,255,.12);
+      --brand: #7c5cff;
+      --brand2: #28d7ff;
+      --code: rgba(255,255,255,.08);
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8ff;
+        --panel: rgba(0,0,0,.04);
+        --panel2: rgba(0,0,0,.06);
+        --text: rgba(10,14,28,.92);
+        --muted: rgba(10,14,28,.66);
+        --border: rgba(10,14,28,.12);
+        --code: rgba(10,14,28,.06);
+        --shadow: 0 20px 60px rgba(10,14,28,.12);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Microsoft YaHei, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(124,92,255,.45), transparent 60%),
+        radial-gradient(900px 500px at 85% 25%, rgba(40,215,255,.35), transparent 60%),
+        radial-gradient(900px 500px at 50% 80%, rgba(124,92,255,.18), transparent 60%),
+        var(--bg);
+    }
+    a { color: inherit; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 18px 64px;
+    }
+
+    .hero {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      box-shadow: var(--shadow);
+      border-radius: 18px;
+      padding: 22px 22px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero:before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(90deg, rgba(124,92,255,.35), rgba(40,215,255,.25));
+      opacity: .18;
+      filter: blur(18px);
+      pointer-events: none;
+    }
+    .hero > * { position: relative; }
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: .2px;
+    }
+    .badge {
+      font-size: 12px;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+    }
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 860px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+    .card p { margin: 0 0 10px; color: var(--muted); }
+    .card ul { margin: 0; padding-left: 18px; }
+    .card li { margin: 6px 0; }
+
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    code { padding: 2px 7px; }
+    pre { padding: 12px 14px; overflow: auto; }
+
+    .hint {
+      margin-top: 12px;
+      border-left: 3px solid var(--brand2);
+      padding: 10px 12px;
+      color: var(--muted);
+      background: rgba(40,215,255,.08);
+      border-radius: 10px;
+      border: 1px solid rgba(40,215,255,.18);
+    }
+    .footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+    .k {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1 class="title">
+        YusTweenSystem
+        <span class="badge">Inspector 友好 · 轻量可拼装</span>
+      </h1>
+      <p class="subtitle">推荐入口统一为 <code>YusTween</code>（写代码） + <code>YusTweenSequencePlayer</code>（策划/美术在 Inspector 里拼动效）。</p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>推荐入口</h2>
+        <ul>
+          <li><span class="k">代码</span>：直接用 <code>YusTween.*</code>（统一 <code>SetUpdate / SetLink / SetId</code> 等默认行为）</li>
+          <li><span class="k">Inspector</span>：挂 <code>YusTweenSequencePlayer</code>，用多轨道拼装 Move/Scale/Rotate/Color/Fade</li>
+        </ul>
+        <div class="hint">目标：让“常见动效”尽量不写代码、可复用、可随 Prefab 走；代码只处理少数特殊逻辑。</div>
+      </section>
+
+      <section class="card">
+        <h2>YusTweenSequencePlayer 快速上手</h2>
+        <ol style="margin:0; padding-left: 18px;">
+          <li style="margin:6px 0;">给物体挂 <code>YusTweenSequencePlayer</code></li>
+          <li style="margin:6px 0;">点一次 <code>自动绑定目标</code>（可选，但强烈建议）</li>
+          <li style="margin:6px 0;">点 <code>+ 移动/+ 缩放/+ 淡入淡出/+ 颜色</code> 添加轨道，设置 <code>To</code>（需要指定起点就勾 <code>指定起点（From）</code>）</li>
+          <li style="margin:6px 0;">把 <code>播放时机</code> 设为 <code>OnEnable</code>/<code>Start</code>，或在 UnityEvent 里调用 <code>PlayForward()</code></li>
+        </ol>
+        <div class="hint">播放预览：进入 Play Mode 后，Inspector 底部会出现 <span class="k">正向播放</span>/<span class="k">反向播放</span>/<span class="k">停止</span> 按钮。</div>
+      </section>
+
+      <section class="card">
+        <h2>常见搭配（示例）</h2>
+        <p>一个“弹窗出现”的常见组合：</p>
+        <pre><code>轨道 0：CanvasGroupAlpha  From=0  To=1  duration=0.18  ease=OutQuad
+轨道 1：LocalScale        From=0  To=1  duration=0.22  ease=OutBack</code></pre>
+        <p>一个“按钮反馈”的常见组合：</p>
+        <pre><code>轨道 0：LocalScale  Relative=true  To=(0.06, 0.06, 0)  loops=2  loopType=Yoyo</code></pre>
+      </section>
+
+      <section class="card">
+        <h2>Legacy</h2>
+        <p><code>YusTweenManager</code> 保留用于兼容旧用法，但新代码/新资源建议只使用：</p>
+        <ul>
+          <li><code>YusTween</code></li>
+          <li><code>YusTweenSequencePlayer</code></li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="footer">
+      文件位置：<code>Assets/YusGameFrame/YusTweenSystem/README.html</code>
+    </div>
+  </div>
+</body>
+</html>
+

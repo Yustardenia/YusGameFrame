@@ -13,7 +13,7 @@ public sealed class YusWorkflowLogNode : YusWorkflowNode
 {
     public string Message = "Hello Workflow";
 
-    public override void OnEnter(YusWorkflowContext context)
+    protected override void OnEnter()
     {
         Debug.Log(Message);
     }
@@ -24,34 +24,34 @@ public sealed class YusWorkflowWaitNode : YusWorkflowNode
 {
     public float Seconds = 1f;
 
-    public override void OnEnter(YusWorkflowContext context)
+    protected override void OnEnter()
     {
-        context.Set($"wait:{context.CurrentNodeGuid}:remaining", Seconds);
+        Context.Set($"wait:{Context.CurrentNodeGuid}:remaining", Seconds);
     }
 
-    public override void OnUpdate(YusWorkflowContext context)
+    protected override void OnUpdate()
     {
-        var key = $"wait:{context.CurrentNodeGuid}:remaining";
-        var remaining = context.Get(key, Seconds);
-        remaining -= context.DeltaTime;
-        context.Set(key, remaining);
+        var key = $"wait:{Context.CurrentNodeGuid}:remaining";
+        var remaining = Context.Get(key, Seconds);
+        remaining -= Context.DeltaTime;
+        Context.Set(key, remaining);
     }
 }
 
 [Serializable]
 public sealed class YusWorkflowCond_CurrentWaitDone : YusWorkflowCondition
 {
-    public override bool Evaluate(YusWorkflowContext context)
+    protected override bool Evaluate()
     {
-        var key = $"wait:{context.CurrentNodeGuid}:remaining";
-        return context.Get(key, 0f) <= 0f;
+        var key = $"wait:{Context.CurrentNodeGuid}:remaining";
+        return Context.Get(key, 0f) <= 0f;
     }
 }
 
 [Serializable]
 public sealed class YusWorkflowCond_Always : YusWorkflowCondition
 {
-    public override bool Evaluate(YusWorkflowContext context) => true;
+    protected override bool Evaluate() => true;
 }
 
 [Serializable]
@@ -59,10 +59,10 @@ public sealed class YusWorkflowBroadcastEventNode : YusWorkflowNode
 {
     public string EventName;
 
-    public override void OnEnter(YusWorkflowContext context)
+    protected override void OnEnter()
     {
         if (string.IsNullOrWhiteSpace(EventName)) return;
-        context.Events.Publish(EventName);
+        Context.Events.Publish(EventName);
     }
 }
 
@@ -72,27 +72,27 @@ public sealed class YusWorkflowWaitEventNode : YusWorkflowNode
     public string EventName;
     public bool ResetCountOnEnter = true;
 
-    public override void OnEnter(YusWorkflowContext context)
+    protected override void OnEnter()
     {
         if (string.IsNullOrWhiteSpace(EventName)) return;
 
-        if (ResetCountOnEnter) context.ResetEvent(EventName);
+        if (ResetCountOnEnter) Context.ResetEvent(EventName);
 
-        var subKey = YusWorkflowContext.GetEventSubscriptionKey(context.CurrentNodeGuid, EventName);
-        var existing = context.Get<IDisposable>(subKey, null);
+        var subKey = YusWorkflowContext.GetEventSubscriptionKey(Context.CurrentNodeGuid, EventName);
+        var existing = Context.Get<IDisposable>(subKey, null);
         existing?.Dispose();
 
-        var token = context.Events.Subscribe(EventName, () => context.MarkEventFired(EventName));
-        context.Set(subKey, token);
+        var token = Context.Events.Subscribe(EventName, () => Context.MarkEventFired(EventName));
+        Context.Set(subKey, token);
     }
 
-    public override void OnExit(YusWorkflowContext context)
+    protected override void OnExit()
     {
         if (string.IsNullOrWhiteSpace(EventName)) return;
-        var subKey = YusWorkflowContext.GetEventSubscriptionKey(context.CurrentNodeGuid, EventName);
-        var token = context.Get<IDisposable>(subKey, null);
+        var subKey = YusWorkflowContext.GetEventSubscriptionKey(Context.CurrentNodeGuid, EventName);
+        var token = Context.Get<IDisposable>(subKey, null);
         token?.Dispose();
-        context.Set(subKey, null);
+        Context.Set(subKey, null);
     }
 }
 
@@ -101,9 +101,9 @@ public sealed class YusWorkflowCond_EventReceived : YusWorkflowCondition
 {
     public string EventName;
 
-    public override bool Evaluate(YusWorkflowContext context)
+    protected override bool Evaluate()
     {
         if (string.IsNullOrWhiteSpace(EventName)) return false;
-        return context.GetEventCount(EventName) > 0;
+        return Context.GetEventCount(EventName) > 0;
     }
 }

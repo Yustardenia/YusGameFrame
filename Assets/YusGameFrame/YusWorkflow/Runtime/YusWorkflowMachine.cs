@@ -51,6 +51,7 @@ public sealed class YusWorkflowMachine
 
     public string CurrentNodeGuid { get; private set; }
     public string PreviousNodeGuid { get; private set; }
+    public YusWorkflowContext Context => context;
 
     public TransitionMode AutoTransitionMode { get; set; } = TransitionMode.Single;
     public int MaxTransitionsPerTick { get; set; } = 32;

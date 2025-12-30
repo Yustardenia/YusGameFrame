@@ -5,6 +5,13 @@ public abstract class YusWorkflowCondition
 {
     public virtual string DisplayName => GetType().Name;
 
-    public abstract bool Evaluate(YusWorkflowContext context);
-}
+    protected YusWorkflowContext Context { get; private set; }
 
+    public virtual bool Evaluate(YusWorkflowContext context)
+    {
+        Context = context;
+        return Evaluate();
+    }
+
+    protected virtual bool Evaluate() => false;
+}

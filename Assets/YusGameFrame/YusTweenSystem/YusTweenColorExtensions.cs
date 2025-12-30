@@ -20,13 +20,10 @@ public static class YusTweenColorExtensions
     public static Tween YusColorFade(this Graphic graphic, Color to, float duration, Ease ease = YusEase.FastToSlow, bool unscaledTime = true, bool killTargetTweens = true, object id = null)
     {
         if (graphic == null) return null;
-        if (killTargetTweens) graphic.DOKill();
+        if (killTargetTweens) YusTween.KillTargetTweens(graphic);
 
-        Tween t = graphic.DOColor(to, duration).SetEase(ease);
-        if (id != null) t.SetId(id);
-        t.SetUpdate(unscaledTime);
-        t.SetLink(graphic.gameObject, LinkBehaviour.KillOnDestroy);
-        return t;
+        Tween tween = graphic.DOColor(to, duration).SetEase(ease);
+        return YusTween.ApplyDefaults(tween, graphic.gameObject, unscaledTime, id, LinkBehaviour.KillOnDestroy);
     }
 
     public static void YusColorInstant(this SpriteRenderer renderer, Color to)
@@ -38,13 +35,10 @@ public static class YusTweenColorExtensions
     public static Tween YusColorFade(this SpriteRenderer renderer, Color to, float duration, Ease ease = YusEase.FastToSlow, bool unscaledTime = false, bool killTargetTweens = true, object id = null)
     {
         if (renderer == null) return null;
-        if (killTargetTweens) renderer.DOKill();
+        if (killTargetTweens) YusTween.KillTargetTweens(renderer);
 
-        Tween t = renderer.DOColor(to, duration).SetEase(ease);
-        if (id != null) t.SetId(id);
-        t.SetUpdate(unscaledTime);
-        t.SetLink(renderer.gameObject, LinkBehaviour.KillOnDestroy);
-        return t;
+        Tween tween = renderer.DOColor(to, duration).SetEase(ease);
+        return YusTween.ApplyDefaults(tween, renderer.gameObject, unscaledTime, id, LinkBehaviour.KillOnDestroy);
     }
 
     /// <summary>
@@ -64,17 +58,14 @@ public static class YusTweenColorExtensions
     public static Tween YusColorFade(this Renderer renderer, Color to, float duration, Ease ease = YusEase.FastToSlow, bool unscaledTime = false, bool killTargetTweens = true, bool useSharedMaterial = false, object id = null)
     {
         if (renderer == null) return null;
-        if (killTargetTweens) renderer.DOKill();
+        if (killTargetTweens) YusTween.KillTargetTweens(renderer);
 
         Material m = useSharedMaterial ? renderer.sharedMaterial : renderer.material;
         if (m == null) return null;
         if (!m.HasProperty("_Color")) return null;
 
-        Tween t = m.DOColor(to, duration).SetEase(ease);
-        if (id != null) t.SetId(id);
-        t.SetUpdate(unscaledTime);
-        t.SetLink(renderer.gameObject, LinkBehaviour.KillOnDestroy);
-        return t;
+        Tween tween = m.DOColor(to, duration).SetEase(ease);
+        return YusTween.ApplyDefaults(tween, renderer.gameObject, unscaledTime, id, LinkBehaviour.KillOnDestroy);
     }
 }
 

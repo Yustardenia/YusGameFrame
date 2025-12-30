@@ -5,28 +5,25 @@ using UnityEngine;
 [Serializable]
 public sealed class VMNode_Init : YusWorkflowNode
 {
-    public override void OnEnter(YusWorkflowContext context)
+    protected override void OnEnter()
     {
-        context.Set("vm:item", 0);
-        context.Set("vm:price", 0);
-        context.Set("vm:paid", 0);
-        context.Set("vm:cancel", false);
-        context.Set("vm:dispenseDone", false);
+        // Reset to the initial blackboard values configured on the WorkflowAsset (via the editor window).
+        Context.ResetBlackboardToInitial();
         Debug.Log("[VMWF] Init: press 1/2 to select item.");
     }
 
-    public override void OnUpdate(YusWorkflowContext context)
+    protected override void OnUpdate()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            context.Set("vm:item", 1);
-            context.Set("vm:price", 2);
+            Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Item, 1);
+            Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Price, 2);
             Debug.Log("[VMWF] Selected Cola, price=2");
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            context.Set("vm:item", 2);
-            context.Set("vm:price", 1);
+            Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Item, 2);
+            Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Price, 1);
             Debug.Log("[VMWF] Selected Water, price=1");
         }
     }
@@ -41,27 +38,27 @@ public sealed class VMNode_Coin : YusWorkflowNode
         yield return "Cancel";
     }
 
-    public override void OnEnter(YusWorkflowContext context)
+    protected override void OnEnter()
     {
-        var price = context.Get("vm:price", 0);
-        var paid = context.Get("vm:paid", 0);
+        var price = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Price, 0);
+        var paid = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Paid, 0);
         Debug.Log($"[VMWF] Coin: price={price}, paid={paid}. (C=+1, X=cancel)");
-        context.Set("vm:cancel", false);
+        Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Cancel, false);
     }
 
-    public override void OnUpdate(YusWorkflowContext context)
+    protected override void OnUpdate()
     {
         if (Input.GetKeyDown(KeyCode.C))
         {
-            var paid = context.Get("vm:paid", 0) + 1;
-            context.Set("vm:paid", paid);
-            var price = context.Get("vm:price", 0);
+            var paid = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Paid, 0) + 1;
+            Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Paid, paid);
+            var price = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Price, 0);
             Debug.Log($"[VMWF] Insert coin: {paid}/{price}");
         }
 
         if (Input.GetKeyDown(KeyCode.X))
         {
-            context.Set("vm:cancel", true);
+            Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Cancel, true);
             Debug.Log("[VMWF] Cancel requested.");
         }
     }
@@ -72,22 +69,22 @@ public sealed class VMNode_Dispense : YusWorkflowNode
 {
     public float Seconds = 1.2f;
 
-    public override void OnEnter(YusWorkflowContext context)
+    protected override void OnEnter()
     {
-        context.Set("vm:dispenseRemaining", Seconds);
-        context.Set("vm:dispenseDone", false);
-        var item = context.Get("vm:item", 0);
+        Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_DispenseRemaining, Seconds);
+        Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_DispenseDone, false);
+        var item = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Item, 0);
         Debug.Log($"[VMWF] Dispense item={item}...");
     }
 
-    public override void OnUpdate(YusWorkflowContext context)
+    protected override void OnUpdate()
     {
-        var remaining = context.Get("vm:dispenseRemaining", Seconds);
-        remaining -= context.DeltaTime;
-        context.Set("vm:dispenseRemaining", remaining);
+        var remaining = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_DispenseRemaining, Seconds);
+        remaining -= Context.DeltaTime;
+        Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_DispenseRemaining, remaining);
         if (remaining > 0f) return;
 
-        context.Set("vm:dispenseDone", true);
+        Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_DispenseDone, true);
         Debug.Log("[VMWF] Dispense done.");
     }
 }
@@ -95,41 +92,41 @@ public sealed class VMNode_Dispense : YusWorkflowNode
 [Serializable]
 public sealed class VMNode_End : YusWorkflowNode
 {
-    public override void OnEnter(YusWorkflowContext context)
+    protected override void OnEnter()
     {
-        var paid = context.Get("vm:paid", 0);
-        var price = context.Get("vm:price", 0);
+        var paid = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Paid, 0);
+        var price = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Price, 0);
         Debug.Log($"[VMWF] End. Change={Mathf.Max(0, paid - price)}. (R=restart)");
-        context.Set("vm:restart", false);
+        Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Restart, false);
     }
 
-    public override void OnUpdate(YusWorkflowContext context)
+    protected override void OnUpdate()
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            context.Set("vm:restart", true);
+            Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Restart, true);
         }
     }
 
-    public override void OnExit(YusWorkflowContext context)
+    protected override void OnExit()
     {
-        context.Set("vm:restart", false);
+        Context.Set(VendingMachineWorkflowBlackboardKeys.Vm_Restart, false);
     }
 }
 
 [Serializable]
 public sealed class VMCond_HasSelection : YusWorkflowCondition
 {
-    public override bool Evaluate(YusWorkflowContext context) => context.Get("vm:item", 0) != 0;
+    protected override bool Evaluate() => Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Item, 0) != 0;
 }
 
 [Serializable]
 public sealed class VMCond_PaidEnough : YusWorkflowCondition
 {
-    public override bool Evaluate(YusWorkflowContext context)
+    protected override bool Evaluate()
     {
-        var price = context.Get("vm:price", 0);
-        var paid = context.Get("vm:paid", 0);
+        var price = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Price, 0);
+        var paid = Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Paid, 0);
         return price > 0 && paid >= price;
     }
 }
@@ -137,18 +134,17 @@ public sealed class VMCond_PaidEnough : YusWorkflowCondition
 [Serializable]
 public sealed class VMCond_Cancel : YusWorkflowCondition
 {
-    public override bool Evaluate(YusWorkflowContext context) => context.Get("vm:cancel", false);
+    protected override bool Evaluate() => Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Cancel, false);
 }
 
 [Serializable]
 public sealed class VMCond_DispenseDone : YusWorkflowCondition
 {
-    public override bool Evaluate(YusWorkflowContext context) => context.Get("vm:dispenseDone", false);
+    protected override bool Evaluate() => Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_DispenseDone, false);
 }
 
 [Serializable]
 public sealed class VMCond_Restart : YusWorkflowCondition
 {
-    public override bool Evaluate(YusWorkflowContext context) => context.Get("vm:restart", false);
+    protected override bool Evaluate() => Context.Get(VendingMachineWorkflowBlackboardKeys.Vm_Restart, false);
 }
-

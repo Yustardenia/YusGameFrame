@@ -15,6 +15,9 @@ public sealed class YusWorkflowRunner : MonoBehaviour
     [SerializeField] private Component owner;
     [SerializeField] private List<ExternalEventEnter> externalEventEnters = new List<ExternalEventEnter>();
 
+    [Header("Context Init (Blackboard)")]
+    [SerializeField] private List<YusWorkflowBlackboardEntry> initialBlackboard = new List<YusWorkflowBlackboardEntry>();
+
     [Header("PlayMode Debug")]
     [SerializeField] private bool debugPaused;
     [SerializeField] private bool debugManualTick;
@@ -43,6 +46,7 @@ public sealed class YusWorkflowRunner : MonoBehaviour
     private void Start()
     {
         machine = new YusWorkflowMachine(owner, workflow);
+        ApplyInitialBlackboard();
         machine.Start();
         FlushPendingEnters();
     }
@@ -127,5 +131,26 @@ public sealed class YusWorkflowRunner : MonoBehaviour
     {
         if (machine == null) return;
         machine.FixedTick(Time.fixedDeltaTime * debugDeltaTimeScale);
+    }
+
+    private void ApplyInitialBlackboard()
+    {
+        if (machine == null) return;
+
+        var merged = new List<YusWorkflowBlackboardEntry>();
+
+        var assetInit = workflow != null ? workflow.InitialBlackboard : null;
+        if (assetInit != null && assetInit.Count > 0)
+        {
+            merged.AddRange(assetInit);
+        }
+
+        if (initialBlackboard != null && initialBlackboard.Count > 0)
+        {
+            merged.AddRange(initialBlackboard);
+        }
+
+        machine.Context.SetInitialBlackboardSnapshot(merged);
+        machine.Context.ResetBlackboardToInitial();
     }
 }

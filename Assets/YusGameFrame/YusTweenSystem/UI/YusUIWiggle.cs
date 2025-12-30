@@ -39,25 +39,17 @@ public class YusUIWiggle : MonoBehaviour
     {
         Stop();
 
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null && localRotate)
-        {
-            _tween = mgr.WiggleZ(transform, angle: angle, halfDuration: halfDuration, loops: loops, baseLocalRotation: _baseRotation, unscaledTime: unscaledTime, killTargetTweens: false, id: this);
-            return;
-        }
-
         float d = Mathf.Max(0.001f, halfDuration);
         Vector3 targetEuler = new Vector3(0f, 0f, angle);
 
-        _tween = (localRotate
+        Tween tween = (localRotate
                 ? transform.DOLocalRotate(targetEuler, d).SetRelative()
                 : transform.DORotate(targetEuler, d).SetRelative())
             .SetEase(Ease.InOutSine)
             .SetLoops(loops, LoopType.Yoyo)
-            .SetUpdate(unscaledTime)
-            .SetLink(gameObject, LinkBehaviour.KillOnDestroy)
-            .SetId(this)
             .OnKill(ResetRotation);
+
+        _tween = YusTween.ApplyDefaults(tween, gameObject, unscaledTime, id: this, linkBehaviour: LinkBehaviour.KillOnDestroy);
     }
 
     public void Stop()

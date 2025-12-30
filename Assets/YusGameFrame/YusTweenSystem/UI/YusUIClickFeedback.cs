@@ -37,39 +37,18 @@ public class YusUIClickFeedback : MonoBehaviour, IPointerDownHandler, IPointerUp
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null)
-        {
-            mgr.PressDown(transform, pressMultiplier: pressMultiplier, duration: pressDuration, baseScale: _baseScale, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            return;
-        }
-
         Vector3 to = _baseScale * pressMultiplier;
         YusTween.ScaleTo(transform, to, pressDuration, pressEase, unscaledTime, killTargetTweens, id: this);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null)
-        {
-            mgr.PressUp(transform, duration: pressDuration, baseScale: _baseScale, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            return;
-        }
-
         YusTween.ScaleTo(transform, _baseScale, pressDuration, pressEase, unscaledTime, killTargetTweens, id: this);
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (!punchOnClick) return;
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null)
-        {
-            mgr.ClickPunch(transform, punch, duration: punchDuration, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            return;
-        }
-
         YusTween.PunchScale(transform, punch, punchDuration, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
     }
 }

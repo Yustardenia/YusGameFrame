@@ -22,12 +22,6 @@ public static class YusTweenUIExtensions
         if (target == null) return null;
 
         Vector3 to = endScale ?? Vector3.one;
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null && ease == YusEase.PopOut && unscaledTime == true && killTargetTweens == true && linkBehaviour == LinkBehaviour.KillOnDestroy)
-        {
-            return mgr.ScalePopOpen(target, duration: duration, endScale: to, unscaledTime: true, killTargetTweens: true, id: id);
-        }
-
         return YusTween.ScaleFromTo(
             target,
             from: Vector3.zero,
@@ -58,12 +52,6 @@ public static class YusTweenUIExtensions
         if (target == null) return null;
 
         Vector3 to = endScale ?? Vector3.zero;
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null && ease == YusEase.PopIn && unscaledTime == true && killTargetTweens == true && linkBehaviour == LinkBehaviour.KillOnDestroy)
-        {
-            return mgr.ScalePopClose(target, onComplete, duration: duration, endScale: to, unscaledTime: true, killTargetTweens: true, id: id);
-        }
-
         Tween tween = YusTween.ScaleTo(
             target,
             to: to,

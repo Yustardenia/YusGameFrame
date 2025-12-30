@@ -32,26 +32,12 @@ public class YusUIHoverScale : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null)
-        {
-            mgr.HoverEnter(transform, hoverMultiplier: hoverMultiplier, duration: duration, baseScale: _baseScale, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            return;
-        }
-
         Vector3 to = _baseScale * hoverMultiplier;
         YusTween.ScaleTo(transform, to, duration, ease, unscaledTime, killTargetTweens, id: this);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null)
-        {
-            mgr.HoverExit(transform, duration: duration, baseScale: _baseScale, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            return;
-        }
-
         YusTween.ScaleTo(transform, _baseScale, duration, ease, unscaledTime, killTargetTweens, id: this);
     }
 }

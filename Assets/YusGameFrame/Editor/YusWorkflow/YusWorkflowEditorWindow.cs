@@ -94,7 +94,7 @@ public sealed class YusWorkflowEditorWindow : EditorWindow
         toolbar.Add(new Button(() => graphView?.OpenSearchAt(new Vector2(position.x + position.width * 0.5f, position.y + position.height * 0.5f))) { text = "添加节点(搜索)" });
         toolbar.Add(new Button(() => graphView?.CreateNodeAtCenter()) { text = "添加空节点" });
         toolbar.Add(new Button(() => YusWorkflowNodeGeneratorWindow.Open()) { text = "生成节点脚本" });
-        toolbar.Add(new Button(() => graphView?.SavePositionsToAsset()) { text = "保存" });
+        toolbar.Add(new Button(SaveAsset) { text = "保存" });
 
         rootVisualElement.Add(toolbar);
 
@@ -158,6 +158,12 @@ public sealed class YusWorkflowEditorWindow : EditorWindow
         ShowNothingSelected();
     }
 
+    private void SaveAsset()
+    {
+        graphView?.SavePositionsToAsset();
+        if (asset != null) YusWorkflowBlackboardKeysGenerator.GenerateFor(asset);
+    }
+
     private void OnGraphSelectionChanged(ISelectable selectable)
     {
         inspectorContent.Clear();
@@ -182,6 +188,23 @@ public sealed class YusWorkflowEditorWindow : EditorWindow
         inspectorContent.Clear();
         inspectorContent.Add(new Label("选择一个节点/连线进行编辑。"));
         inspectorContent.Add(new Label("提示：按空格打开搜索，或使用“添加节点(搜索)”"));
+
+        if (asset == null) return;
+
+        inspectorContent.Add(new VisualElement { style = { height = 8 } });
+        inspectorContent.Add(new Label("Context Init (Blackboard)"));
+
+        var so = new SerializedObject(asset);
+        var initProp = so.FindProperty("initialBlackboard");
+        if (initProp == null)
+        {
+            inspectorContent.Add(new HelpBox("initialBlackboard 字段未找到，请确认 YusWorkflowAsset 已更新。", HelpBoxMessageType.Warning));
+            return;
+        }
+
+        var field = new PropertyField(initProp);
+        field.Bind(so);
+        inspectorContent.Add(field);
     }
 
     private void ValidateAsset()

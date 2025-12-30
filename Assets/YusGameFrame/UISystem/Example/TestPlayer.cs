@@ -1,18 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class TestPlayer : MonoBehaviour
 {
-    // Start is called before the first frame update
     private Rigidbody2D rb;
+
     void Start()
     {
         rb = gameObject.GetComponent<Rigidbody2D>();
         Init();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.P))
@@ -22,9 +19,21 @@ public class TestPlayer : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.L))
         {
-            UIManager.Instance.OpenPanel<PlayerInfoPanel>("PlayerInfo");
+            var options = UIPanelOpenOptions.Default;
+            options.layer = UILayer.Popup;
+            options.addToStack = true;
+            options.isModal = true;
+            options.closeOnBlockerClick = true;
+
+            UIManager.Instance.OpenPanel<PlayerInfoPanel>("PlayerInfo", options);
         }
-        rb.linearVelocity = new Vector2(10 *Input.GetAxis("Horizontal"), 10 *Input.GetAxis("Vertical"));
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            UIManager.Instance.CloseTopPanel();
+        }
+
+        rb.linearVelocity = new Vector2(10 * Input.GetAxis("Horizontal"), 10 * Input.GetAxis("Vertical"));
     }
 
     private void Init()
@@ -37,3 +46,4 @@ public class TestPlayer : MonoBehaviour
         PlayerManager.Instance.ChangeLocation(this.gameObject.transform.position);
     }
 }
+

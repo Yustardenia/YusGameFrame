@@ -9,6 +9,10 @@ using UnityEngine.UI;
 /// 动画总管（单例）：
 /// 你可以把它理解成“动画指挥官”——所有 DOTween 的常用动作都从这里发号施令。
 /// 好处是：项目里到处都用同一种节奏、同一种默认手感、同一种管理方式（Kill/Link/UnscaledTime）。
+/// 
+/// Note: This is kept for legacy/compatibility. New code should prefer:
+/// - `YusTween` for code-driven tweens
+/// - `YusTweenSequencePlayer` for Inspector-driven tween composition
 /// </summary>
 public class YusTweenManager : MonoBehaviour
 {

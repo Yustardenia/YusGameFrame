@@ -175,11 +175,12 @@ public sealed class YusWorkflowNodeGeneratorWindow : EditorWindow
 
         sb.Append("public partial class ").Append(className).AppendLine();
         sb.AppendLine("{");
-        sb.AppendLine("    public override void OnEnter(YusWorkflowContext context)");
+        sb.AppendLine("    protected override void OnEnter()");
         sb.AppendLine("    {");
+        sb.AppendLine("        // You can access workflow runtime data via `Context`.");
         sb.AppendLine("    }");
         sb.AppendLine();
-        sb.AppendLine("    public override void OnUpdate(YusWorkflowContext context)");
+        sb.AppendLine("    protected override void OnUpdate()");
         sb.AppendLine("    {");
         sb.AppendLine("    }");
         sb.AppendLine("}");

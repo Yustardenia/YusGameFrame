@@ -28,10 +28,12 @@ public sealed class YusWorkflowAsset : ScriptableObject
     [SerializeField] private string entryNodeGuid;
     [SerializeField] private List<NodeRecord> nodes = new List<NodeRecord>();
     [SerializeField] private List<EdgeRecord> edges = new List<EdgeRecord>();
+    [SerializeField] private List<YusWorkflowBlackboardEntry> initialBlackboard = new List<YusWorkflowBlackboardEntry>();
 
     public string EntryNodeGuid => entryNodeGuid;
     public IReadOnlyList<NodeRecord> Nodes => nodes;
     public IReadOnlyList<EdgeRecord> Edges => edges;
+    public IReadOnlyList<YusWorkflowBlackboardEntry> InitialBlackboard => initialBlackboard;
 
     public bool Validate(out List<string> errors)
     {

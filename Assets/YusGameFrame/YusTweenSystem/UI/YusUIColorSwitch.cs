@@ -61,16 +61,6 @@ public class YusUIColorSwitch : MonoBehaviour
     {
         AutoBindIfNeeded();
 
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-
-        if (mgr != null)
-        {
-            if (graphic != null) mgr.ColorInstant(graphic, color);
-            else if (spriteRenderer != null) mgr.ColorInstant(spriteRenderer, color);
-            else if (rendererTarget != null) mgr.ColorInstant(rendererTarget, color, rendererUseSharedMaterial);
-            return;
-        }
-
         if (graphic != null) graphic.YusColorInstant(color);
         else if (spriteRenderer != null) spriteRenderer.YusColorInstant(color);
         else if (rendererTarget != null) rendererTarget.YusColorInstant(color, rendererUseSharedMaterial);
@@ -79,14 +69,6 @@ public class YusUIColorSwitch : MonoBehaviour
     public Tween SetFade(Color color)
     {
         AutoBindIfNeeded();
-
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null)
-        {
-            if (graphic != null) return mgr.ColorFade(graphic, color, fadeDuration, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            if (spriteRenderer != null) return mgr.ColorFade(spriteRenderer, color, fadeDuration, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            if (rendererTarget != null) return mgr.ColorFade(rendererTarget, color, fadeDuration, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, useSharedMaterial: rendererUseSharedMaterial, id: this);
-        }
 
         if (graphic != null) return graphic.YusColorFade(color, fadeDuration, fadeEase, unscaledTime, killTargetTweens, id: this);
         if (spriteRenderer != null) return spriteRenderer.YusColorFade(color, fadeDuration, fadeEase, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);

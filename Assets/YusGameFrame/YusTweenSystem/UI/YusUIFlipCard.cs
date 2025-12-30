@@ -51,13 +51,6 @@ public class YusUIFlipCard : MonoBehaviour
     {
         _isFront = showFront;
 
-        var mgr = YusSingletonManager.Instance != null ? YusSingletonManager.Instance.Tween : null;
-        if (mgr != null)
-        {
-            _tween = mgr.FlipCard(transform, front, back, _isFront, duration: duration, axis: axis, unscaledTime: unscaledTime, killTargetTweens: killTargetTweens, id: this);
-            return;
-        }
-
         if (killTargetTweens) transform.DOKill();
         if (_tween != null) _tween.Kill();
 

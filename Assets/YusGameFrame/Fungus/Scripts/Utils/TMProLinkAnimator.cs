@@ -3,6 +3,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using System.Collections.Generic;
 #if UNITY_2018_1_OR_NEWER
 namespace Fungus
 {
@@ -13,6 +14,16 @@ namespace Fungus
 [DisallowMultipleComponent]
 public class TMProLinkAnimator : MonoBehaviour
 {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private const int MaxMissingLinkLogs = 30;
+    private static int _missingLinkLogCount;
+    private static readonly HashSet<string> _missingLinkLogDedup = new HashSet<string>();
+
+    private const int MaxResolvedLinkLogs = 30;
+    private static int _resolvedLinkLogCount;
+    private static readonly HashSet<string> _resolvedLinkLogDedup = new HashSet<string>();
+#endif
+
 #region Auto Add Component
     // When link effects mutate TMP text at runtime, TMP raises TEXT_CHANGED_EVENT which can re-enter
     // the auto-add / update pipeline and cause infinite recursion. Use this guard to suppress it.
@@ -246,32 +257,52 @@ public class TMProLinkAnimator : MonoBehaviour
 	                var curLink = TMProComponent.textInfo.linkInfo[i];
 
 	                //if a static lookup exists, ask it to run its animation with us as the context
-	                var linkHash = curLink.hashCode;
+	                var originalHash = curLink.hashCode;
+	                var linkHash = originalHash;
+	                string resolvedBy = "originalHash";
 	                if (!TMProLinkAnimLookup.LinkHashToEffect.TryGetValue(linkHash, out TMProLinkAnimLookup.TMProAnimFunc animFunc))
 	                {
 	                    // Some TMP versions / parsing paths can produce a hashCode that doesn't match
 	                    // TMP_TextUtilities.GetSimpleHashCode(GetLinkID()). Recompute as a fallback.
 	                    var linkIdRaw = curLink.GetLinkID();
 	                    var linkId = SanitizeLinkId(linkIdRaw);
+	                    int fullIdHash = 0;
+	                    int keyHash = 0;
+	                    string effectKey = null;
 	                    if (!string.IsNullOrEmpty(linkId))
 	                    {
 	                        // Try full ID first (supports exact matches).
-	                        linkHash = TMPro.TMP_TextUtilities.GetSimpleHashCode(linkId);
+	                        fullIdHash = TMPro.TMP_TextUtilities.GetSimpleHashCode(linkId);
+	                        linkHash = fullIdHash;
+	                        resolvedBy = "fullId";
 	                        if (!TMProLinkAnimLookup.LinkHashToEffect.TryGetValue(linkHash, out animFunc))
 	                        {
 	                            // Then try effect key (supports parameterized IDs like "type:8,0.2").
-	                            var effectKey = ExtractEffectKey(linkId);
+	                            effectKey = ExtractEffectKey(linkId);
 	                            if (!string.IsNullOrEmpty(effectKey) && !string.Equals(effectKey, linkId, StringComparison.Ordinal))
 	                            {
-	                                linkHash = TMPro.TMP_TextUtilities.GetSimpleHashCode(effectKey);
+	                                keyHash = TMPro.TMP_TextUtilities.GetSimpleHashCode(effectKey);
+	                                linkHash = keyHash;
+	                                resolvedBy = "effectKey";
 	                                TMProLinkAnimLookup.LinkHashToEffect.TryGetValue(linkHash, out animFunc);
 	                            }
 	                        }
 	                    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+	                    if (animFunc == null)
+	                    {
+	                        ReportMissingLink(curLink, linkIdRaw, linkId, effectKey, originalHash, fullIdHash, keyHash);
+	                    }
+#endif
 	                }
 
 	                if (animFunc != null)
 	                {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+	                    // Confirms that the link was matched to an effect (useful when effects "do nothing" visually).
+	                    ReportResolvedLinkOnce(curLink, resolvedBy, originalHash, linkHash);
+#endif
                     //only update caches if we actually need it
                     HandleDirty();
 
@@ -336,6 +367,60 @@ public class TMProLinkAnimator : MonoBehaviour
             dirty = false;
         }
     }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void ReportMissingLink(TMPro.TMP_LinkInfo linkInfo, string linkIdRaw, string linkIdSanitized, string effectKey, int originalHash, int fullIdHash, int keyHash)
+    {
+        if (_missingLinkLogCount >= MaxMissingLinkLogs)
+            return;
+
+        int textId = TMProComponent != null ? TMProComponent.GetInstanceID() : 0;
+        string dedupKey = $"{textId}:{linkInfo.linkTextfirstCharacterIndex}:{linkInfo.linkTextLength}:{linkIdRaw}";
+        if (!_missingLinkLogDedup.Add(dedupKey))
+            return;
+
+        _missingLinkLogCount++;
+
+        string objName = TMProComponent != null ? TMProComponent.gameObject.name : "(null)";
+        string sceneName = TMProComponent != null ? TMProComponent.gameObject.scene.name : "(unknown)";
+
+        Debug.LogWarning(
+            "[TMProLinkAnimator] Missing link effect mapping.\n" +
+            $"  scene={sceneName} obj={objName} tmpId={textId}\n" +
+            $"  linkText=\"{linkInfo.GetLinkText()}\"\n" +
+            $"  linkIdRaw=\"{linkIdRaw}\" linkIdSanitized=\"{linkIdSanitized}\" effectKey=\"{effectKey}\"\n" +
+            $"  hashes: original={originalHash} fullId={fullIdHash} key={keyHash}\n" +
+            "  Tip: check CustomTMProEffects registration log and ensure the effect key matches AddHelper(\"...\")."
+        );
+    }
+
+    private void ReportResolvedLinkOnce(TMPro.TMP_LinkInfo linkInfo, string resolvedBy, int originalHash, int matchedHash)
+    {
+        if (_resolvedLinkLogCount >= MaxResolvedLinkLogs)
+            return;
+
+        int textId = TMProComponent != null ? TMProComponent.GetInstanceID() : 0;
+        string linkIdRaw = linkInfo.GetLinkID();
+        string dedupKey = $"{textId}:{linkInfo.linkTextfirstCharacterIndex}:{linkInfo.linkTextLength}:{linkIdRaw}:{matchedHash}";
+        if (!_resolvedLinkLogDedup.Add(dedupKey))
+            return;
+
+        _resolvedLinkLogCount++;
+
+        string objName = TMProComponent != null ? TMProComponent.gameObject.name : "(null)";
+        string sceneName = TMProComponent != null ? TMProComponent.gameObject.scene.name : "(unknown)";
+        string linkIdSanitized = SanitizeLinkId(linkIdRaw);
+        string effectKey = ExtractEffectKey(linkIdSanitized);
+
+        Debug.Log(
+            "[TMProLinkAnimator] Resolved link effect mapping.\n" +
+            $"  scene={sceneName} obj={objName} tmpId={textId}\n" +
+            $"  linkText=\"{linkInfo.GetLinkText()}\"\n" +
+            $"  linkIdRaw=\"{linkIdRaw}\" linkIdSanitized=\"{linkIdSanitized}\" effectKey=\"{effectKey}\"\n" +
+            $"  resolvedBy={resolvedBy} hashes: original={originalHash} matched={matchedHash}"
+        );
+    }
+#endif
 }
 }
 #endif

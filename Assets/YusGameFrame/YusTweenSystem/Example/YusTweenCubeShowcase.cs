@@ -107,25 +107,6 @@ public class YusTweenCubeShowcase : MonoBehaviour
         GUILayout.EndArea();
     }
 
-    private YusTweenManager Tween
-    {
-        get
-        {
-            if (YusSingletonManager.Instance != null && YusSingletonManager.Instance.Tween != null)
-            {
-                return YusSingletonManager.Instance.Tween;
-            }
-
-            if (YusTweenManager.Instance != null) return YusTweenManager.Instance;
-
-            var found = FindObjectOfType<YusTweenManager>();
-            if (found != null) return found;
-
-            var go = new GameObject(nameof(YusTweenManager));
-            return go.AddComponent<YusTweenManager>();
-        }
-    }
-
     private void SpawnCubes()
     {
         ClearOld();
@@ -185,7 +166,7 @@ public class YusTweenCubeShowcase : MonoBehaviour
             Transform t = _cubes[i];
             if (t == null) continue;
 
-            Tween.StopTarget(t);
+            YusTween.KillTargetTweens(t);
             t.position = _basePositions[i];
             t.rotation = _baseRotations[i];
             t.localScale = _baseScales[i];
@@ -206,9 +187,12 @@ public class YusTweenCubeShowcase : MonoBehaviour
             if (t == null) continue;
 
             Vector3 up = _basePositions[i] + Vector3.up * moveDistance;
-            Sequence seq = YusTween.NewSequence(unscaledTime: unscaledTime, id: this, linkGameObject: t.gameObject);
-            seq.Append(Tween.MoveTo(t, up, duration, YusEase.FastToSlow, unscaledTime: unscaledTime, id: this));
-            seq.Append(Tween.MoveTo(t, _basePositions[i], duration, YusEase.SlowToFast, unscaledTime: unscaledTime, id: this));
+            object id = YusTweenId.For(t, YusTweenChannel.Move);
+            YusTween.KillId(id);
+
+            Sequence seq = YusTween.NewSequence(unscaledTime: unscaledTime, id: id, linkGameObject: t.gameObject);
+            seq.Append(YusTween.MoveTo(t, up, duration, YusEase.FastToSlow, unscaledTime: unscaledTime, killTargetTweens: false, id: id));
+            seq.Append(YusTween.MoveTo(t, _basePositions[i], duration, YusEase.SlowToFast, unscaledTime: unscaledTime, killTargetTweens: false, id: id));
         }
     }
 
@@ -220,7 +204,9 @@ public class YusTweenCubeShowcase : MonoBehaviour
             if (t == null) continue;
 
             Vector3 target = _baseRotations[i].eulerAngles + new Vector3(0f, 360f, 0f);
-            Tween.RotateTo(t, target, duration, YusEase.CleanStop, rotateMode: RotateMode.FastBeyond360, unscaledTime: unscaledTime, id: this);
+            object id = YusTweenId.For(t, YusTweenChannel.Rotate);
+            YusTween.KillId(id);
+            YusTween.RotateTo(t, target, duration, YusEase.CleanStop, rotateMode: RotateMode.FastBeyond360, unscaledTime: unscaledTime, killTargetTweens: false, id: id);
         }
     }
 
@@ -232,9 +218,12 @@ public class YusTweenCubeShowcase : MonoBehaviour
             if (t == null) continue;
 
             Vector3 baseScale = _baseScales[i];
-            Sequence seq = YusTween.NewSequence(unscaledTime: unscaledTime, id: this, linkGameObject: t.gameObject);
-            seq.Append(Tween.ScaleTo(t, baseScale * 1.25f, duration * 0.6f, YusEase.PopOut, unscaledTime: unscaledTime, id: this));
-            seq.Append(Tween.ScaleTo(t, baseScale, duration * 0.4f, YusEase.PopIn, unscaledTime: unscaledTime, id: this));
+            object id = YusTweenId.For(t, YusTweenChannel.PopupScale);
+            YusTween.KillId(id);
+
+            Sequence seq = YusTween.NewSequence(unscaledTime: unscaledTime, id: id, linkGameObject: t.gameObject);
+            seq.Append(YusTween.ScaleTo(t, baseScale * 1.25f, duration * 0.6f, YusEase.PopOut, unscaledTime: unscaledTime, killTargetTweens: false, id: id));
+            seq.Append(YusTween.ScaleTo(t, baseScale, duration * 0.4f, YusEase.PopIn, unscaledTime: unscaledTime, killTargetTweens: false, id: id));
         }
     }
 
@@ -244,7 +233,10 @@ public class YusTweenCubeShowcase : MonoBehaviour
         {
             Transform t = _cubes[i];
             if (t == null) continue;
-            Tween.PunchPosition(t, new Vector3(0.4f, 0.15f, 0f), duration * 0.6f, unscaledTime: unscaledTime, id: this);
+
+            object id = YusTweenId.For(t, YusTweenChannel.PunchPosition);
+            YusTween.KillId(id);
+            YusTween.PunchPosition(t, new Vector3(0.4f, 0.15f, 0f), duration * 0.6f, unscaledTime: unscaledTime, killTargetTweens: false, id: id);
         }
     }
 
@@ -254,7 +246,10 @@ public class YusTweenCubeShowcase : MonoBehaviour
         {
             Transform t = _cubes[i];
             if (t == null) continue;
-            Tween.ShakePosition(t, duration * 0.8f, new Vector3(0.25f, 0.25f, 0.25f), unscaledTime: unscaledTime, id: this);
+
+            object id = YusTweenId.For(t, YusTweenChannel.ShakePosition);
+            YusTween.KillId(id);
+            YusTween.ShakePosition(t, duration * 0.8f, new Vector3(0.25f, 0.25f, 0.25f), unscaledTime: unscaledTime, killTargetTweens: false, id: id);
         }
     }
 
@@ -264,7 +259,10 @@ public class YusTweenCubeShowcase : MonoBehaviour
         {
             Transform t = _cubes[i];
             if (t == null) continue;
-            Tween.ShakeRotation(t, duration * 0.8f, new Vector3(0f, 20f, 0f), unscaledTime: unscaledTime, id: this);
+
+            object id = YusTweenId.For(t, YusTweenChannel.ShakeRotation);
+            YusTween.KillId(id);
+            YusTween.ShakeRotation(t, duration * 0.8f, new Vector3(0f, 20f, 0f), unscaledTime: unscaledTime, killTargetTweens: false, id: id);
         }
     }
 
@@ -274,7 +272,10 @@ public class YusTweenCubeShowcase : MonoBehaviour
         {
             Transform t = _cubes[i];
             if (t == null) continue;
-            Tween.ShakeScale(t, duration * 0.8f, new Vector3(0.25f, 0.25f, 0f), unscaledTime: unscaledTime, id: this);
+
+            object id = YusTweenId.For(t, YusTweenChannel.ShakeScale);
+            YusTween.KillId(id);
+            YusTween.ShakeScale(t, duration * 0.8f, new Vector3(0.25f, 0.25f, 0f), unscaledTime: unscaledTime, killTargetTweens: false, id: id);
         }
     }
 
@@ -289,7 +290,7 @@ public class YusTweenCubeShowcase : MonoBehaviour
             if (renderer == null) continue;
 
             Color c = Random.ColorHSV(0f, 1f, 0.7f, 1f, 0.7f, 1f);
-            Tween.ColorInstant(renderer, c);
+            renderer.YusColorInstant(c);
         }
     }
 
@@ -304,7 +305,10 @@ public class YusTweenCubeShowcase : MonoBehaviour
             if (renderer == null) continue;
 
             Color c = Random.ColorHSV(0f, 1f, 0.7f, 1f, 0.7f, 1f);
-            Tween.ColorFade(renderer, c, duration: duration, unscaledTime: unscaledTime, id: this);
+
+            object id = YusTweenId.For(t, YusTweenChannel.Color);
+            YusTween.KillId(id);
+            renderer.YusColorFade(c, duration: duration, unscaledTime: unscaledTime, killTargetTweens: false, id: id);
         }
     }
 
@@ -319,11 +323,22 @@ public class YusTweenCubeShowcase : MonoBehaviour
 
             if (_infiniteRotateEnabled)
             {
-                Tween.InfiniteRotate(t, axis: Vector3.up, degreesPerSecond: 240f, localRotate: false, unscaledTime: unscaledTime, id: this);
+                object id = YusTweenId.For(t, YusTweenChannel.InfiniteRotate);
+                YusTween.KillId(id);
+
+                float degreesPerSecond = 240f;
+                float d = Mathf.Approximately(degreesPerSecond, 0f) ? 0.001f : Mathf.Abs(360f / degreesPerSecond);
+                Vector3 oneTurn = Vector3.up * 360f;
+
+                Tween tween = t.DORotate(oneTurn, d, RotateMode.FastBeyond360)
+                    .SetEase(YusEase.Average)
+                    .SetLoops(-1, LoopType.Incremental);
+
+                YusTween.ApplyDefaults(tween, t.gameObject, unscaledTime, id: id, linkBehaviour: LinkBehaviour.KillOnDestroy);
             }
             else
             {
-                Tween.StopTarget(t);
+                YusTween.KillId(YusTweenId.For(t, YusTweenChannel.InfiniteRotate));
                 t.rotation = _baseRotations[i];
             }
         }
